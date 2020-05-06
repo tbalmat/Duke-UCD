@@ -1,0 +1,560 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.5.7)  20 FEB 2020 11:55
+entering extended mode
+**./UCDAppOverview01.tex
+(UCDAppOverview01.tex
+LaTeX2e <2017-04-15>
+Babel <3.18> and hyphenation patterns for 75 language(s) loaded.
+("C:\Program Files\MiKTeX 2.9\tex\latex\base\article.cls"
+Document Class: article 2014/09/29 v1.4h Standard LaTeX document class
+("C:\Program Files\MiKTeX 2.9\tex\latex\base\size10.clo"
+File: size10.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\setspace\setspace.sty"
+Package: setspace 2011/12/19 v6.7a set line spacing
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\geometry\geometry.sty"
+Package: geometry 2010/09/12 v5.6 Page Geometry
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\graphics\keyval.sty"
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\ifpdf.sty"
+Package: ifpdf 2017/03/15 v3.2 Provides the ifpdf switch
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\ifvtex.sty"
+Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+)
+("C:\Program Files\MiKTeX 2.9\tex\generic\ifxetex\ifxetex.sty"
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count87
+\Gm@cntv=\count88
+\c@Gm@tempcnt=\count89
+\Gm@bindingoffset=\dimen103
+\Gm@wd@mp=\dimen104
+\Gm@odd@mp=\dimen105
+\Gm@even@mp=\dimen106
+\Gm@layoutwidth=\dimen107
+\Gm@layoutheight=\dimen108
+\Gm@layouthoffset=\dimen109
+\Gm@layoutvoffset=\dimen110
+\Gm@dimlist=\toks15
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\geometry\geometry.cfg"))
+("C:\Program Files\MiKTeX 2.9\tex\latex\titlesec\titlesec.sty"
+Package: titlesec 2016/03/21 v2.10.2 Sectioning titles
+\ttl@box=\box26
+\beforetitleunit=\skip43
+\aftertitleunit=\skip44
+\ttl@plus=\dimen111
+\ttl@minus=\dimen112
+\ttl@toksa=\toks16
+\titlewidth=\dimen113
+\titlewidthlast=\dimen114
+\titlewidthfirst=\dimen115
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\enumitem\enumitem.sty"
+Package: enumitem 2011/09/28 v3.5.2 Customized lists
+\labelindent=\skip45
+\enit@outerparindent=\dimen116
+\enit@toks=\toks17
+\enit@inbox=\box27
+\enitdp@description=\count90
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\listings\listings.sty"
+\lst@mode=\count91
+\lst@gtempboxa=\box28
+\lst@token=\toks18
+\lst@length=\count92
+\lst@currlwidth=\dimen117
+\lst@column=\count93
+\lst@pos=\count94
+\lst@lostspace=\dimen118
+\lst@width=\dimen119
+\lst@newlines=\count95
+\lst@lineno=\count96
+\lst@maxwidth=\dimen120
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\listings\lstmisc.sty"
+File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
+\c@lstnumber=\count97
+\lst@skipnumbers=\count98
+\lst@framebox=\box29
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\listings\listings.cfg"
+File: listings.cfg 2015/06/04 1.6 listings configuration
+))
+Package: listings 2015/06/04 1.6 (Carsten Heinz)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\amsmath\amsmath.sty"
+Package: amsmath 2017/09/02 v2.17a AMS math features
+\@mathmargin=\skip46
+
+For additional information on amsmath, use the `?' option.
+("C:\Program Files\MiKTeX 2.9\tex\latex\amsmath\amstext.sty"
+Package: amstext 2000/06/29 v2.01 AMS text
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\amsmath\amsgen.sty"
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks19
+\ex@=\dimen121
+))
+("C:\Program Files\MiKTeX 2.9\tex\latex\amsmath\amsbsy.sty"
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen122
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\amsmath\amsopn.sty"
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count99
+LaTeX Info: Redefining \frac on input line 213.
+\uproot@=\count100
+\leftroot@=\count101
+LaTeX Info: Redefining \overline on input line 375.
+\classnum@=\count102
+\DOTSCASE@=\count103
+LaTeX Info: Redefining \ldots on input line 472.
+LaTeX Info: Redefining \dots on input line 475.
+LaTeX Info: Redefining \cdots on input line 596.
+\Mathstrutbox@=\box30
+\strutbox@=\box31
+\big@size=\dimen123
+LaTeX Font Info:    Redeclaring font encoding OML on input line 712.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 713.
+\macc@depth=\count104
+\c@MaxMatrixCols=\count105
+\dotsspace@=\muskip10
+\c@parentequation=\count106
+\dspbrk@lvl=\count107
+\tag@help=\toks20
+\row@=\count108
+\column@=\count109
+\maxfields@=\count110
+\andhelp@=\toks21
+\eqnshift@=\dimen124
+\alignsep@=\dimen125
+\tagshift@=\dimen126
+\tagwidth@=\dimen127
+\totwidth@=\dimen128
+\lineht@=\dimen129
+\@envbody=\toks22
+\multlinegap=\skip47
+\multlinetaggap=\skip48
+\mathdisplay@stack=\toks23
+LaTeX Info: Redefining \[ on input line 2817.
+LaTeX Info: Redefining \] on input line 2818.
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\tools\bm.sty"
+Package: bm 2017/01/16 v1.2c Bold Symbol Support (DPC/FMi)
+\symboldoperators=\mathgroup4
+\symboldletters=\mathgroup5
+\symboldsymbols=\mathgroup6
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 141.
+LaTeX Info: Redefining \bm on input line 207.
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\graphics\graphicx.sty"
+Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\graphics\graphics.sty"
+Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\graphics\trig.sty"
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\graphics-cfg\graphics.cfg"
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 99.
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\graphics-def\pdftex.def"
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen130
+\Gin@req@width=\dimen131
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\caption\subcaption.sty"
+Package: subcaption 2018/05/01 v1.1-162 Sub-captions (AR)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\caption\caption.sty"
+Package: caption 2018/05/01 v3.3-147 Customizing captions (AR)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\caption\caption3.sty"
+Package: caption3 2018/05/27 v1.8a caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 64.
+\captionmargin=\dimen132
+\captionmargin@=\dimen133
+\captionwidth=\dimen134
+\caption@tempdima=\dimen135
+\caption@indent=\dimen136
+\caption@parindent=\dimen137
+\caption@hangindent=\dimen138
+)
+\c@ContinuedFloat=\count111
+Package caption Info: listings package is loaded.
+)
+\c@subfigure=\count112
+\c@subtable=\count113
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\xcolor\xcolor.sty"
+Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\graphics-cfg\color.cfg"
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1352.
+Package xcolor Info: Model `RGB' extended on input line 1364.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1367.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\colortbl\colortbl.sty"
+Package: colortbl 2018/12/12 v1.0d Color table columns (DPC)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\tools\array.sty"
+Package: array 2016/10/06 v2.4d Tabular extension package (FMi)
+\col@sep=\dimen139
+\extrarowheight=\dimen140
+\NC@list=\toks24
+\extratabsurround=\skip49
+\backup@length=\skip50
+)
+\everycr=\toks25
+\minrowclearance=\skip51
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\changepage\changepage.sty"
+Package: changepage 2009/10/20 v1.0c check page and change page layout
+\c@cp@cntr=\count114
+\cp@tempcnt=\count115
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\oberdiek\pdflscape.sty"
+Package: pdflscape 2016/05/14 v0.11 Display of landscape pages in PDF (HO)
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\graphics\lscape.sty"
+Package: lscape 2000/10/22 v3.01 Landscape Pages (DPC)
+)
+Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\natbib\natbib.sty"
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip52
+\bibsep=\skip53
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count116
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\footmisc\footmisc.sty"
+Package: footmisc 2011/06/06 v5.5b a miscellany of footnote facilities
+\FN@temptoken=\toks26
+\footnotemargin=\dimen141
+\c@pp@next@reset=\count117
+Package footmisc Info: Declaring symbol style bringhurst on input line 855.
+Package footmisc Info: Declaring symbol style chicago on input line 863.
+Package footmisc Info: Declaring symbol style wiley on input line 872.
+Package footmisc Info: Declaring symbol style lamport-robust on input line 883.
+
+Package footmisc Info: Declaring symbol style lamport* on input line 903.
+Package footmisc Info: Declaring symbol style lamport*-robust on input line 924
+.
+)
+(UCDAppOverview01.aux)
+\openout1 = `UCDAppOverview01.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: letterpaper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(72.26999pt, 469.75502pt, 72.26999pt)
+* v-part:(T,H,B)=(72.26999pt, 650.43001pt, 72.26999pt)
+* \paperwidth=614.295pt
+* \paperheight=794.96999pt
+* \textwidth=469.75502pt
+* \textheight=650.43001pt
+* \oddsidemargin=0.0pt
+* \evensidemargin=0.0pt
+* \topmargin=-55.06749pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=10.0pt
+* \footskip=30.0pt
+* \marginparwidth=65.0pt
+* \marginparsep=11.0pt
+* \columnsep=10.0pt
+* \skip\footins=12.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+\c@lstlisting=\count118
+("C:\Program Files\MiKTeX 2.9\tex\context\base\supp-pdf.mkii"
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count119
+\scratchdimen=\dimen142
+\scratchbox=\box32
+\nofMPsegments=\count120
+\nofMParguments=\count121
+\everyMPshowfont=\toks27
+\MPscratchCnt=\count122
+\MPscratchDim=\dimen143
+\MPnumerator=\count123
+\makeMPintoPDFobject=\count124
+\everyMPtoPDFconversion=\toks28
+) ("C:\Program Files\MiKTeX 2.9\tex\latex\oberdiek\epstopdf-base.sty"
+Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\infwarerr.sty"
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+)
+("C:\Program Files\MiKTeX 2.9\tex\latex\oberdiek\grfext.sty"
+Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\kvdefinekeys.sty"
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\ltxcmds.sty"
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+)))
+("C:\Program Files\MiKTeX 2.9\tex\latex\oberdiek\kvoptions.sty"
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\kvsetkeys.sty"
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\etexcmds.sty"
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\ifluatex.sty"
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\pdftexcmds.sty"
+Package: pdftexcmds 2018/01/21 v0.26 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+38.
+Package grfext Info: Graphics extension search list:
+(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 456.
+)
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: End \AtBeginDocument code.
+
+Underfull \hbox (badness 10000) in paragraph at lines 50--51
+
+ []
+
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 55.
+("C:\Program Files\MiKTeX 2.9\tex\latex\base\omscmr.fd"
+File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 55.
+ [1
+
+{C:/Users/Kyung Soon/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] [2]
+<images/MentalDisorderUCDProx.png, id=11, 1023.07219pt x 585.68813pt>
+File: images/MentalDisorderUCDProx.png Graphic file (type png)
+<use images/MentalDisorderUCDProx.png>
+Package pdftex.def Info: images/MentalDisorderUCDProx.png  used on input line 8
+0.
+(pdftex.def)             Requested size: 505.89pt x 289.60818pt.
+
+Overfull \hbox (36.13498pt too wide) in paragraph at lines 80--82
+ [][] 
+ []
+
+<images/MentalDisorderSex.png, id=14, 985.43156pt x 422.32782pt>
+File: images/MentalDisorderSex.png Graphic file (type png)
+<use images/MentalDisorderSex.png>
+Package pdftex.def Info: images/MentalDisorderSex.png  used on input line 89.
+(pdftex.def)             Requested size: 505.89pt x 216.81494pt.
+
+Overfull \hbox (36.13498pt too wide) in paragraph at lines 89--91
+ [][] 
+ []
+
+[3
+
+ <./images/MentalDisorderUCDProx.png> <./images/MentalDisorderSex.png>]
+<images/MentalDisorderUCDDx.png, id=23, 1017.8025pt x 570.63188pt>
+File: images/MentalDisorderUCDDx.png Graphic file (type png)
+<use images/MentalDisorderUCDDx.png>
+Package pdftex.def Info: images/MentalDisorderUCDDx.png  used on input line 98.
+
+(pdftex.def)             Requested size: 505.89pt x 283.62605pt.
+
+Overfull \hbox (36.13498pt too wide) in paragraph at lines 98--100
+ [][] 
+ []
+
+<images/MentalDisorderAgeOnset.png, id=25, 990.70125pt x 519.44063pt>
+File: images/MentalDisorderAgeOnset.png Graphic file (type png)
+<use images/MentalDisorderAgeOnset.png>
+Package pdftex.def Info: images/MentalDisorderAgeOnset.png  used on input line 
+107.
+(pdftex.def)             Requested size: 505.89pt x 265.24411pt.
+
+Overfull \hbox (36.13498pt too wide) in paragraph at lines 107--109
+ [][] 
+ []
+
+[4
+
+ <./images/MentalDisorderUCDDx.png> <./images/MentalDisorderAgeOnset.png>]
+<images/MentalDisorderAgeOnsetSubset1.png, id=34, 977.15062pt x 580.41844pt>
+File: images/MentalDisorderAgeOnsetSubset1.png Graphic file (type png)
+<use images/MentalDisorderAgeOnsetSubset1.png>
+Package pdftex.def Info: images/MentalDisorderAgeOnsetSubset1.png  used on inpu
+t line 116.
+(pdftex.def)             Requested size: 505.89pt x 300.49971pt.
+
+Overfull \hbox (36.13498pt too wide) in paragraph at lines 116--118
+ [][] 
+ []
+
+<images/MentalDisorderAgeOnsetSubset2.png, id=36, 618.81187pt x 383.18156pt>
+File: images/MentalDisorderAgeOnsetSubset2.png Graphic file (type png)
+<use images/MentalDisorderAgeOnsetSubset2.png>
+Package pdftex.def Info: images/MentalDisorderAgeOnsetSubset2.png  used on inpu
+t line 125.
+(pdftex.def)             Requested size: 361.34999pt x 223.76564pt.
+[5
+
+ <./images/MentalDisorderAgeOnsetSubset1.png> <./images/MentalDisorderAgeOnsetS
+ubset2.png>]
+<images/MentalDisorderSexPrescriptionConcept.png, id=45, 987.69pt x 319.94531pt
+>
+File: images/MentalDisorderSexPrescriptionConcept.png Graphic file (type png)
+<use images/MentalDisorderSexPrescriptionConcept.png>
+Package pdftex.def Info: images/MentalDisorderSexPrescriptionConcept.png  used 
+on input line 136.
+(pdftex.def)             Requested size: 505.89pt x 163.87294pt.
+
+Overfull \hbox (36.13498pt too wide) in paragraph at lines 136--138
+ [][] 
+ []
+
+<images/MentalDisorderSexPrescriptionSubsumeConcept.png, id=47, 985.43156pt x 6
+09.77812pt>
+File: images/MentalDisorderSexPrescriptionSubsumeConcept.png Graphic file (type
+ png)
+<use images/MentalDisorderSexPrescriptionSubsumeConcept.png>
+Package pdftex.def Info: images/MentalDisorderSexPrescriptionSubsumeConcept.png
+  used on input line 145.
+(pdftex.def)             Requested size: 505.89pt x 313.04831pt.
+
+Overfull \hbox (36.13498pt too wide) in paragraph at lines 145--147
+ [][] 
+ []
+
+[6
+
+ <./images/MentalDisorderSexPrescriptionConcept.png> <./images/MentalDisorderSe
+xPrescriptionSubsumeConcept.png>]
+<images/MentalDisorderAgeOnsetPrescriptionParticipant.png, id=56, 1005.7575pt x
+ 589.4522pt>
+File: images/MentalDisorderAgeOnsetPrescriptionParticipant.png Graphic file (ty
+pe png)
+<use images/MentalDisorderAgeOnsetPrescriptionParticipant.png>
+Package pdftex.def Info: images/MentalDisorderAgeOnsetPrescriptionParticipant.p
+ng  used on input line 154.
+(pdftex.def)             Requested size: 469.75499pt x 275.30667pt.
+<images/MentalDisorderUCDDxPrescriptionParticipant.png, id=58, 1029.09468pt x 5
+86.44093pt>
+File: images/MentalDisorderUCDDxPrescriptionParticipant.png Graphic file (type 
+png)
+<use images/MentalDisorderUCDDxPrescriptionParticipant.png>
+Package pdftex.def Info: images/MentalDisorderUCDDxPrescriptionParticipant.png 
+ used on input line 163.
+(pdftex.def)             Requested size: 469.75499pt x 267.69902pt.
+ [7
+
+ <./images/MentalDisorderAgeOnsetPrescriptionParticipant.png> <./images/MentalD
+isorderUCDDxPrescriptionParticipant.png>]
+<images/MentalDisorderPrescriptionConceptSubset.png, id=68, 857.45343pt x 359.8
+4438pt>
+File: images/MentalDisorderPrescriptionConceptSubset.png Graphic file (type png
+)
+<use images/MentalDisorderPrescriptionConceptSubset.png>
+Package pdftex.def Info: images/MentalDisorderPrescriptionConceptSubset.png  us
+ed on input line 172.
+(pdftex.def)             Requested size: 469.75499pt x 197.14081pt.
+<images/MentalDisorderUCDDxPrescriptionSubset.png, id=70, 545.78906pt x 336.507
+19pt>
+File: images/MentalDisorderUCDDxPrescriptionSubset.png Graphic file (type png)
+<use images/MentalDisorderUCDDxPrescriptionSubset.png>
+Package pdftex.def Info: images/MentalDisorderUCDDxPrescriptionSubset.png  used
+ on input line 181.
+(pdftex.def)             Requested size: 325.215pt x 200.50922pt.
+[8
+
+ <./images/MentalDisorderPrescriptionConceptSubset.png> <./images/MentalDisorde
+rUCDDxPrescriptionSubset.png>] (UCDAppOverview01.aux) ) 
+Here is how much of TeX's memory you used:
+ 6651 strings out of 493305
+ 98663 string characters out of 3138858
+ 180610 words of memory out of 3000000
+ 10092 multiletter control sequences out of 15000+200000
+ 10118 words of font info for 36 fonts, out of 3000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 42i,8n,40p,973b,367s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Program Files/MiKTeX
+ 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/font
+s/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/p
+ublic/amsfonts/cm/cmsy10.pfb>
+Output written on UCDAppOverview01.pdf (8 pages, 1218567 bytes).
+PDF statistics:
+ 90 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 133 words of extra memory for PDF output out of 10000 (max. 10000000)
+

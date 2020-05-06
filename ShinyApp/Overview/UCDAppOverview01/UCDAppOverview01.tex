@@ -1,0 +1,189 @@
+\documentclass[10pt, letterpaper]{article}
+\usepackage{setspace}
+\usepackage[letterpaper, margin=1.0in]{geometry}
+\addtolength{\topmargin}{-0.25in}
+%\usepackage{tocloft}
+\usepackage{titlesec}
+%\titleformat*{\section}{\large\bfseries}
+\titleformat*{\section}{\large}
+\titleformat*{\subsection}{\normalsize}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amsmath}   % includes \boldmath(), \boldsymbol{()}
+\usepackage{bm}        % math fonts, \boldmath{}, \boldsymbol{}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{subcaption}
+\usepackage{xcolor, colortbl}
+\definecolor{gray}{gray}{0.9}
+\definecolor{ltBlue}{rgb}{0.75, 0.85, 0.975}
+\definecolor{medBlue}{rgb}{0.75, 0.8, 0.9}
+\definecolor{white}{rgb}{1, 1, 1}
+%\rowcolor{ltBlue}
+\usepackage{changepage}
+\usepackage{pdflscape}
+\bibliographystyle{plainnat}
+\usepackage[authoryear, round, semicolon]{natbib}
+\newcommand{\mt}[1]{\bm{#1}^{\prime}}
+\newcommand{\mtm}[2]{\bm{#1}^{\prime}\bm{#2}}
+\newcommand{\mi}[1]{\bm{#1}^{-1}}
+\newcommand{\mest}[1]{\hat{\bm{#1}}}
+\usepackage[bottom]{footmisc}
+\setlength{\skip\footins}{12pt}
+\setlength\parindent{0pt}
+
+\title{\large University of Nebraska, Duke University UCD-SNOMEDCT Graph Application\\[8pt]
+       \large Example Graph Set 1}
+
+\date{}
+
+\author{\normalsize Tom Balmat, Duke University Research Computing}
+
+\begin{document}
+    
+\begin{spacing}{1.0}
+    
+\maketitle
+
+%\vspace{0.25in}
+
+Following are example graphs generated using the visNetwork package of R in a web-enabled Shiny application.  Source data are anonymized urea cycle disorder (UCD) participant observations with associated SNOMEDCT encoded clinical diagnoses and RxNorm encoded prescriptions.  The data were supplied by the University of Nebraska Medical Center and the Duke University School of Nursing.  Observations reside in a Neo4j graph database and were queried using Neo4j's Cypher query language along with user supplied values from prompts presented by the Shiny app.  The intent is to illustrate methods of exploring relationships between select groups of participants, SNOMEDCT concepts, and prescriptions, using interactive graph visualization.\\
+
+Notes and observations:
+\begin{itemize}
+
+    \item  Vertex (node) and edge size corresponds to observation frequency (number of observations). The size of connected vertices must be considered when assessing significance of relative relationships.  For instance, in figure \ref{fig:MentalDisorderUCDProx}, due to its heavier connecting edge, the relationship of UCDProx to Attention Deficit Hyperactivity Disorder may appear more significant than that of UCDProx to Mood Disorder.  However, the heavier edge is due to there being more observations involved in the first relationship than in the second.  On the one hand, this is informative, while on the other, differences in proportion UCD-distal and UCD-proximal observations are approximately equal for both Attention Deficit and Mood disorders.  This is also informative.  Suggestions on representing proportions in addition to frequencies will be appreciated.
+    
+    \item Concept and Prescription nodes are constructed from distinct participant relationships.  For instance, if participant A has multiple diagnoses of concept B, the B node includes A once only.
+
+    \item Although absent in graphs appearing here, the app renders labels containing numbers of observations when nodes and edges are hovered over.  Labels are modifiable and can contain anything that can be queried or computed regarding associated participant, diagnosis, and prescription nodes and relationships.
+    
+    \item Several graphs exhibit a confounding of node variable levels.  For instance, figure \ref{fig:MentalDisorderSex} reveals a set of concepts that is associated strictly with males, while a disjoint set is associated strictly with females.  It is possible that conditions are sex specific or, possibly, in the data, all participants exhibiting a given condition are of a single sex.  Care must be taken when generalizing relationships involving confounded entities.  In this example, it is not clear whether a relationship involving sex, concept, or both are indicated.
+    
+    \item Figure \ref{fig:MentalDisorderAgeOnset} shows one participant with Age of Onset below twelve days, but associated with Adult Attention Deficit Hyperactivity Disorder.  It was verified that Neonatal Onset Age for this participant is less than 28 days.  Is there a (clinically) meaningful explanation for this?
+    
+    \item visNetwork attempts to place nodes such that those with high mass (many observations) appear in a region along with connected nodes.  Higher mass causes greater gravitational-like attraction.  Once a graph is rendered, nodes can be repositioned using selectable methods that affect attraction (causing connected nodes to be ``dragged" along).  Attraction can also be disabled, so that nodes can be repositioned without affecting others.  Each graph presented had nodes manually repositioned after initial rendering.  Nodes can also be programmatically repositioned and it may be useful to implement alternative algorithms, such as for collecting nodes by type (Concept nodes in one region, Participant nodes in another, Prescription nodes in a third region).
+    
+    \item Features are implemented to subset a graph by either highlighting a node's nearest neighborhood (figure \ref{fig:MentalDisorderAgeOnsetSubset1}) or by truncating the graph to the neighborhood of a selected node (figure \ref{fig:MentalDisorderAgeOnsetSubset2}).  In a single-node subset, edge size indicates proportion of observations in each relationship (edge).  Multiple node subsets are also possible, based on user specified node or edge filters.
+    
+    \item Figures \ref{fig:MentalDisorderSexPrescriptionConcept} through \ref{fig:MentalDisorderUCDDxPrescriptionSubset} include nodes for prescriptions.  Prescriptions are connected, by user selection, to either Concept nodes (figures \ref{fig:MentalDisorderSexPrescriptionConcept} and \ref{fig:MentalDisorderSexPrescriptionSubsumeConcept}) or Participant property nodes (figures \ref{fig:MentalDisorderAgeOnsetPrescriptionParticipant} and \ref{fig:MentalDisorderUCDDxPrescriptionParticipant}).  With three node categories and many prescriptions, graphs become busy, making the subset feature convenient for detailed exploration of relationships (figures \ref{fig:MentalDisorderPrescriptionConceptSubset} and \ref{fig:MentalDisorderUCDDxPrescriptionSubset}).
+    
+    \item Note the increase in the number of prescription nodes when subsuming is requested (figure \ref{fig:MentalDisorderSexPrescriptionSubsumeConcept} compared to figure \ref{fig:MentalDisorderSexPrescriptionConcept}).  This occurs because, for instance, both Phenylbutyrate (type ``ingredient") and Glycerol Phenylbutyrate (type ``precise ingredient") subsume Glycerol Phenylbutyrate 1100 MG/ML Oral Solution [Ravicti], causing two subsuming nodes to appear for this prescription in figure \ref{fig:MentalDisorderSexPrescriptionSubsumeConcept}.  A means of resolving single subsuming prescriptions is needed.
+    
+\end{itemize}
+
+\clearpage
+
+\section{Graphs relating mental disorder SNOMEDCT concepts with participant features}
+
+\begin{figure}[h!]
+    \includegraphics[width=7in, trim={0 0 0 0in}, clip]{{MentalDisorderUCDProx}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue, Fully Specified Name) and Participant UCD\_Proximal state (yellow) as nodes.}
+    \label{fig:MentalDisorderUCDProx}
+\end{figure}
+
+\vspace{20pt}
+
+\begin{figure}[h!]
+    \includegraphics[width=7in, trim={0 0 0 0in}, clip]{{MentalDisorderSex}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue) and Participant Sex (yellow) as nodes.}
+    \label{fig:MentalDisorderSex}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h!]
+    \includegraphics[width=7in, trim={0 0 0 0in}, clip]{{MentalDisorderUCDDx}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue) and Participant UCDDx (yellow) as nodes.}
+    \label{fig:MentalDisorderUCDDx}
+\end{figure}
+
+\vspace{20pt}
+
+\begin{figure}[h!]
+    \includegraphics[width=7in, trim={0 0 0 0in}, clip]{{MentalDisorderAgeOnset}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue) and Participant Age at Onset (in days, yellow) as nodes.}
+    \label{fig:MentalDisorderAgeOnset}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h!]
+    \includegraphics[width=7in, trim={0 0 0 0in}, clip]{{MentalDisorderAgeOnsetSubset1}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue) and Participant Age at Onset (yellow) as nodes.  Anxiety Disorder subset with neighborhood highlighted.}
+    \label{fig:MentalDisorderAgeOnsetSubset1}
+\end{figure}
+
+\vspace{20pt}
+
+\begin{figure}[h!]
+    \includegraphics[width=5in, trim={0 0 0 0in}, clip]{{MentalDisorderAgeOnsetSubset2}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue) and Participant Age at Onset (yellow) as nodes.  Graph truncated to Anxiety Disorder neighborhood.}
+    \label{fig:MentalDisorderAgeOnsetSubset2}
+\end{figure}
+
+\clearpage
+
+\section{Graphs relating mental disorder concepts with participant features and prescriptions}
+
+\begin{figure}[h!]
+    \includegraphics[width=7in, trim={0 0 0 0in}, clip]{{MentalDisorderSexPrescriptionConcept}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue), Participant Sex (yellow), and Prescription (green)  as nodes.  Complete prescription text.  Prescriptions joined to Concept.}
+    \label{fig:MentalDisorderSexPrescriptionConcept}
+\end{figure}
+
+\vspace{30pt}
+
+\begin{figure}[h!]
+    \includegraphics[width=7in, trim={0 0 0 0in}, clip]{{MentalDisorderSexPrescriptionSubsumeConcept}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue), Participant Sex (yellow), and Prescription (green) as nodes.  Subsuming Prescription text replaces complete text.  Prescriptions connected to Concept.}
+    \label{fig:MentalDisorderSexPrescriptionSubsumeConcept}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h!]
+    \includegraphics[width=6.5in, trim={0 0 0 0in}, clip]{{MentalDisorderAgeOnsetPrescriptionParticipant}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue), Participant Age at Onset (yellow), and Prescription (green)  as nodes.  Subsumed prescription text.  Prescriptions joined to Age.}
+    \label{fig:MentalDisorderAgeOnsetPrescriptionParticipant}
+\end{figure}
+
+\vspace{10pt}
+
+\begin{figure}[h!]
+    \includegraphics[width=6.5in, trim={0 0 0 0in}, clip]{{MentalDisorderUCDDxPrescriptionParticipant}.png}
+    \centering
+    \caption{Graph with Mental Disorder concepts (blue), Participant Age at Onset (yellow), and Prescription (green)  as nodes.  Subsumed prescription text.  Prescriptions joined to UCDDx.}
+    \label{fig:MentalDisorderUCDDxPrescriptionParticipant}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h!]
+    \includegraphics[width=6.5in, trim={0 0 0 0in}, clip]{{MentalDisorderPrescriptionConceptSubset}.png}
+    \centering
+    \caption{Truncated graph subset with Mental Disorder concepts (blue) and selected subsumed Prescription (Phenylbutyrate, green) as node.}
+    \label{fig:MentalDisorderPrescriptionConceptSubset}
+\end{figure}
+
+\vspace{50pt}
+
+\begin{figure}[h!]
+    \includegraphics[width=4.5in, trim={0 0 0 0in}, clip]{{MentalDisorderUCDDxPrescriptionSubset}.png}
+    \centering
+    \caption{Truncated graph subset with UCDDx (yellow) and selected subsumed Prescription (Phenylbutyrate, green) as node.}
+    \label{fig:MentalDisorderUCDDxPrescriptionSubset}
+\end{figure}
+
+\end{spacing}
+
+\end{document} 
