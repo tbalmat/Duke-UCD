@@ -1,0 +1,21 @@
+If it is not already installed, get OpenJDK 8 or Oracle Java 8, recommended for Neo4j 3.0.x Version 7 is recommended for releases prior to 2.3.0.
+
+set JAVA_HOME=java install dir
+
+Find the zip file you just downloaded and right-click, extract all.
+
+Place the extracted files in a permanent home on your server, for example D:\neo4j\. The top level directory is referred to as NEO4J_HOME.
+
+set NEO4J_HOME=neo4j top install  dir
+
+To run Neo4j as a console application, use:
+<NEO4J_HOME>\bin\neo4j console
+To install Neo4j as a service use:
+<NEO4J_HOME>\bin\neo4j install-service.
+For additional commands and to learn about the Windows PowerShell module included in the Zip file, see the Windows installation documentation.
+
+Modify dbms.active_database= line of C:\Software\Neo4j\neo4j-community-3.5.8\conf\neo4j.conf to reference target db
+Visit http://localhost:7474 in your web browser.
+u:  neo4j
+p:  neo4j01
+

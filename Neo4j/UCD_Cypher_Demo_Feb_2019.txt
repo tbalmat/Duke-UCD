@@ -1,0 +1,62 @@
+Feb 19, 2019 meeting -- CYPHER queries:
+
+-------------- Part 2.   CYPHER queries from this morning: ------------------
+
+NOTE:
+(a) P_SCT relationships between Participant nodes and SNOMED CT coded diagnoses
+(b) P_RX relationships between Participant nodes and RXCUI coded medications (presumably prescribed and/or administered)
+
+#1. Obtain account of participants whose UCD diagnosis (UCDDX field) is 'OTC' or 'CPS1' or 'NAGS'.
+
+MATCH (a:Participant) where a.UCDDx = 'OTC' or a.UCDDx = 'CPS1' or a.UCDDx='NAGS' return count(a)
+
+#2. Add UCD_Proximal label for participants with any of those 3 UCDDX values.
+
+MATCH (a:Participant) where a.UCDDx = 'OTC' or a.UCDDx = 'CPS1' or a.UCDDx='NAGS'
+SET a :UCD_Proximal
+
+#3. Obtain frequency count for participants with various UCDDX values (ignores UCDDX null values)
+
+match (a:Participant)
+return a.UCDDx, count(a.UCDDx)
+order by count(a.UCDDx) desc
+
+NOTE: that query is very much like the following SQL query (imagine this as a SQL database):
+
+  select UCDDX, count(UCDDX) from UCD_Proximal
+  group by UCDDX
+
+#4. Determine count of participants with NULL value for UCDDX.
+
+match (a:Participant) where a.UCDDx is null
+return count(a)
+
+#5. Look at the behavior diagnoses for UCD_Proximal participants:
+
+match (a:UCD_Proximal) where a.UCDDx <> 'OTC'
+with a
+match (a)-[:P_SCT]->(b:PBehav)-[*..4]->(c:Behav)
+return a, b, c
+
+#6. Look at behavior diagnoses for all participants who do not have the 'OTC' UCDDX diagnosis code:
+
+match (a:UCD_Proximal) where a.UCDDx <> 'OTC'
+with a match (a)-[:P_SCT]->(b:PBehav)-[*..4]->(c:Behav)
+return a, b, c
+
+#7. Look at behavior diagnoses for participants with NULL value of UCDDX (different set of participants than #5)
+
+match (a:Participant) where a.UCDDx is NULL
+with a
+match (a)-[:P_SCT]->(b:PBehav)-[*..4]->(c:Behav)
+return a, b, c
+
+#8. Look at the medications prescribed for UCD_Proximal participants
+
+match (a:UCD_Proximal)
+with a
+match (a)-[r:P_RX]->(b:RXCUI)
+return a,r,b
+
+This hung!  Probably needs to be a subset of 'all RXNORM codes',
+something like 'anti seizure medications'.

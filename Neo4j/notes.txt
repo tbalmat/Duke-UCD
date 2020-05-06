@@ -1,0 +1,6 @@
+Create indices:  https://neo4j.com/docs/cypher-manual/current/schema/index/#schema-index-create-a-single-property-index
+
+More in Projects\SQL\GraphDB\
+
+Useful functions:  https://neo4j.com/docs/cypher-manual/current/functions/list/
+Match patterns:  https://neo4j.com/docs/cypher-manual/current/syntax/patterns/

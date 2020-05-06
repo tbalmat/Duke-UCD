@@ -1,0 +1,63 @@
+March 22, 2019
+
+CYPHER queries we worked with today: obtaining frequency counts of behavioral and neurologic disorders
+for two sets up patients -- (A) patients with proximal disorders and HASxDX attribute of "HA events at Diagnosis",
+and (B) patients with proximal disorders and HASxDX attribute that is NOT equal to "HA events at Diagnosis"
+
+#1. Create set A which are participants with proximal disorders with a HASxDX attribute
+    with value "HA events at Diagnosis".  This is a set of 155 participants in the UNMC DB.
+
+MATCH (a:Participant) where (a.UCDDx = 'OTC' or a.UCDDx = 'CPS1' or a.UCDDx='NAGS')  and a.HASxDx='HA events at Diagnosis'
+with a
+return count(a)
+
+#2. Create set B, which are participants with proximal disorders whose HASxDX attribute
+    is NOT "HA events at Diagnosis".  This is a set of 355 participants in the UNMC DB.
+
+MATCH (b:Participant) where (b.UCDDx = 'OTC' or b.UCDDx = 'CPS1' or b.UCDDx='NAGS')  and b.HASxDx<>'HA events at Diagnosis'
+with b
+return count(b)
+
+#3. Determine frequency counts for Behavioral diagnoses for participants in set A, and separately for set B,
+    with no regard for multiple counts from a single participant (that is, all counts from all participants are included
+    regardless of whether the same diagnosis is reported multiple times for the same participant).
+
+(3a - set A)
+
+MATCH (a:Participant) where (a.UCDDx = 'OTC' or a.UCDDx = 'CPS1' or a.UCDDx='NAGS')  and a.HASxDx='HA events at Diagnosis'
+with a
+match (a)-[:P_SCT]->(b:PBehav)-[*..4]->(c:Behav)
+return c.FSN, count(c.FSN)
+
+(3b - set B)
+
+Change query 3a slightly ==> a.HASxDx='HA events at Diagnosis' to a.HASxDx<>'HA events at Diagnosis'.
+Change variable name 'a' to 'b' if you like (NOTE: I didn't), to make it more clear that set B is being examined.
+
+==>
+
+MATCH (a:Participant) where (a.UCDDx = 'OTC' or a.UCDDx = 'CPS1' or a.UCDDx='NAGS')  and a.HASxDx='HA events at Diagnosis'
+with a
+match (a)-[:P_SCT]->(b:PBehav)-[*..4]->(c:Behav)
+return c.FSN, count(c.FSN)
+
+#4. Frequency counts for Neurologic diagnoses for set A and set B.
+
+(4a - for set A)
+
+MATCH (a:Participant) where (a.UCDDx = 'OTC' or a.UCDDx = 'CPS1' or a.UCDDx='NAGS')  and a.HASxDx='HA events at Diagnosis'
+with a
+match (a)-[:P_SCT]->(b:PNeuro)-[*..4]->(c:Neuro)
+return c.FSN, count(c.FSN) order by count(c.FSN) desc
+
+(4b - for set B)
+
+Change query 3a slightly ==> a.HASxDx='HA events at Diagnosis' to a.HASxDx<>'HA events at Diagnosis'.
+Change variable name 'a' to 'b' if you like (NOTE: I didn't), to make it more clear that set B is being examined.
+
+===>
+
+MATCH (a:Participant) where (a.UCDDx = 'OTC' or a.UCDDx = 'CPS1' or a.UCDDx='NAGS')  and a.HASxDx<>'HA events at Diagnosis'
+with a
+match (a)-[:P_SCT]->(b:PNeuro)-[*..4]->(c:Neuro)
+return c.FSN, count(c.FSN) order by count(c.FSN) desc
