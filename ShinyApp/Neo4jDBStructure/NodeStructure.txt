@@ -1,0 +1,197 @@
+Participant example:
+{
+  "LiverTransplantStatus": "No Liver Transplant",
+  "StartAgeDays": "4216",
+  "VitalStatus": "Alive or Uncertain",
+  "ElibilityStatus": "Eligible",
+  "Sex": "Male",
+  "UCDDx": "ALD",
+  "LocationID": "0",
+  "GLabel": " ",
+  "NeonatalOnset": "Age > 28 days",
+  "HASxDx": "Symptoms but no HA event at Diagnosis",
+  "HASx1stAgeDays": "183",
+  "YOB": "1994",
+  "ParticipantId": "100006",
+  "DxMethod": "Clinical Presentation",
+  "EnrollmentStatus": "Enrolled Alive, Full Participation",
+  "UCDDxAgeDays": "183",
+  "OnsetAgeDays": "183",
+  "RegisterAgeDays": "4216",
+  "HASxLast": "Symptoms but no HA events"
+}
+
+Behav example:
+{
+  "FSN": "Ex-problem drinker (finding)",
+  "nodetype": "concept",
+  "effectiveTime": "20020131",
+  "definitionStatusId": "900000000000074008",
+  "active": "1",
+  "GLabel": "Ex-problem drinker (finding)",
+  "history": "",
+  "id": "286857004",
+  "moduleId": "900000000000207008",
+  "sctid": "286857004"
+}
+
+Description example:
+{
+  "caseSignificanceId": "900000000000020002",
+  "nodetype": "description",
+  "acceptabilityId": "900000000000549004",
+  "effectiveTime": "20020731",
+  "refsetId": "900000000000509007",
+  "active": "1",
+  "history": "",
+  "languageCode": "en",
+  "id128bit": "70de2c75-fb44-50ba-8055-76e23fec03af",
+  "descriptionType": "Synonym",
+  "typeId": "900000000000013009",
+  "term": "[D]Histology - nonspecific finding",
+  "id": "1222544015",
+  "moduleId": "900000000000207008",
+  "sctid": "207480009"
+}
+
+Neuro example:
+{
+  "FSN": "Abnormal ability to hear voice (finding)",
+  "nodetype": "concept",
+  "effectiveTime": "20050131",
+  "definitionStatusId": "900000000000074008",
+  "active": "1",
+  "GLabel": "Abnormal ability to hear voice (finding)",
+  "history": "",
+  "id": "413385009",
+  "moduleId": "900000000000207008",
+  "sctid": "413385009"
+}
+
+Psych example:
+{
+  "FSN": "Other personality disorders (disorder)",
+  "nodetype": "concept",
+  "effectiveTime": "20100131",
+  "definitionStatusId": "900000000000074008",
+  "active": "0",
+  "GLabel": "Other personality disorders (disorder)",
+  "history": "[{"active": "1", "effectiveTime": "20020131", "id": "191770003", "definitionStatusId": "900000000000074008", "moduleId": "900000000000207008"}]",
+  "id": "191770003",
+  "moduleId": "900000000000207008",
+  "sctid": "191770003"
+}
+
+Rx example:
+match(x:RXCUI) return x limit 10
+{
+  "name": "Salicylic Acid 20 MG/ML Topical Lotion [Neutrogena Rapid Clear]",
+  "activated_date": "20120501",
+  "GLabel": "Salicylic Acid 20 MG/ML Topical Lotion [Neutrogena Rapid Clear]",
+  "concept_code": "RXNORM:1250480",
+  "id": "1250480",
+  "category": "DRUG",
+  "type": "SBD",
+  "status": "Retired",
+  "deactiviated_date": "20170301"
+}
+
+{
+  "name": "Parlodel",
+  "GLabel": "Parlodel",
+  "activated_date": "20060501",
+  "concept_code": "RXNORM:38",
+  "id": "38",
+  "category": "OTHER",
+  "type": "BN",
+  "status": "Active"
+}
+
+{
+  "name": "Mesna",
+  "GLabel": "Mesna",
+  "activated_date": "20060501",
+  "concept_code": "RXNORM:44",
+  "id": "44",
+  "category": "INGREDIENT",
+  "type": "IN",
+  "status": "Active"
+}
+
+{
+  "name": "beta-Alanine",
+  "GLabel": "beta-Alanine",
+  "activated_date": "20060501",
+  "concept_code": "RXNORM:61",
+  "id": "61",
+  "category": "INGREDIENT",
+  "type": "IN",
+  "status": "Active"
+}
+
+{
+  "name": "Docosahexaenoate",
+  "GLabel": "Docosahexaenoate",
+  "activated_date": "20060501",
+  "concept_code": "RXNORM:73",
+  "id": "73",
+  "type": "IN",
+  "category": "INGREDIENT",
+  "status": "Active"
+}
+
+{
+  "name": "4-Aminobenzoic Acid",
+  "GLabel": "4-Aminobenzoic Acid",
+  "activated_date": "20060501",
+  "concept_code": "RXNORM:74",
+  "id": "74",
+  "type": "IN",
+  "category": "INGREDIENT",
+  "status": "Active"
+}
+
+{
+  "name": "Eicosapentaenoic Acid",
+  "GLabel": "Eicosapentaenoic Acid",
+  "activated_date": "20060501",
+  "concept_code": "RXNORM:90",
+  "id": "90",
+  "type": "PIN",
+  "category": "INGREDIENT",
+  "status": "Active"
+}
+
+{
+  "name": "5-Hydroxytryptophan",
+  "GLabel": "5-Hydroxytryptophan",
+  "activated_date": "20060501",
+  "concept_code": "RXNORM:94",
+  "id": "94",
+  "type": "IN",
+  "category": "INGREDIENT",
+  "status": "Active"
+}
+
+{
+  "name": "Heroin 500 MG Injectable Solution [Diaphine]",
+  "activated_date": "20050601",
+  "GLabel": "Heroin 500 MG Injectable Solution [Diaphine]",
+  "concept_code": "RXNORM:108371",
+  "id": "108371",
+  "category": "DRUG",
+  "type": "SBD",
+  "status": "Never Active",
+  "deactiviated_date": "20050601"
+}
+
+{
+  "name": "Ticlopidine Hydrochloride",
+  "GLabel": "Ticlopidine Hydrochloride",
+  "activated_date": "20060501",
+  "concept_code": "RXNORM:97",
+  "id": "97",
+  "type": "PIN",
+  "category": "INGREDIENT",
+  "status": "Active"
+}
