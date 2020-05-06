@@ -1,0 +1,559 @@
+From Jay Pedersen
+
+Hi,
+
+re: <<Jay and Scott – A couple of questions came up about how to organize the RxNorm medication codes. Not urgent, but I wonder whether you are using SNOMED or ACT or another drug classification/ ontology to group them..?>>
+
+At the moment, we are using the 'VA Drug Classification' to categorize RxNORM-coded drugs (and NDC-coded drug packages).  We get these from a REST API interface from the NLM.  I can give more detailed in formation on that as needed.  We can probably incorporate that into the graph.
+
+The VA drug classification is not a complete classification as there are a significant number of RXCUI-coded drugs that are not included in any of the classifications.  But it does cover a wide range of drugs.
+
+DETAILS
+
+Here are a list of the class names:
+
+Antidotes,deterrents and poison control
+Antihistamines
+Antimicrobials
+Antineoplastics
+Antiparasitics
+Antiseptics/disinfectants
+Autonomic medications
+Blood products/modifiers/volume expanders
+Cardiovascular medications
+Central nervous system medications
+Dental and oral agents,topical
+Dermatological agents
+Diagnostic agents
+Gastrointestinal medications
+Genitourinary medications
+Herbs/alternative therapies
+Hormones/synthetics/modifiers
+Immunological agents
+Intrapleural medications
+Introduction
+Investigational agents
+Irrigation/dialysis solutions
+Miscellaneous agents
+Musculoskeletal medications
+Nasal and throat agents,topical
+Ophthalmic agents
+Otic agents
+Pharmaceutical aids/reagents
+Rectal,local
+Respiratory tract medications
+Therapeutic nutrients/minerals/electrolytes
+Vitamins
+Alcohol deterrents
+Antidotes,deterrents,and poison control exchange resins
+Antidotes/deterrents,other
+Cyanide antidotes
+Heavy metal antagonists
+Antihistamines,alkylamine
+Antihistamines,butyrophenone
+Antihistamines,ethanolamine
+Antihistamines,ethylenediamine
+Antihistamines,other
+Antihistamines,phenothiazine
+Antihistamines,piperazine
+Antihistamines,piperidine
+Aminoglycosides
+Anti-infectives,other
+Antifungals
+Antituberculars
+Antivirals
+Chloramphenicol
+Erythromycins/macrolides
+Lincomycins
+Methenamine salts antimicrobials
+Nitrofurans antimicrobials
+Penicillins and beta-lactam antimicrobials
+Quinolones
+Sulfonamide/related antimicrobials
+Tetracyclines
+Antineoplastic adjuvants
+Antineoplastic antibiotics
+Antineoplastic hormones
+Antineoplastic radiopharmaceuticals
+Antineoplastic,other
+Antineoplastics,alkylating agents
+Antineoplastics,antimetabolites
+Protective agents
+Anthelmintics
+Antiparasitics,other
+Antiprotozoals
+Pediculicides
+Autonomic agents,other
+Parasympatholytics
+Parasympathomimetics (cholinergics)
+Sympatholytics
+Sympathomimetics (adrenergics)
+Anticoagulants
+Antihemorrhagics
+Blood derivatives
+Blood formation products
+Blood products,other
+Heparin antagonists
+Platelet aggregation inhibitors
+Thrombolytics
+Volume expanders
+Ace inhibitors
+Alpha blockers/related
+Angiotensin ii inhibitor
+Antianginals
+Antiarrhythmics
+Antihypertensive combinations
+Antihypertensives,other
+Antilipemic agents
+Beta blockers/related
+Calcium channel blockers
+Cardiovascular agents,other
+Digitalis glycosides
+Direct renin inhibitor
+Diuretics
+Peripheral vasodilators
+Sclerosing agents
+Analgesics
+Anesthetics
+Anticonvulsants
+Antidepressants
+Antiparkinson agents
+Antipsychotics
+Antipyretics
+Antivertigo agents
+Cns medications,other
+Cns stimulants
+Lithium salts
+Sedatives/hypontics
+Cariostatics,topical
+Dental and oral agents,topical,other
+Dental protectants
+Dentifrices
+Denture adhesives
+Mouthwashes
+Analgesics,topical
+Anti-infective,topical
+Anti-infective/anti-inflammatory combinations,topical
+Anti-inflammatory,topical
+Antiacne agents
+Antineoplastic,topical
+Antipsoriatic
+Deodorants/antiperspirants,topical
+Dermatologicals,systemic,other
+Dermatologicals,topical other
+Emollients
+Keratolytics/caustics,topical
+Local anesthetics,topical
+Soaps/shampoos/soap-free cleansers
+Sun protectants/screens,topical
+Diagnostic antigens
+Diagnostics,other
+Radiological/contrast media
+Radiopharmaceuticals,diagnostic
+Antacids
+Antidiarrheal agents
+Antiemetics
+Antimuscarinics/antispasmodics
+Antiulcer agents
+Appetite suppressants
+Digestants
+Emetics
+Gastric medications,other
+Laxatives
+Tumor necrosis factor blocker
+Analgesics,urinary
+Anti-infectives,vaginal
+Antispasmodics,urinary
+Contraceptives,vaginal/topical
+Estrogens,vaginal
+Genito-urinary agents,other
+Oxytocics
+Adrenal corticosteriods
+Androgens/anabolics
+Blood glucose regulation agents
+Contraceptives,systemic
+Estrogens
+Gonadotropins
+Hormones/synthetics/modifiers,other
+Parathyroid
+Pituitary
+Progestins
+Prostaglandins
+Thyroid modifiers
+Antivenins/antitoxins
+Immune serums
+Immune stimulants
+Immune suppressants
+Immunoglobulins
+Immunological agents,other
+Toxoids
+Vaccines
+Vaccines/toxoids, other
+Intrapleural agents,other
+Intrapleural sclerosing agents
+Invest anti-neoplastic bone,connective tissue,skin,breast
+Invest anti-neoplastic digestive organs,peritoneum
+Invest anti-neoplastic drugs lip,oral cavity and pharynx
+Invest anti-neoplastic drugs lymphatic and hemapoietic tissue
+Invest drugs for dialysis and volume/electrolyte support
+Invest drugs for psychosis and post tramatic stress disorder
+Invest drugs psoriasis,eczema,non-infectious dermatitis
+Invest hematologic deficiencies,hematopoeitic growth factors
+Invest hormone therapy/replacement androgen and anabolic
+Invest hormone therapy/replacement estrogens and progestins
+Investigational analgesics
+Investigational anesthetics
+Investigational anti-angina drugs
+Investigational anti-anxiety drugs
+Investigational anti-bacterial drugs
+Investigational anti-convulsant drugs
+Investigational anti-depressants
+Investigational anti-diabetic drugs
+Investigational anti-diarrheal drugs
+Investigational anti-dysrhythmic drugs
+Investigational anti-fungal drugs
+Investigational anti-glaucoma drugs
+Investigational anti-hypertensive drugs
+Investigational anti-infective drugs,other
+Investigational anti-nausea and anti-emetic drugs
+Investigational anti-neoplastic drugs cns
+Investigational anti-neoplastic drugs genitourinary organs
+Investigational anti-neoplastic drugs intrathoracic organs
+Investigational anti-neoplastic drugs, gene therapy
+Investigational anti-neoplastic drugs,other
+Investigational anti-parasitic drugs
+Investigational anti-thrombotic drugs
+Investigational anti-tubercular drugs
+Investigational anti-viral drugs hepatitis b
+Investigational anti-viral drugs hepatitis c
+Investigational anti-viral drugs hiv
+Investigational anti-viral drugs,other
+Investigational congestive heart failure
+Investigational diagnostic agents,glucose testing
+Investigational diagnostic agents,other
+Investigational diagnostic agents,skin testing
+Investigational drugs for allergy and nasal congestion
+Investigational drugs for arthritis and gout
+Investigational drugs for asthma and copd
+Investigational drugs for central and peripheral neuropathy
+Investigational drugs for constipation
+Investigational drugs for dementia
+Investigational drugs for dyslipidemias
+Investigational drugs for dyspepsia
+Investigational drugs for gastroesophageal reflux disease
+Investigational drugs for hematologic deficiencies,other
+Investigational drugs for immunologic diseases,other
+Investigational drugs for mania and bipolar disorders
+Investigational drugs for musculoskeletal conditions,other
+Investigational drugs for nasal/throat diseases,other
+Investigational drugs for organ transplantation
+Investigational drugs for other dermatological diseases
+Investigational drugs for other gastrointestinal diseases
+Investigational drugs for other indications
+Investigational drugs for pancreatic enzyme deficiency
+Investigational drugs for parkinson's disease
+Investigational drugs for peptic ulcer disease
+Investigational drugs for psychiatric disease,other
+Investigational drugs for respiratory tract disease,other
+Investigational drugs for substance addiction treatment
+Investigational drugs for vitamin or mineral deficiency
+Investigational gene therapy
+Investigational hormone therapy/replacement, thyroid
+Investigational hormone therapy/replacement,other
+Investigational other cardiovascular diseases
+Investigational pharmaceutical aids/reagents
+Investigational prosthetics/supplies/devices
+Investigational therapeutic nutrients/mineral/electrolytes
+Investigational thrombolytic drugs
+Investigational vaccines
+Hemodialysis solutions
+Irrigation solutions
+Irrigation/dialysis solutions,other
+Peritoneal dialysis solutions
+Antigout agents
+Antirheumatics
+Musculoskeletal agents,other
+Neuromuscular blocking agents
+Skeletal muscle relaxants
+Vesicular monoamine transport type 2 blocker
+Anesthetics,mucosal
+Anti-inflammatories,nasal
+Antihistamines,nasal
+Decongestants,nasal
+Nasal and throat,topical,other
+Anesthetics,topical ophthalmic
+Anti-infective,topical ophthalmic
+Anti-infective/anti-inflammatory combinations,topical ophthalmic
+Anti-inflammatories,topical ophthalmic
+Antiglaucoma medications
+Contact lens solutions
+Decongestants,topical ophthalmic
+Eye washes/lubricants
+Mydriatics/cycloplegics,topical ophthalmic
+Ophthalmics,other
+Analgesics,topical otic
+Anti-infective,topical otic
+Anti-infective/anti-inflammatory combinations,topical otic
+Anti-inflammatories,topical otic
+Ceruminolytics
+Otic agents,other
+Anti-inflammatories,rectal
+Hemorrhoidal preparations,rectal
+Laxatives,rectal
+Rectal,local other
+Antiasthma/bronchodilators
+Antitussives/expectorants
+Cold remedies,combinations
+Decongestants,systemic
+Mucolytics
+Non-anesthetic gases
+Respiratory agents,other
+Amino acids/proteins
+Electrolytes/minerals
+Enteral nutrition
+Iv solutions
+Lipid supplements
+Therapeutic nutrients/minerals/electrolyes,other
+Vitamin a
+Vitamin b
+Vitamin c
+Vitamin d
+Vitamin e
+Vitamin k
+Vitamins,combinations
+Vitamins,other
+Beta-lactams antimicrobials,other
+Cephalosporin 1st generation
+Cephalosporin 2nd generation
+Cephalosporin 3rd generation
+Cephalosporin 4th generation
+Extended spectrum penicillins
+Penicillin-g related penicillins
+Penicillinase-resistant penicillins
+Penicillins,amino derivatives
+Antimalarials
+Antiprotozoals,other
+Carbonic anhydrase inhibitor diuretics
+Diuretics,other
+Loop diuretics
+Potassium sparing/combinations diuretics
+Thiazides/related diuretics
+Antimigraine agents
+Non-opioid analgesics
+Non-steroidal anti-inflammatory analgesics
+Opioid analgesics
+Opioid antagonist analgesics
+Anesthetic adjuncts
+Anesthetics,inhalation
+Barbituric acid derivative anesthetics
+General anesthetics,other
+Local anesthetics,injection
+Antidepressants,other
+Monamine oxidase inhibitor antidepressants
+Tricyclic antidepressants
+Antipsychotics,other
+Phenothiazine/related antipsychotics
+Amphetamine like stimulants
+Amphetamines
+Cns stimulants,other
+Barbituric acid derivative sedatives/hypnotics
+Benzodiazepine derivative sedatives/hypnotics
+Sedatives/hypnotics,other
+Anti-infective,topical,other
+Antibacterial,topical
+Antifungal,topical
+Antiviral,topical
+Antiacne agents,systemic
+Antiacne agents,topical
+Antipsoriatics,systemic
+Antipsoriatics,topical
+Contrast media, other
+Ionic contrast media
+Non-ionic contrast media
+Imaging agents (in vivo) radiopharmaceuticals
+Non-imaging agents radiopharmaceuticals
+Aluminum containing antacids
+Aluminum/calcium/magnesium containing antacids
+Aluminum/magnesium containing antacids
+Aluminum/magnesium/sodium bicarbonate containing antacids
+Antacids,other
+Calcium containing antacids
+Calcium/magnesium containing antacids
+Magaldrate containing antacids
+Magnesium containing antacids
+Magnesium/sodium bicarbonate containing antacids
+Sodium bicarbonate containing antacids
+Antimuscarinic/antipasmodic combinations
+Antimuscarinics/antispasmodics
+Antiulcer agents,other
+H. pylori agents
+Histamine antagonists
+Protectants,ulcer
+Appetite suppressants,other
+Bulking agent,appetite suppressants
+Centrally-acting appetite suppressants
+Bulk-forming laxatives
+Carbon dioxide-releasing laxatives
+Hyperosmotic laxatives
+Laxatives,other
+Lubricant laxatives
+Stimulant laxatives
+Stool softener
+Antispasmodics,urinary
+Antispasmodics,urinary,other
+Glucocorticoids
+Mineralocorticoids
+Antihypoglycemics
+Hypoglycemic agents,other
+Insulin
+Oral hypoglycemic agents,oral
+Anterior pituitary
+Posterior pituitary
+Antithyroid agents
+Thyroid supplements
+Antimalarials,antirheumatic
+Antirheumatics,other
+Cytotoxics,antirheumatic
+Gold compounds,antirheumatic
+Nonsalicylate nsais,antirheumatic
+Penicillamine
+Salicylates,antirheumatic
+Anti-infective,topical ophthalmic,other
+Antibacterials,topical ophthalmic
+Antifungals,topical ophthalmic
+Antivirals,topical ophthalmic
+Adrenergics,topical ophthalmic
+Antiglaucoma combinations,topical ophthalmic
+Antiglaucoma,other
+Beta-blockers,systemic ophthalmic
+Beta-blockers,topical ophthalmic
+Carbonic anhydrase inhibitors,systemic ophthalmic
+Miotics,topical ophthalmic
+Osmotic agents,systemic ophthalmic
+Anti-infectives,topical otic other
+Antibacterials,topical otic
+Antifungals,topical otic
+Hemorrhoidal preparations with steroid
+Hemorrhoidal preparations without steroid
+Anti-inflammatories,inhalation
+Antiasthma,antileukotrienes
+Antiasthma,other
+Bronchodilators,anticholinergic
+Bronchodilators,sympathomimetic,inhalation
+Bronchodilators,sympathomimetic,oral
+Bronchodilators,xanthine-derivative
+Non-opioid-containing antitussives/expectorants
+Opioid-containing antitussives/expectorants
+Antihistamine/antitussive
+Antihistamine/antitussive/analgesic
+Antihistamine/antitussive/expectorant
+Antihistamine/decongestant
+Antihistamine/decongestant/antitussive
+Antihistamine/decongestant/antitussive/analgesic
+Antihistamine/decongestant/antitussive/expectorant
+Antihistamine/decongestant/antitussive/expectorant/analgesic
+Antihistamine/decongestant/expectorant
+Antitussive/antimuscarinic
+Antitussive/bronchodilator
+Cold remedies,other
+Decongestant/antitussive
+Decongestant/antitussive/analgesic
+Decongestant/antitussive/expectorant
+Decongestant/antitussive/expectorant/analgesic
+Decongestant/expectorant
+Amino acids/proteins,oral
+Amino acids/proteins,other
+Amino acids/proteins,parenteral,with added electrolytes
+Amino acids/proteins,parenteral,without added electrolytes
+Bicarbonates
+Calcium
+Citrates
+Electrolytes/minerals,combinations
+Electrolytes/minerals,other
+Fluoride
+Iron
+Magnesium
+Phosphorus
+Potassium
+Sodium
+Zinc
+Iv solutions with electrolytes
+Iv solutions without electrolytes
+Cyanocobalamin
+Folic acid/leucovorin
+Nicotinic acid
+Pantothenic acid
+Pyridoxine
+Riboflavin
+Thiamine
+Vitamin b,other
+Calcifediol
+Calcitriol
+Dihydrotachysterol
+Ergocalciferol
+Vitamin d,other
+Menadiol
+Phytonadione
+Vitamin k,other
+Multivitamins
+Multivitamins with minerals
+
+Jay Pedersen, M.A.
+Department of Pathology/Microbiology
+University of Nebraska Medical Center
+985900 Nebraska Medical Center
+Omaha NE  68198-5900
+402-559-9487 (office)
+402-739-3496 (mobile)
+________________________________________
+From: Rachel Richesson, Ph.D. <rachel.richesson@duke.edu>
+Sent: Friday, March 6, 2020 2:42 PM
+To: Tom Balmat <thomas.balmat@duke.edu>; Prajwal Vijendra <prajwal.vijendra@duke.edu>; Bob McCarter <RMcCarte@childrensnational.org>; Izem, Rima (rizem@childrensnational.org) <rizem@childrensnational.org>; Eric Monson, Ph.D. <eric.monson@duke.edu>; Pedersen, Jay G <jay.pedersen@unmc.edu>
+Cc: Campbell, Walter S <wcampbel@unmc.edu>; Sigfried Gold <sigfried@sigfried.org>
+Subject: RE: SNOMED / Neo4J / Data Viz project - All team 
+ 
+Great call yesterday.  For those that missed, the Webex recording is here: Play recording
+ 
+Also, I am attaching some great notes from Sigfried, which also includes some of his suggestions for the interface.
+ 
+Bob and Rima – please see the attached recording and lets also schedule a time for the full group to meet and hear your reaction and suggestion.  Because of Duke Spring Break, we will make this meeting after March 17.  I will start sending meeting requests and see what works for most.
+ 
+Jay and Scott – A couple of questions came up about how to organize the RxNorm medication codes. Not urgent, but I wonder whether you are using SNOMED or ACT or another drug classification/ ontology to group them..?
+ 
+ 
+Next steps:
+1.) Rachel will set a group call for March 17-20.  
+ 2.) Tom will work toward a public url or other means for Sigfried to see the R app, data, and code.
+3.) Think about additional meetings with clinical experts (UCD) and between Sigfried and Prajwal to advance the design.
+4.) Direct suggestions, needs, concerns to Rachel 
+ 
+Thanks!
+Rachel
+ 
+-----Original Appointment-----
+From: Rachel Richesson, Ph.D. 
+Sent: Friday, February 14, 2020 9:03 AM
+To: Rachel Richesson, Ph.D.; Tom Balmat; Prajwal Vijendra; Robert McCarter; Izem, Rima; Eric Monson, Ph.D.; Jay G Pedersen
+Cc: Campbell, Walter S; Sigfried Gold
+Subject: SNOMED / Neo4J / Data Viz project - All team
+When: Friday, March 6, 2020 10:00 AM-11:00 AM (UTC-05:00) Eastern Time (US & Canada).
+Where: Web-ex (added below)
+ 
+ 
+UCD Data Viz Tool
+Hosted by Rachel Richesson
+ 
+Friday, Mar 6, 2020 10:00 am | 1 hour 15 minutes | (UTC-05:00) Eastern Time (US & Canada)
+Meeting number: 734 578 894
+Password: Friday
+https://dukemed.webex.com/dukemed/j.php?MTID=m3c884fb0b6a2b88156a79b9ddb02d6ac
+ 
+Join by video system
+Dial 734578894@dukemed.webex.com
+You can also dial 173.243.2.68 and enter your meeting number.
+ 
+Join by phone
+1-650-479-3207 Call-in toll number (US/Canada)
+Access code: 734 578 894
+
+The information in this e-mail may be privileged and confidential, intended only for the use of the addressee(s) above. Any unauthorized use or disclosure of this information is prohibited. If you have received this e-mail by mistake, please delete it and immediately contact the sender. 
