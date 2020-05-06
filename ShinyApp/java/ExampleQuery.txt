@@ -1,0 +1,9 @@
+A little better example -- show count of distinct patients with
+any form of Mental Disorder (according to subsumed codes in SNOMED
+by ISA relationships).
+
+with snomedct.code_subsumes_codes('74732009') as codes
+match (p:Participant)-[:P_SCT]->(pn:ObjectConcept) where pn.sctid in codes
+with distinct(p) as affected_pats
+return count(affected_pats)
+
