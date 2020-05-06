@@ -1,0 +1,19 @@
+Copy and execute existing DB (Windows):
+
+1.  Neo4j Community:
+    1a.  Copy entire Neo4j DB directory (C:\Software\Neo4j\neo4j-community-3.5.8\data\databases\UCDdb_2018_12_23.db)
+    1b.  Modify neo4j.conf (C:\Software\Neo4j\neo4j-community-3.5.8\conf), adding new dbms.active_database entry (dbms.active_database=UCDdb_2018_12_23.db)
+    1c.  Execute Neo4j Community Edition:
+         set JAVA_HOME=C:\Software\java-se-8u40-ri
+         set NEO4J_HOME=C:\Software\neo4j\neo4j-community-3.5.8
+         C:\Software\neo4j\neo4j-community-3.5.8\bin\neo4j console
+    1d.  Connect to DB with browser url http://localhost:7474/
+
+2.  Neo4j Desktop:
+    2a.  From within Desktop, create a new project.  A new directory appears in the DB dir (C:\Users\tjb48\.Neo4jDesktop\neo4jDatabases\database-76cf0f7c-0ea4-461c-b18f-38b1cf2aad10) 
+    2b.  Delete contents of new project dir
+    2c.  Copy the contents of the existing project dir to the new one (copy c:\...\database-2b3e2295-6869-47ac-a30d-b6ee51e5c73d to c:\...\database-76cf0f7c-0ea4-461c-b18f-38b1cf2aad10
+    2d.  An alternative (to retain new project info, password, etc.) may be to:
+         2da.  Copy only the DB dir (database-2b3e2295-6869-47ac-a30d-b6ee51e5c73d\installation-3.5.2\data\databases\UCDdb_2018_12_23.db)
+         2db.  Modify the dbms.active_database entry of neo4j.conf (database-76cf0f7c-0ea4-461c-b18f-38b1cf2aad10 (C:\Users\tjb48\.Neo4jDesktop\neo4jDatabases\database-76cf0f7c-0ea4-461c-b18f-38b1cf2aad10\installation-3.5.2\conf)
+    2e.  Projects and databases created in Desktop are cataloged in the projects.json and databases.json files of the persist dir (C:\Users\tjb48\.Neo4jDesktop\persist)

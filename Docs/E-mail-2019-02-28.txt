@@ -1,0 +1,33 @@
+Mark – thanks for lunch and the introduction to Tom.
+
+Tom- 
+It was great to meet you last week and thanks so much for your interest in my project.
+
+I will send follow-up information soon. Also, I will meet with our Center for Nursing Research group so I can pass your name on to other researchers here. As I mentioned, we are not too engaged in research with big data sets, but that is changing rapidly.  
+
+More soon. Definitely drop by if you find yourself near the Pearson School of Nursing Building on Trent Drive!
+
+Thanks,
+Rachel
+
+From: Tom Balmat 
+Sent: Friday, February 22, 2019 2:17 PM
+To: Mark Delong <mark.delong@duke.edu>; Rachel Richesson, Ph.D. <rachel.richesson@duke.edu>
+Subject: RE: Lunch assignment: Holmes and Ingrid...
+
+Thanks for lunch Mark!
+
+Rachel, it was a pleasure to meet you and I hope that we are able to work together.  Let me know when I am able to take a closer look at the database and SNOMED encoding.  Perhaps, with a good question or two, we can explore the capabilities of neo4j and the particular data you have available.  I look forward to hearing from you.
+
+Tom 
+
+From: Mark Delong <mark.delong@duke.edu> 
+Sent: Friday, February 22, 2019 2:01 PM
+To: Rachel Richesson, Ph.D. <rachel.richesson@duke.edu>; Tom Balmat <thomas.balmat@duke.edu>
+Subject: Lunch assignment: Holmes and Ingrid...
+
+Really nice lunch. Thanks you both for being such delightful company!
+Rachel, I've attached the Holmes Morton article "Through My Window" -- an oldie but a goodie. (And, Tom, you should read it, too.)
+Morton, D. H., ‘Through My Window--Remarks at the 125th Year Celebration of Children’s Hospital of Boston’, Pediatrics, 94 (1994), 785–91
+Here's Ingrid's brief bio: https://en.wikipedia.org/wiki/Ingrid_Daubechies. Maybe someday I'll figure out how to work on a project with her.
+m
