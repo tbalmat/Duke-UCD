@@ -1,11 +1,4 @@
-USE [Snomed]
-GO
-/****** Object:  StoredProcedure [dbo].[SnomedAuthorativeAssignment]    Script Date: 5/19/2020 1:17:41 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER proc [dbo].[SnomedAuthorativeAssignment] as
+alter proc SnomedAuthorativeAssignment as
 
 -- Identify authorative source SNOMED records
 
@@ -28,8 +21,6 @@ ALTER proc [dbo].[SnomedAuthorativeAssignment] as
 
 -- Source records considered authoratative are identified with a 1 in the DukeSelect column of the descriptions and
 -- relationships tables
-
--- The following leaves, at most, one synonym record (typeID='900000000000013056') active per concept
 
 -- SNOMED terms and relationships can be browsed at https://browser.ihtsdotools.org
 
@@ -58,19 +49,17 @@ from   description d
                             group by conceptID, typeID, effectiveTime
                           ) act on dt.conceptID=act.conceptID and dt.typeID=act.typeID and dt.dt=act.dt
             ) auth on d.DukeID=auth.DukeID
--- Select one record for each type (FSN and synonym)
--- Omit the following where clause
---where  -- Omit duplicated concept IDs for types
---       -- As of August 2019, entries in the description table have one of two values in the typeID column:  900000000000002944 or 900000000000013056
---       -- There also exist active description records with:
---       --          conceptID              typeID  term
---       -- 900000000000002944  900000000000002944  Fully specified name (core metadata concept)
---       -- 900000000000002944  900000000000013056  Fully specified name
---       -- 900000000000013056  900000000000002944  Synonym (core metadata concept)
---       -- 900000000000013056  900000000000013056  Synonym
---       -- Since conceptID is used to map typeID from description records and conceptID is confounded (both 2944 records give a similar result,
---       -- as do both 13056 records), omit the record with the most characters in its term
---       d.conceptID not in('900000000000002944', '900000000000013056') or d.typeID='900000000000013056'
+where  -- Omit duplicated concept IDs for types
+       -- As of August 2019, entries in the description table have one of two values in the typeID column:  900000000000002944 or 900000000000013056
+       -- There also exists active description records with:
+       --          conceptID              typeID  term
+       -- 900000000000002944  900000000000002944  Fully specified name (core metadata concept)
+       -- 900000000000002944  900000000000013056  Fully specified name
+       -- 900000000000013056  900000000000002944  Synonym (core metadata concept)
+       -- 900000000000013056  900000000000013056  Synonym
+       -- Since conceptID is used to map typeID from description records and conceptID is confounded (both 2944 records give a similar result,
+       -- as do both 13056 records), omit the record with the most characters in its term
+       d.conceptID not in('900000000000002944', '900000000000013056') or d.typeID='900000000000013056'
 
 --
 -- Relationships
@@ -114,20 +103,6 @@ from   relationship r
 -- All such concept records with typeID 900000000000002944 have term identical to corresponding (same conceptID) records with
 -- typeID 900000000000013056, except with the text '(attribute)' appended
 -- De-select concepts with typeID 900000000000002944 referenced as typeID in relationship records
--- CORRECTION:  typeID 900000000000002944 corresponds to concept 'Fully specified name' while typeID corresponds to
--- 'Synonym' [review with select * from description where conceptid in(900000000000013056, 900000000000002944)]
--- Instead of disabling FSN types, leave enabled and take care to include typeIDs in join clauses
--- For instance, to join FSNs with a relationship use:
--- select fsn1.term, fsn2.term
--- from   description fsn1 join relationship r on fsn1.conceptid=r.sourceid
---        join description rd on r.typeid=rd.conceptid
---        join description fsn2 on r.destinationid=fsn2.conceptid
--- where  fsn1.conceptid='64572001' and fsn1.typeid='900000000000002944' and fsn1.dukeselection=1
---        and r.dukeselection=1 and rd.typeid='900000000000002944' and rd.dukeselection=1
---        and fsn.typeid='900000000000002944' and fsn.dukeselection=1
--- Note the common specification of FSN type IDs
--- For synonyms, use typeID='900000000000013056' (note that many synonyms may exist for a single FSN)
--- Following update that inactivates FSNs is disabled
---update description set DukeSelection=0
---where  conceptID in(select distinct typeID from relationship) and typeID='900000000000002944' and DukeSelection=1
+update description set DukeSelection=0
+where  conceptID in(select distinct typeID from relationship) and typeID='900000000000002944' and DukeSelection=1
  
