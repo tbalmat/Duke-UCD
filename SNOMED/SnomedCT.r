@@ -446,7 +446,7 @@ x <- as.data.frame(call_neo4j(query, dbcon, type=c("row", "graph")[1], output=c(
 
 library(RNeo4j)
 
-rm(dbcon)
+rm(db)
 
 # Do user and password have any effect?  Yes.
 db <- startGraph("http://localhost:7474/db/data/", username="neo4j", password="neo4j01")
@@ -544,3 +544,21 @@ colnames(edat) <- cname
 
 k <- which(pConcept[,nodeVar2]=="Motor coordination finding (finding)")
 w <- pConcept[k,c(nodeVar1, nodeVar2, "participantID")]
+
+#############################################################################################################
+# Evaluate SNOMEDCT concept hierarchies
+#############################################################################################################
+
+library(RNeo4j)
+db <- startGraph("http://localhost:7474/db/data/", username="neo4j", password="neo4j01")
+
+# Retrieve root node ID
+id <- cypher(db, "match(x) where x.FSN contains 'SNOMED CT Concept' and x.active='1'
+                  return   labels(x) as label, x.sctid as sctid, x.FSN as FSN limit 1")[1,"sctid"]
+
+# Retrieve all nodes with a direct relationship (one level) to the specified node
+q <- paste(" match(x:ObjectConcept)-[:ISA]->(y:ObjectConcept)",
+           " where y.sctid='", id, "' and x.active='1' and y.active='1'",
+           " return labels(x) as label, x.sctid as sctid, x.FSN as FSN",
+           " order by x.FSN", sep="")
+x <- cypher(db, q)
