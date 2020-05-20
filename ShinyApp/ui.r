@@ -46,9 +46,9 @@ shinyUI(
               )
             ),
             fluidRow(
-              column(width=7,
+              column(width=12,
                 div(HTML("<b>Select sub-concept&nbsp&nbsp<b>"), style="display:inline-block;vertical-align:top;margin-top:25px"),
-                div(selectInput("conceptSel", "", choices="", width="400px"), style="display:inline-block;vertical-align:top"),
+                div(selectInput("conceptSel", "", choices="", width="520px"), style="display:inline-block;vertical-align:top"),
                 div(actionButton("retParentConcept", "<- parent"), style="display:inline-block;vertical-align:top;margin-left:10px;margin-top:20px"),
                 div(actionButton("queryConcept", "query"), style="display:inline-block;vertical-align:top;margin-left:35px; margin-top:20px")
               )
@@ -232,21 +232,24 @@ shinyUI(
           fluidRow(
             column(width=4,
               sidebarPanel(width=11,
-                HTML("<b>5. Explore<br><br></b>"),
+                HTML("<b>5. Explore</b><br>"),
+                div(HTML("<i>Shift-click, Alt-click to select/deselect<br></i>"), style="margin-left:0px; margin-top:10px"),
                 fluidRow(
-                  column(width=6,
-                    div(HTML("<i>Alt-click node selection</i><br>"), style="text-align:left; margin-bottom: 15px"),
-                    fluidRow(
-                      column(width=4, actionButton("altClickSubnet", "subnet")),
-                      column(width=4, actionButton("altClickDescend", "expand"))
-                    )
-                  ),
-                  column(width=6,
-                    div(HTML("<i>Restore edges</i><br>"), style="text-align:left; margin-bottom: 15px"),
-                    fluidRow(
-                      column(width=4, actionButton("restoreEdgesPostMove", "after move"))
-                    )
+                  div(
+                    column(width=12,
+                      div(actionButton("nodeSubnet", "subnet"), style="display:inline-block;vertical-align:top"),
+                      div(actionButton("nodeExpand", "expand"), style="display:inline-block;vertical-align:top"),
+                      div(actionButton("nodeNeighborhood1", "neighborhood-1"), style="display:inline-block;vertical-align:top"),
+                      div(actionButton("nodeRestorePrevious", "back"), style="display:inline-block;vertical-align:top")
+                    ),
+                    style="margin-top:10px"
                   )
+                ),
+                fluidRow(
+                  div(
+                    column(width=4, actionButton("restoreEdgesPostMove", "redraw edges"))
+                  ),
+                  style="margin-top:10px"
                 )
               )
             )

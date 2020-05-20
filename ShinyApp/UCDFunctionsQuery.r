@@ -13,34 +13,40 @@ queryISAConcept <- function(sctid, filterOpt=NA) {
   if(sctid!=0) {
 
     # Retrieve all nodes leading to the specified node by ISA relationships
-    query <- paste(" match(x:ObjectConcept)-[:ISA]->(y:ObjectConcept)",
-                   " where y.sctid='", sctid, "' and x.active='1' and y.active='1'",
-                   " return labels(x) as label, x.sctid as sctid, x.FSN as FSN",
-                   " order by x.FSN", sep="")
+    # Note the concatenation of labels, since cypher returns a list of labels when multiples exist
+    # Cypher substring positions are 0-based
+    query <- paste(" match(x:ObjectConcept)-[r:ISA]->(y:ObjectConcept)",
+                   " where y.sctid='", sctid, "' and x.active='1' and y.active='1' and r.active='1'",
+                   " with reduce(a='', b in labels(x)|a+', '+b) as label, x.sctid as sctid, x.FSN as FSN",
+                   " return substring(label, 2, length(label)-2) as label, sctid, FSN",
+                   " order by FSN", sep="")
     conceptList <- cypher(db, query)
 
     # Filter concepts, if requested
     # This, global, approach should be refined based on some sort of user-defined filtering
-    if(!is.na(filterOpt))
-      conceptList <- conceptList[
-                       which(conceptList[,"FSN"] %in%
-                               c("Clinical finding (finding)",
-                                 "Disease (disorder)",
-                                 "Mental disorder (disorder)",
-                                 "Neurological finding (finding)",
-                                 "Metabolic disease (disorder)",
-                                 "Motor nervous system finding (finding)",
-                                 "Disorder of nervous system (disorder)")),]
-
+    # if(ifelse(!is.na(filterOpt), filterOpt=="1", F)) {
+      # k <- which(conceptList[,"FSN"] %in% c("Clinical finding (finding)",
+                                            # "Disease (disorder)",
+                                            # "Mental disorder (disorder)",
+                                            # "Neurological finding (finding)",
+                                            # "Metabolic disease (disorder)",
+                                            # "Motor nervous system finding (finding)",
+                                            # "Disorder of nervous system (disorder)"))
+      # conceptList <- conceptList[k,]
+    # }
   } else {
 
     query <- "match(x) where x.FSN contains 'SNOMED CT Concept' and x.active='1'
-              return   labels(x) as label, x.sctid as sctid, x.FSN as FSN limit 1"
+              with     reduce(a='', b in labels(x)|a+', '+b) as label, x.sctid as sctid, x.FSN as FSN
+              return   label, sctid, FSN limit 1"
     conceptList <- cypher(db, query)[1,]
 
   }
 
-    return(conceptList)
+  return(conceptList)
+  #return(data.frame("label"=conceptList[,"label"],
+  #                  "sctid"=conceptList[,"sctid"],
+  #                  "FSN"=paste(conceptList[,"FSN"], " ", conceptList[,"sctid"], sep="")))
 
 }
 
@@ -48,13 +54,20 @@ queryISAConcept <- function(sctid, filterOpt=NA) {
 # Query UCD participant variables, SNOMED concepts, prescriptions, and finding sites
 ##########################################################################################################
 
-queryNetworkData <- function(filter) {
+queryNetworkData <- function() {
 
-  # Parameters:
-  # filter ......... a list with:
-  #                  1. elements named according to variables to be filtered (UCDProxDist, Sex, Age,
-  #                     UCDDx, prescripID, findingSiteID) 
-  #                  2. a vector of levels (values of participant vars) or IDs associated with element name
+  # Query observations, filtered using the "query" element of the current global graph configuration
+
+  # The filter is a named list of vectors, where names indicate the database variable to be filtered and
+  # the vector elements contain values of the corresponding variable to be included
+  # If a variable is not included in the query filter names, then no filtering is done to that variable
+  # Note that a variable name can be repeated, but this will cause a null set to be returned if the 
+  # intersection of all vectors for any one variable is null (two vectors c("a", "b") and c("c", "d")
+  # for variable x generates a where clause such as where x in('a', 'b') and x in('c', 'd') which is null) 
+
+  # Note that concept IDs appearing in the query filter are always used to select children nodes with
+  # an ISA relationship to the specified concept
+  # Multiple concepts and variable filters can be specified
 
   # Result is a data frame with one row per participant var, concept, prescription, and finding site
   # Although values within columns are not unique, all combinations of levels of two variables exist
@@ -94,25 +107,33 @@ queryNetworkData <- function(filter) {
   # ID and description of the actual site
   # Since many SNOMED concepts do not have associated finding sites (in the DB), left joins are used
 
-  # Compose concept filter string
-
-  i <- which(names(filter)=="conceptID")
-  if(length(i)>0) {
-    filtConcept <- paste(" and sct2.sctid in['", paste(filter[[i[1]]], collapse="', '", sep=""), "']", sep="")
-  } else {
-    filtConcept <- ""
+  # Compose filter strings
+  # Limit to database variables, which omits, for instance, interaction variables
+  # Note that all observed variables in the UCD database are encoded as character strings, even those
+  # with numeric appearance (hence the use of delimiting apostrophes here)
+  filtConcept <- ""
+  filtVar <- ""
+  for(i in 1:length(graphCfg[[gcPtr]][["query"]])) {
+    v <- names(graphCfg[[gcPtr]][["query"]])[i]
+    if(v=="conceptID") {
+      filtConcept <- paste(" and sct2.sctid in['",
+                           paste(graphCfg[[gcPtr]][["query"]][[i]], collapse="', '", sep=""), "']", sep="")
+    } else {
+      filtVar <- paste(filtVar, " and ", v, " in['",
+                       paste(graphCfg[[gcPtr]][["filter"]][[i]], collapse="', '", sep=""), "']", sep="")
+    }
   }
 
-  # Compose filter strings for remaining variables
-  filtVar <- ""
-  for(i in which(names(filter)!="conceptID"))
-    filtVar <- paste(filtVar, " and ", names(filter)[i], " in['", paste(filter[[i]], collapse="', '", sep=""), "']", sep="")
-
   # Compose query
-  query <- paste(# Retrieve pairs of participants and SNOMED concepts",
+  query <- paste(# Retrieve pairs of participants and SNOMED concepts
+                 # Note that P_SCT relationships have no keys (fields) and, therefore, no status
+                 # All are assumed to be active
+                 # Participants have an EligibilityStatus field, but no 'active' field
                  " match  (prt:Participant)-[:P_SCT]->(sct0:ObjectConcept)-[rsct:ISA*]->(sct2:ObjectConcept)",
                  " where  1=1", filtConcept,
                  "        and sct0.active='1' and sct2.active='1'",
+                 # Due to rsct:ISA* having an indeterminate length, we must evaluate all relationships in the path
+                 "        and reduce(n=0, r in rsct|n+case when(r.active='0')then 1 else 0 end)=0",
                  # Retrieve leading node in final path terminating at sct0
                  # This accepts paths from any concept with a path (regardless of length) to sct0 and
                  # aggregates all of them to the immediate child of sct0 
@@ -121,12 +142,18 @@ queryNetworkData <- function(filter) {
                  # Left join to prescriptions (note that the where clause is applied within the join,
                  # such that nulls are returned in rx0 and rx1 nodes when no prescriptions exist for a prt
                  # or when staus values are not 'active')
+                 # P_SCT relationships have no keys (fields) and, therefore, no status
+                 # All are assumed to be active
                  " optional match(prt)-[:P_RX]->(rx0:RXCUI)",
                  " where  toLower(rx0.status)='active'",
+                 # SUBSUMES relationships have no keys (fields) and, therefore, no status
+                 # All are assumed to be active
                  " optional match(rx0)<-[:SUBSUMES]-(rx1:RXCUI)",
                  " where  toLower(rx1.status)='active'",
                  " with   prt, sct0, sct1, rx0, rx1",
                  # Left join to finding sites from first node in path from participant to terminating concept node
+                 # HAS_ROLE_GROUP relationships have no keys (fields) and, therefore, no status
+                 # All are assumed to be active
                  " optional match(sct0)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst:ObjectConcept)",
                  " where  role2.active='1' and fst.active='1'",
                  " with distinct",
@@ -144,7 +171,7 @@ queryNetworkData <- function(filter) {
                  "        else null",
                  "   end as onsetAgeDays,",
                  "   sct1.sctid as conceptID, sct1.FSN as conceptFSN,",
-                 #   Substitute rx for subsuming rx when not subsumed",
+                 #   Substitute rx for subsuming rx when not subsumed
                  "   coalesce(rx1.id, rx0.id) as rxSubsID, coalesce(rx1.name, rx0.name) as rxSubsName,",
                  "   rx0.id as rxID, rx0.name as rxName,",
                  "   fst.sctid as findingSiteID, fst.FSN as findingSiteFSN, type(role2) as fsRole",

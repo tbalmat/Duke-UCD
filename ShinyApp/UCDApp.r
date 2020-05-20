@@ -17,3 +17,4 @@ runApp(appDir=ad,
        host = getOption("shiny.host", "127.0.0.1"),
        port=4301,
        display.mode = c("auto", "normal", "showcase"))
+

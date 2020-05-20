@@ -43,7 +43,7 @@ vc2 <- "#66AAFF"
 vc3 <- "#88AAAA"
 vc4 <- "#FF8080"
 vc5 <- "#B284BE"
-altClickColor <- "#FF00FF"
+shiftClickColor <- "#FF00FF"
 
 # Edge colors
 ec1 <- "#080808"
@@ -66,7 +66,7 @@ vcfg <- data.frame(
           # Variable ID - column names appearing in query results
           # Note that Rx is a placeholder for either rxName or rxSubsName and is modified as needed 
           "vID"=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-          # Database ID - data frame column containing unique identifier for var level as reported by DB
+          # Database var - data frame column containing unique identifier for var level as reported by DB
           "dbID"=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "Rx", "findingSiteID"),
           # Connection cfg IDs - used to positionally relate elements of the graphCfg connect vectors
           # to those selected (on-screen) by the user
@@ -75,10 +75,13 @@ vcfg <- data.frame(
           "mID"=c("UCD proximal/distal", "Sex", "UCD Dx", "Onset age in days", "HA sympt last", "SNOMED concept", "Rx", "Finding site"),
           "vColor"=c(vc1, rgb(matrix(col2rgb(vc1)/255*0.85, nrow=1)), rgb(matrix(col2rgb(vc1)/255*0.7, nrow=1)),
                      rgb(matrix(col2rgb(vc1)/255*0.55, nrow=1)), vc5, vc2, vc3, vc4),
-          "tSize"=c(1.2, 1.2, 1.2, 1.2, 1.2, 1, 1, 1),
+          "tSize"=c(1, 1, 1, 1, 1, 1, 1, 1),
           "tColor"=c(pfc, pfc, pfc, pfc, vc5, vc2, vc3, vc4),
           "elabVar"=c(NA, NA, NA, NA, NA, NA, NA, "fsRole"),
           "accMethod"=c("PID", "PID", "PID", "PID", "PID", "PID", "PID", "PID"))
+
+# Reactive value list (used to copy values of reactive variables prior to being modified
+reactVal <- list()
 
 ##########################################################################################################
 # Load functions
@@ -102,6 +105,9 @@ db <- startGraph(c("http://localhost:7474/db/data/", "http://localhost:7479/db/d
 graphCfg <- list()
 gcPtr <- 0
 
+# Interaction flag
+interactionRendered <- F
+
 ##########################################################################################################
 # Shiny server function
 ##########################################################################################################
@@ -118,10 +124,10 @@ shinyServer(
     conceptStack <- data.frame(nodeLabel=character(), sctid=character(), FSN=character())
     csPtr <- 0
 
-    # Create a vector of selected node indicators while holding the Alt key
+    # Create a data frame of selected node indicators (using shift-click)
     # These are used in sub-netting operations
-    # Note that this must exist prior to clicking the Alt-clk buttons
-    altClickNode <- vector("integer")
+    # Note that this must exist prior to using shift-click and alt-click (select and deselect)
+    shiftClickNode <- data.frame("nodeID"=integer(), "color"=character())
 
     ##########################################################################################################
     # Concept selection event (add selection to concept stack)
@@ -167,88 +173,135 @@ shinyServer(
     }, ignoreInit=T)
 
     ##########################################################################################################
-    # Initialize graph configuration stack, push/remove current configuration onto/from stack
+    # Configure graph configuration stack
+    # Initialize, push/remove current configuration onto/from stack
     # Record currently selected concept IDs, participant var filter values, prescription filters, etc.
     # Note the global declaration to that the function accessible from outside the shiynyServer() env
     ##########################################################################################################
 
-    graphCfgOp <<- function(op, filter=NA, vcfg=NA) {
+    graphCfgOp <<- function(op, query=NULL, filter=NULL, filterMode=NULL, vcfg=NULL) {
 
       # Parameters:
-      # op ....... "init" ..... initialize graph configuration stack (one element with curr cfg)
-      #            "add" ...... push the current on-screen configuration onto the graph configuration stack and advance pointer
-      #            "upd" ...... update configuration with current on-screen values
-      #            "remove" ... remove the current configuration and retreat stack pointer
-      #            "vcfg" ..... update the vcfg element of graphCfg
-      # filter ... List of current query filter parameter values, one element per graph node variable, with name
-      #            equal to that of the variable and containing a vector of variable levels (values) to be included
-      #            in query results
-      #            This list must contain a "conceptID" parameter and associate vector of IDs (may be of length one)
-      # vcfg ..... Data frame of vertex configuration values, a modified version of the global vcfg data frame
-      #            that reflects current data set and appearance configuration
-      #            These values generally modify defaults and account for additional variables (such as for 
-      #            interaction) and are used to construct and render the current graph
-      #            It is assumed that gcPtr > 0
+      # op ........... "init" ..... initialize graph configuration stack (one element with curr cfg)
+      #                "add" ...... push the current on-screen configuration onto the graph configuration
+      #                             stack and advance pointer
+      #                "upd" ...... update configuration with current on-screen values
+      #                "remove" ... remove the current configuration and retreat stack pointer
+      #                "vcfg" ..... update the vcfg element of graphCfg
+      # query ........ See notes in the queryNetworkData() function for an explanation
+      # filter ....... See notes in the assembleNetwokComponents() function for an explanation
+      # filterMode ... "filter", "expand", "nbhood1" as used in assembleNetworkComponents()
+      # vcfg ......... Data frame of vertex configuration values, a modified version of the global
+      #                vcfg data frame that reflects current data set and appearance configuration
+      #                These values generally modify defaults and account for additional variables
+      #                (such as for interaction) and are used to construct and render the current graph
+      #                It is assumed that gcPtr > 0
 
       if(op %in% c("init", "add", "upd")) {
-        # Initialize, if requested
-        # Advance pointer if adding an entry
-        if(op=="init" | gcPtr<1) {
+
+        # Use current values for elements common to init, add, upd operations
+        gcfg <- list("query"=query,
+                     "filter"=filter,
+                     "filterMode"=filterMode,
+                     "connect"=list("UCDProxDist"=input$cnUCDProxDist,
+                                    "Sex"=input$cnSex,
+                                    "UCDDx"=input$cnUCDDx,
+                                    "onsetAgeDays"=input$cnAge,
+                                    "HASxLast"=input$cnHASxLast,
+                                    "conceptFSN"=input$cnConceptFSN,
+                                    "Rx"=input$cnRx,
+                                    "rxSubsume"=input$rxSubsume,
+                                    "findingSiteFSN"=input$cnFindingSite),
+                     "interact"=list("set1"=input$interactSet1,
+                                     "conn1"=input$interactConn1,
+                                     "set2"=input$interactSet2,
+                                     "conn2"=input$interactConn2),
+                     "nedgemin"=input$nedgemin,
+                     "eopacity"=input$eopacity,
+                     "vmassf"=input$vMassFactor,
+                     "vsizefactor"=input$vSizeFactor,
+                     "vfontsz"=input$vFontSize,
+                     "nCluster"=input$nCluster,
+                     "nearestHighlightDeg"=input$nearestHighlightDeg,
+                     "vcfg"=vcfg)
+
+        # Assign elements specific to requested operation
+        if("op"=="init" | gcPtr<1) {
           graphCfg <<- list()
+          # Use current concept as query specification when unspecified
+          if(is.null(query))
+            gcfg[["query"]] <- list("conceptID"=conceptStack[csPtr,"sctid"])
           gcPtr <<- 1
-        } else if(op=="add") {
-          gcPtr <<- gcPtr+1
+        } else if(op %in% c("add", "upd") & gcPtr>0) {
+          # Copy filters from current cfg if unspecified
+          if(is.null(query))
+            gcfg[["query"]] <- graphCfg[[gcPtr]][["query"]]
+          if(is.null(filter))
+            gcfg[["filter"]] <- graphCfg[[gcPtr]][["filter"]]
+          if(is.null(filterMode))
+            gcfg[["filterMode"]] <- graphCfg[[gcPtr]][["filterMode"]]
+          if(op=="add")
+            gcPtr <<- gcPtr+1
         }
-        # Assign filter if not specified (retain current when cfg exists, use concept if initializing)
-        if(is.na(filter))
-          if(gcPtr>0) {
-            filter <- graphCfg[["filter"]]
+
+        # Save new configuration
+        if(gcPtr>0)
+          graphCfg[[gcPtr]] <<- gcfg
+
+      } else if(op=="remove" & gcPtr>1) {
+
+        # Remove current cfg from stack (truncate stack)
+        gcPtr <<- gcPtr-1
+        graphCfg <<- graphCfg[1:gcPtr]
+        # Restore screen values
+        # Isolate to avoid triggering reactive events
+        v <- data.frame("cfg"=c("UCDProxDist", "Sex", "UCDDx", "osetAgeDays", "HASxLast", "conceptFSN",
+                                "Rx", "rxSubsume", "findingSiteFSN"),
+                        "scr"=c("cnUCDProxDist", "cnSex", "cnUCDDx", "cnAge", "cnHASxLast", "cnConceptFSN",
+                                "cnRx", "rxSubsume", "cnFindingSite"))
+        for(i in 1:nrow(v))
+          if(!is.null(graphCfg[[gcPtr]][["connect"]][[v[i,"cfg"]]])) {
+            updateCheckboxGroupInput(session, v[i,"scr"], selected=graphCfg[[gcPtr]][["connect"]][[v[i,"cfg"]]])
           } else {
-            filter <- list("conceptID"=conceptStack[csPtr,"sctid"])
+            updateCheckboxGroupInput(session, v[i,"scr"], selected=character())
           }
-        # Save configuration
-        if(op %in% c("init", "add", "upd")) {
-          # Capture on-screen parameter values to be relayed to graph query and construction functions
-          graphCfg[[gcPtr]] <<- list("filter"=filter,
-                                     "connect"=list("UCDProxDist"=input$cnUCDProxDist,
-                                                    "Sex"=input$cnSex,
-                                                    "UCDDx"=input$cnUCDDx,
-                                                    "onsetAgeDays"=input$cnAge,
-                                                    "HASxLast"=input$cnHASxLast,
-                                                    "conceptFSN"=input$cnConceptFSN,
-                                                    "Rx"=input$cnRx,
-                                                    "rxSubsume"=input$rxSubsume,
-                                                    "findingSiteFSN"=input$cnFindingSite),
-                                     "interact"=list("set1"=input$interactSet1,
-                                                     "conn1"=input$interactConn1,
-                                                     "set2"=input$interactSet2,
-                                                     "conn2"=input$interactConn2),
-                                     "nedgemin"=input$nedgemin,
-                                     "eopacity"=input$eopacity,
-                                     "vmassf"=input$vMassFactor,
-                                     "vsizefactor"=input$vSizeFactor,
-                                     "vfontsz"=input$vFontSize,
-                                     "nCluster"=input$nCluster,
-                                     "nearestHighlightDeg"=input$nearestHighlightDeg)
-      } else if(op=="remove") {
-        if(gcPtr>1) {
-          # Remove current cfg from stack (truncate stack)
-          gcPtr <<- gcPtr-1
-          graphCfg <<- graphCfg[1:gcPtr]
-        } else {
-          # Clear all configurations
-          gcPtr <<- 0
-          graphCfg <<- list()
-        }
-      }
+        v <- data.frame("cfg"=c("set1", "conn1", "set2", "conn2"),
+                        "scr"=c("interactSet1", "interactConn1", "interactSet2", "interactConn2"))
+        for(i in 1:nrow(v))
+          if(!is.null(graphCfg[[gcPtr]][["interact"]][[v[i,"cfg"]]])) {
+            updateCheckboxGroupInput(session, v[i,"scr"], selected=graphCfg[[gcPtr]][["interact"]][[v[i,"cfg"]]])
+          } else {
+            updateCheckboxGroupInput(session, v[i,"scr"], selected=character())
+          }
+        v <- data.frame("cfg"=c("nedgemin", "eopacity", "vmassf", "vsizefactor", "vfontsz", "nCluster", "nearestHighlightDeg"),
+                        "scr"=c("nedgemin", "eopacity", "vMassFactor", "vSizeFactor", "vFontSize", "nCluster", "nearestHighlightDeg"))
+        for(i in 1:nrow(v))
+          if(!is.null(graphCfg[[gcPtr]][[v[i,"cfg"]]])) {
+            updateCheckboxGroupInput(session, v[i,"scr"], selected=graphCfg[[gcPtr]][[v[i,"cfg"]]])
+          } else {
+            updateCheckboxGroupInput(session, v[i,"scr"], selected=character())
+          }
+
       } else if(op=="vcfg" & gcPtr>0) {
-        # Save the supplied vcfg data frame
+
+        # Save the supplied vcfg data frame in the current cfg
         graphCfg[[gcPtr]][["vcfg"]] <<- vcfg
+
       }
+
+      #print("graphCfgOp.op")
+      #print(op)
+      #print("graphCfgOp.query")
+      #print(graphCfg[[gcPtr]][["query"]])
+      #print("graphCfgOp.filter")
+      #print(graphCfg[[gcPtr]][["filter"]])
+      #print("graphCfgOp.filterMode")
+      #print(graphCfg[[gcPtr]][["filterMode"]])
+
     }
 
     ##########################################################################################################
-    # Query observations for selected concept
+    # Query concept action
     ##########################################################################################################
 
     observeEvent(input$queryConcept,{
@@ -256,18 +309,18 @@ shinyServer(
       # Initialize graph configuration stack
       # Note that this event always establishes a new graph environment (imagine, otherwise, repeatedly
       # clicking render)
-      graphCfgOp(op="init", filter=list("conceptID"=conceptStack[csPtr,"sctid"]))
+      graphCfgOp(op="init", query=list("conceptID"=conceptStack[csPtr,"sctid"]))
 
       # Query observations using the currenttly selected concept
       # Note the placement of results into a global data frame, since various user triggered actions
       # utilize previously queried data
-      netData <<- queryNetworkData(filter=graphCfg[[gcPtr]][["filter"]])
+      netData <<- queryNetworkData()
 
       if(nrow(netData)>0) {
 
-        netComponents <- assembleNetworkComponents()
+        netComponents <<- assembleNetworkComponents()
         if(nrow(netComponents[["vertex"]])>0) {
-print(graphCfg[[gcPtr]][["vcfg"]])
+
           # Net regen is always done with physics enabled, but we want it to be disabled after regen
           # Direct disabling of physics (using visPhysics(enabled=F)) has no effect when called immediately after
           # renderVisNetwork(), but is effective when executed from within a shiny reactive function
@@ -297,6 +350,20 @@ print(graphCfg[[gcPtr]][["vcfg"]])
     }, ignoreInit=T)      
 
     ##########################################################################################################
+    # Record reactive values prior to update
+    # These are useful in evaluating current with prior values 
+    ##########################################################################################################
+
+    onFlush(session=session, once=FALSE,
+      function() {
+        isolate(reactVal[["interactSet1"]] <<- input$interactSet1)
+        isolate(reactVal[["interactConn1"]] <<- input$interactConn1)
+        isolate(reactVal[["interactSet2"]] <<- input$interactSet2)
+        isolate(reactVal[["interactConn2"]] <<- input$interactConn2)
+      }
+    )  
+
+    ##########################################################################################################
     # Action triggered by a change in screen controls that require graph regeneration
     ##########################################################################################################
 
@@ -304,27 +371,22 @@ print(graphCfg[[gcPtr]][["vcfg"]])
                    input$cnHASxLast, input$cnConceptFSN, input$cnRx, input$rxSubsume,
                    input$cnFindingSite, input$nedgemin, input$eopacity, input$vMassFactor,
                    input$vSizeFactor, input$vFontSize, input$nCluster, input$nearestHighlightDeg), {
-print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
+
       if(exists("netData"))
         if(nrow(netData)>0) {
-
           # Modify current graph cfg
           graphCfgOp(op="upd")
-
-          netComponents <- assembleNetworkComponents()
-
+          netComponents <<- assembleNetworkComponents()
           if(nrow(netComponents[["vertex"]])>0) {
             updateRadioButtons(session, "physics", selected=T)
             output$g1 <- renderVisNetwork(composeNetwork(netComponents))
             #output$gTable <- DT::renderDataTable(composeGraphTable())
             #updateTextInput(session=session, inputId="reactiveInst", value="physicsOff")
             updateRadioButtons(session=session, inputId="physics", selected=F)
-
           } else {
             output$g1 <- NULL
             #output$gTable <- NULL
           }
-
         } else {
           output$g1 <- NULL
           #output$gTable <- NULL
@@ -333,27 +395,28 @@ print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
     }, ignoreInit=T)
 
     #########################################################################################################
-    # Interaction trigger
+    # Interaction cfg trigger
     # These are evaluated independently from remaining controls because multiple items in the group must be
     # selected (variables in set and variables to be connected to)
     ##########################################################################################################
 
     observeEvent(c(input$interactSet1, input$interactConn1), {
-
-      if(exists("netData"))
+      if(exists("netData")) {
+        # Execute if sufficient number of variables specified either in current reactive values or prior to
+        # a change in any of the interaction cfg values (so that, if interactions were included prior to change,
+        # but are not to be included at present, then they will be removed and will not be included again until
+        # a sufficient number of variables is spepcified)
+        # Note that list elements are omitted when an attempt to assign NULL is made (prior value is NULL)
+        # However, reference to nonexistent list elements (by name) return NULL and the length of a NULL vector is 0
         if(nrow(netData)>0 & (length(input$interactSet1)>1 & length(input$interactConn1)>0 |
-                              length(input$interactSet2)>1 & length(input$interactConn2)>0)) {
+                              length(input$interactSet2)>1 & length(input$interactConn2)>0 |
+                              length(reactVal[["interactSet1"]])>1 & length(reactVal[["interactConn1"]])>0 |
+                              length(reactVal[["interactSet2"]])>1 & length(reactVal[["interactConn2"]])>0)) {
           # Modify current graph cfg
           graphCfgOp(op="upd")
-          netComponents <- assembleNetworkComponents()
-print("ZXCZXCZCZXCZCZXCZX")
-print(netComponents[["vertex"]])
-print(netComponents[["edge"]])
+          netComponents <<- assembleNetworkComponents()
           if(nrow(netComponents[["vertex"]])>0) {
             updateRadioButtons(session, "physics", selected=T)
-#x <- composeNetwork(netComponents)
-#print(x)
-
             output$g1 <- renderVisNetwork(composeNetwork(netComponents))
             #output$gTable <- DT::renderDataTable(composeGraphTable())
             updateRadioButtons(session=session, inputId="physics", selected=F)
@@ -362,6 +425,7 @@ print(netComponents[["edge"]])
             #output$gTable <- NULL
           }
         }
+      }
     }, ignoreInit=T)
 
     ##########################################################################################################
@@ -378,7 +442,7 @@ print(netComponents[["edge"]])
         visStabilize(visNetworkProxy("g1"))
         # Free positions
         #updateTextInput(session=session, inputId="reactiveInst", value="vertexFixedOff")
-        visUpdateNodes(visNetworkProxy("g1"), data.frame("id"=vertex[,"id"], "fixed"=F))
+        visUpdateNodes(visNetworkProxy("g1"), data.frame("id"=netComponents[["vertex"]][,"id"], "fixed"=F))
       }
     }, ignoreInit=T)
 
@@ -418,7 +482,7 @@ print(netComponents[["edge"]])
     # Triggered by java script contained in the click element of the visEvents parameter of the graph
     # rendered by composeNetwork()
     # Verify that a vertex has been clicked (input$shiftClick[["nodes"]] length one or greater)
-    # Hide all vertices not connected to selected vertex and all edges attached to hidden vertices
+    # Save node refrence in shift-click table
     ##########################################################################################################
 
     observeEvent(input$shiftClick, {
@@ -428,30 +492,10 @@ print(netComponents[["edge"]])
       if(length(v)>0) {
         v0 <- v[[1]][1]
         print(v0)
-        vertex <- netComponents[["vertex"]]
-        edge <- netComponents[["edge"]]
-        # Identify all edges connected to selected vertex
-        # From and to indicate node IDs
-        # It is assumed that the ID of the selected node is returned in input$shiftClick[["nodes"]] (above), since
-        # that is assumed to be the only data available to the UI once a graph has been rendered
-        # Note that IDs were saved as numeric (in assembleNetComponents())
-        ke <- which(edge[,"from"]==v0 | edge[,"to"]==v0)
-        # Identify all vertices connected to selected vertex
-        kv <- which(vertex[,"id"] %in% unlist(edge[ke,c("from", "to")]))
-        # Hide vertices that are not connected to selected vertex
-        vertex[,"hidden"] <- T
-        vertex[kv,"hidden"] <- F
-        vertex[,"physics"] <- F
-        vertex[kv,"physics"] <- T
-        output$g1 <- renderVisNetwork(composeNetwork(vertex=vertex, edge=edge[ke,],
-                                                     nodeVar1=input$prtVar, nodeVar2="FSN",
-                                                     nodeVar3=ifelse(!is.null(input$prescripConnector), "Prescription", NA),
-                                                     nodeVar4=ifelse(!is.null(input$roleGroupConnector), "roleGroupFSN", NA),
-                                                     nodeVar5=ifelse(!is.null(input$haConnector), "HASxLast", NA),
-                                                     vColor1=vc1, vColor2=vc2, vColor3=vc3, vColor4=vc4, vColor5=vd5,
-                                                     nCluster=input$nCluster, nearestHighlightDeg=input$nearestHighlightDeg))
-        #updateTextInput(session=session, inputId="reactiveInst", value="physicsOff")
-        #updateRadioButtons(session=session, inputId="physics", selected=F)
+        # Record node's row position and current color in vertex data frame
+        shiftClickNode[nrow(shiftClickNode)+1,] <<- c(v0, netComponents[["vertex"]][v0,"color"])
+        # Color selected vertex
+        visUpdateNodes(visNetworkProxy("g1"), nodes=data.frame("id"=netComponents[["vertex"]][v0,"id"], "color"=shiftClickColor))
       }
     }, ignoreInit=T)
 
@@ -459,8 +503,8 @@ print(netComponents[["edge"]])
     # Vertex alt-click event
     # Triggered by java script contained in the click element of the visEvents parameter of the graph
     # rendered by composeNetwork()
-    # Verify that a vertex has been clicked (input$alt[["nodes"]] length one or greater)
-    # Render new graph using selected node and any with a relationship
+    # Verify that a vertex has been clicked (input$altClick[["nodes"]] length one or greater)
+    # Remove selected node from shift-click vector, if present
     ##########################################################################################################
 
     observeEvent(input$altClick, {
@@ -469,152 +513,94 @@ print(netComponents[["edge"]])
       v <- input$altClick[["nodes"]]
       if(length(v)>0) {
         v0 <- v[[1]][1]
-        # Record node's row position in vertex data frame
-        altClickNode <<- c(altClickNode, v0)
-        # Color selected vertex
-        visUpdateNodes(visNetworkProxy("g1"), nodes=data.frame(id=netComponents[["vertex"]][v0,"id"], color=altClickColor))
         print(v0)
+        # Index node in shift-click table
+        k <- which(shiftClickNode[,"nodeID"]==v0)
+        if(length(k)>0) {
+          # Recolor selected vertex
+          visUpdateNodes(visNetworkProxy("g1"), nodes=data.frame("id"=netComponents[["vertex"]][v0,"id"], "color"=shiftClickNode[k,"color"]))
+          shiftClickNode <<- shiftClickNode[-k,]
+        }
       }
     }, ignoreInit=T)
 
     ##########################################################################################################
-    # Alt-click subnet event
-    # Verify that vertices have been alt-clicked (altClickNode non-empty)
-    # Render new graph using selected nodes
+    # Return to previous graph
+    # Decrement graph configuration stack pointer, truncate stack, and regenerate graph using cfg at new pointer
     ##########################################################################################################
 
-    observeEvent(input$altClickSubnet, {
-      print("altClickSubnet")
-      # altClickNode vector contains IDs of nodes selected while holding the Alt key
-      if(length(altClickNode)>0) {
-        print(altClickNode)
-        vertex <- netComponents[["vertex"]]
-        edge <- netComponents[["edge"]]
-        #print(vertex[altClickNode,])
-        # Identify all edges that connect selected vertices
-        # From and to indicate node IDs
-        # It is assumed that the IDs selected nodes are saved in altClickNode
-        # IDs were saved as numeric (in assembleNetComponents())
-        # Note that an or in the following which() would select all nodes connected to any selected node
-        ke <- which(edge[,"from"] %in% altClickNode & edge[,"to"] %in% altClickNode)
-        #print(ke)
-        # Identify all selected
-        kv <- altClickNode #which(vertex[,"id"] %in% unlist(edge[ke,c("from", "to")]))
-        # Hide vertices that are not connected to selected vertices
-        vertex[,"hidden"] <- T
-        vertex[kv,"hidden"] <- F
-        vertex[,"physics"] <- F
-        vertex[kv,"physics"] <- T
-        output$g1 <- renderVisNetwork(composeNetwork(vertex=vertex, edge=edge[ke,],
-                                                     nodeVar1=input$prtVar, nodeVar2="FSN",
-                                                     nodeVar3=ifelse(!is.null(input$prescripConnector), "Prescription", NA),
-                                                     nodeVar4=ifelse(!is.null(input$roleGroupConnector), "roleGroupFSN", NA),
-                                                     nodeVar5=ifelse(!is.null(input$haConnector), "HASxLast", NA),
-                                                     vColor1=vc1, vColor2=vc2, vColor3=vc3, vColor4=vc4, vColor=vc5,
-                                                     nCluster=input$nCluster, nearestHighlightDeg=input$nearestHighlightDeg))
-        #updateTextInput(session=session, inputId="reactiveInst", value="physicsOff")
-        #updateRadioButtons(session=session, inputId="physics", selected=F)
-        altClickNode <<- vector("integer")
+    observeEvent(input$nodeRestorePrevious, {
+      print("graphRestorePrevious")
+      if(gcPtr>1) {
+        # Retain query value for comparison to previous graph on stack value (difference warrants requery)
+        q0 <- graphCfg[[gcPtr]][["query"]]
+        graphCfgOp("remove")
+        # Requery?  Subsetting may have omitted records for necessary concepts (or vars with children)
+        netData <<- queryNetworkData()
+        if(nrow(netData)>0) {
+          netComponents <<- assembleNetworkComponents()
+          if(nrow(netComponents[["vertex"]])>0) {
+            updateRadioButtons(session, "physics", selected=T)
+            output$g1 <- renderVisNetwork(composeNetwork(netComponents))
+            #output$gTable <- DT::renderDataTable(composeGraphTable())
+            updateRadioButtons(session=session, inputId="physics", selected=F)
+          } else {
+            output$g1 <- NULL
+            #output$gTable <- NULL
+          }
+        } else {
+          output$g1 <- NULL
+          #output$gTable <- NULL
+        }
+      # Clear selected node indices
+      shiftClickNode <<- shiftClickNode[F,]
       }
     }, ignoreInit=T)
 
     ##########################################################################################################
-    # Alt-click descend event
-    # Verify that vertices have been alt-clicked (altClickNode non-empty)
-    # Generate new graph using children of selected participant and concept nodes
-    # Append prescription and role group nodes using their current configuration parameter values
+    # Create a vertex filter list for subsetting
     ##########################################################################################################
 
-    observeEvent(input$altClickDescend, {
+    subsetNodeFilterCompose <- function(nodeID) {
 
-      print("altClickDescend")
+      # Parameters:
+      # nodeID ..... Vector of node IDs (from netComponents[["vertex"]]) to be treated
 
-      if(length(altClickNode)>0) {
+      # Generate vertex row indices for specified nodes
+      k <- match(nodeID, netComponents[["vertex"]][,"id"])
+      # Generate a list of row indices by database variable
+      v <- split(k, netComponents[["vertex"]][k,"dbVar"])
+      # Construct vectors of DB values to filter, by variable
+      # Package as a graphCfg filter list
+      x <- lapply(1:length(v), function(i) unique(netComponents[["vertex"]][v[[i]],"dbValue"]))
+      # Apply DB variable names
+      names(x) <- names(v)
+      return(x)
 
-        # Capture on-screen parameter values to be relayed to graph query and construction functions
-        prtVar <- input$prtVar
-        nedgemin <- input$nedgemin
-        eopacity <- input$eopacity
-        vmassf <- input$vMassFactor
-        vsizefactor <- input$vSizeFactor
-        vfontsz <- c(input$vFontSize, 0.8*input$vFontSize)
-        nCluster <- input$nCluster
-        nearestHighlightDeg <- input$nearestHighlightDeg
-        prescripConnector <- input$prescripConnector
-        prescripSubsume <- input$prescripSubsume
-        roleGroupConnector <- input$roleGroupConnector
-        haConnector <- input$haConnector
+    }
 
-        # altClickNode vector contains IDs of nodes selected while holding the Alt key
-        print(altClickNode)
-        vertex <- netComponents[["vertex"]]
-        edge <- netComponents[["edge"]]
-        print(vertex[altClickNode,])
+    ##########################################################################################################
+    # Node subnet event
+    # Verify that vertices have been selected (shiftClickNode non-empty)
+    # Render new graph limited to selected nodes
+    ##########################################################################################################
 
-        # Retrieve concept IDs from selected nodes - use current on screen concept if none selected
-        conceptID <- vertex[which(vertex[,"varClass"]=="FSN" & vertex[,"id"] %in% altClickNode),"dbID"]
-        if(length(conceptID)==0)
-          conceptID <- conceptStack[csPtr,"sctid"]
-        #print(conceptID)
-
-        # Retrieve participant node var levels to filter - if no participant nodes selected then reuse
-        # those appearing in current graph configuration (on assumption that that, possibly filtered
-        # group is to be further studied) 
-        prtVarFilter <- vertex[which(vertex[,"varClass"]==prtVar & vertex[,"id"] %in% altClickNode),"dbID"]
-        if(length(prtVarFilter)==0)
-          prtVarFilter <- vertex[which(vertex[,"varClass"]==prtVar), "dbID"]
-        #print(prtVarFilter)
-
-        # Retrieve selected prescriptions to filter
-        prescripFilter <- vertex[which(vertex[,"varClass"]=="Prescription" & vertex[,"id"] %in% altClickNode),"dbID"]
-        if(length(prescripFilter)==0)
-          prescripFilter <- vertex[which(vertex[,"varClass"]=="Prescription"), "dbID"]
-
-        # Retrieve selected roles to filter
-        roleGroupFilter <- vertex[which(vertex[,"varClass"]=="roleGroupFSN" & vertex[,"id"] %in% altClickNode),"dbID"]
-        if(length(roleGroupFilter)==0)
-          roleGroupFilter <- vertex[which(vertex[,"varClass"]=="roleGroup"), "dbID"]
-
-        # Retrieve selected hyperammonemia variables to filter
-        haFilter <- vertex[which(vertex[,"varClass"]=="HASxLast" & vertex[,"id"] %in% altClickNode),"dbID"]
-        if(length(haFilter)==0)
-          haFilter <- vertex[which(vertex[,"varClass"]=="HASxLast"), "dbID"]
-        #print(haFilter)
-
-        prescripFilter <- NULL
-        roleGroupFilter <- NULL
-        haFilter <- NULL
-
-        # Construct graph
-        netComponents <<- queryAndConstructGraph(
-                            nodeVar=prtVar, conceptID=conceptID,
-                            prtVarFilter=prtVarFilter, prescripFilter=prescripFilter,
-                            roleGroupFilter=roleGroupFilter, haFilter=haFilter,
-                            prescripConnector=prescripConnector, prescripSubsume=prescripSubsume,
-                            roleGroupConnector=roleGroupConnector, haConnector=haConnector,
-                            vColor1=vc1, vColor2=vc2, vColor3=vc3, vColor4=vc4, vColor5=vc5,
-                            nedgemin=nedgemin, eopacity=eopacity,
-                            vMassFactor=vmassf, vSizeFactor=vsizefactor, vFontSize=vfontsz)
-
+    observeEvent(input$nodeSubnet, {
+      print("nodeSubnet")
+      # shiftClickNode data frame contains IDs (row positions in vertex DF) of selected nodes
+      if(nrow(shiftClickNode)>0) {
+        # Push a new graph cfg with additional filter for selected nodes
+        # Retain current query filter because it is not changing
+        graphCfgOp(op="add",
+                   query=graphCfg[[gcPtr]][["query"]],
+                   # Include filter list
+                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"]),
+                   filterMode="filter")
         # Render graph
+        netComponents <<- assembleNetworkComponents()
         if(nrow(netComponents[["vertex"]])>0) {
-          # Net regen is always done with physics enabled, but we want it to be disablead after regen
-          # Direct disabling of physics (using visPhysics(enabled=F)) has no effect when called immediately after
-          # renderVisNetwork(), but is effective when executed frimm within a shiny reactive function
-          # So, although not ideal, force disable of physics by toggling the reaction control with physics par val
           updateRadioButtons(session, "physics", selected=T)
-          output$g1 <- renderVisNetwork(
-                         composeNetwork(
-                           vertex=netComponents[["vertex"]],
-                           edge=netComponents[["edge"]],
-                           nodeVar1=prtVar,
-                           nodeVar2="FSN",
-                           nodeVar3=ifelse(!is.null(prescripConnector), "Prescription", NA),
-                           nodeVar4=ifelse(!is.null(roleGroupConnector), "roleGroupFSN", NA),
-                           nodeVar5=ifelse(!is.null(haConnector), "HASxLast", NA),
-                           vColor1=vc1, vColor2=vc2, vColor3=vc3, vColor4=vc4, vColor5=vc5,
-                           nCluster=nCluster, nearestHighlightDeg=nearestHighlightDeg))
-          # Compose and render centrality table
+          output$g1 <- renderVisNetwork(composeNetwork(netComponents))
           #output$gTable <- DT::renderDataTable(composeGraphTable())
           #updateTextInput(session=session, inputId="reactiveInst", value="physicsOff")
           updateRadioButtons(session=session, inputId="physics", selected=F)
@@ -622,10 +608,109 @@ print(netComponents[["edge"]])
           output$g1 <- NULL
           #output$gTable <- NULL
         }
-
-        altClickNode <<- vector("integer")
-
+        # Clear selected node indices
+        shiftClickNode <<- shiftClickNode[F,]
       }
+    }, ignoreInit=T)
+
+    ##########################################################################################################
+    # Node neighborhood subnet event
+    # Verify that vertices have been selected (shiftClickNode non-empty)
+    # Render new graph limited to selected nodes along with nodes with an edge to selected nodes
+    ##########################################################################################################
+
+    observeEvent(input$nodeNeighborhood1, {
+
+      print("nodeNeighborhood1")
+      # shiftClickNode data frame contains IDs (row positions in vertex DF) of selected nodes
+      if(nrow(shiftClickNode)>0) {
+        #print(shiftClickNode)
+        # Push a new graph cfg with additional filter for selected nodes
+        # Retain current query filter because it is not changing
+        graphCfgOp(op="add",
+                   query=graphCfg[[gcPtr]][["query"]],
+                   # Include filter list
+                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"]),
+                   filterMode="nbhood1")
+        # Render graph
+        netComponents <<- assembleNetworkComponents()
+        if(nrow(netComponents[["vertex"]])>0) {
+          updateRadioButtons(session, "physics", selected=T)
+          output$g1 <- renderVisNetwork(composeNetwork(netComponents))
+          #output$gTable <- DT::renderDataTable(composeGraphTable())
+          #updateTextInput(session=session, inputId="reactiveInst", value="physicsOff")
+          updateRadioButtons(session=session, inputId="physics", selected=F)
+        } else {
+          output$g1 <- NULL
+          #output$gTable <- NULL
+        }
+        # Clear selected node indices
+        shiftClickNode <<- shiftClickNode[F,]
+      }
+
+    }, ignoreInit=T)
+
+    ##########################################################################################################
+    # Node expand event
+    # Verify that vertices have been selected (shiftClickNode non-empty)
+    # Generate new graph using children of selected nodes, if any, otherwise the selected nodes
+    # Advance graph configuration stack then assemble and compose graph using current cfg
+    ##########################################################################################################
+
+    observeEvent(input$nodeExpand, {
+
+      print("nodeExpand")
+      if(nrow(shiftClickNode)>0) {
+        #print(shiftClickNode)
+
+        # Configure query and filter instructions
+        # Generate vertex row indices for selected nodes
+        k <- match(shiftClickNode[,"nodeID"], netComponents[["vertex"]][,"id"])
+        # Generate a list of row indices by database variable
+        v <- split(k, netComponents[["vertex"]][k,"dbVar"])
+        # Identify selected concept nodes and place database IDs in query instruction
+        k <- which(names(v)=="conceptID")
+        if(length(k)>0) {
+          query <- list("conceptID"=netComponents[["vertex"]][v[[k]],"dbValue"])
+        } else {
+          # Retain current value, since no concept nodes were selected
+          query <- list("conceptID"=conceptStack[csPtr,"sctid"]) 
+        }
+        # Construct vectors of DB values to filter, by variable
+        # Exclude concepts, since they are being expanded
+        # Package as a graphCfg filter list
+        if(length(v)>1 | length(k)==0) {
+          filter <- lapply(setdiff(1:length(v), k), function(i) unique(netComponents[["vertex"]][v[[i]],"dbValue"]))
+          # Apply DB var names
+          names(filter) <- names(v)[setdiff(1:length(v), k)]
+        } else {
+          filter <- NULL
+        }
+        # Push a new graph cfg with query and filter instructions
+        graphCfgOp(op="add", query=query, filter=filter, filterMode="expand")
+        # Requery observations
+        netData <<- queryNetworkData()
+        if(nrow(netData)>0) {
+          # Render graph
+          netComponents <<- assembleNetworkComponents()
+          if(nrow(netComponents[["vertex"]])>0) {
+            updateRadioButtons(session, "physics", selected=T)
+            output$g1 <- renderVisNetwork(composeNetwork(netComponents))
+            #output$gTable <- DT::renderDataTable(composeGraphTable())
+            #updateTextInput(session=session, inputId="reactiveInst", value="physicsOff")
+            updateRadioButtons(session=session, inputId="physics", selected=F)
+          } else {
+            output$g1 <- NULL
+            #output$gTable <- NULL
+          }
+        } else {
+          output$g1 <- NULL
+          #output$gTable <- NULL
+        }
+        # Clear selected node indices
+        shiftClickNode <<- shiftClickNode[F,]
+      }
+
     }, ignoreInit=T)
 
     ##########################################################################################################

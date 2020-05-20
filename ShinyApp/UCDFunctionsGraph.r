@@ -6,12 +6,17 @@
 ##########################################################################################################
 # Function to assemble network using current graph configuration
 # Result is a list containing two data frames named "vertex" and "edge"
+# Vertices are limited to those with at least one edge to another vertex
 ##########################################################################################################
 
 assembleNetworkComponents <- function() {
 
-  # Note the use of the global data frame netData as the source of observations
   if(nrow(netData)>0) {
+
+    print("assemble.graphCfg.query:")
+    print(graphCfg[[gcPtr]][["query"]])
+    print("assemble.graphCfg.filter:")
+    print(graphCfg[[gcPtr]][["filter"]])
 
     # Make a local copy of the variable connection list, since it may be modified here
     gconn <- graphCfg[[gcPtr]][["connect"]]
@@ -49,10 +54,45 @@ assembleNetworkComponents <- function() {
                                        "elabVar"=NA,
                                        "accMethod"="PID"))
         # Include combined levels in observation data
-        if(!vID %in% colnames(netData))
-          netData[vID] <- apply(as.matrix(netData[,inx1]), 1, function(x) paste(x, collapse=" -X- ", sep=""))
+        # Note that a local copy of netData is made
+        netData[,vID] <- apply(as.matrix(netData[,inx1]), 1, function(x) paste(x, collapse=" -X- ", sep=""))
         # Append connection vector to the connection list
         gconn[[vID]] <- inx2
+      }
+    }
+
+    # Filter vertices
+    # This is executed after interaction variables are constructed, in case filters for interactions are specified
+    # The intersection of rows satisfying individual variable filters is used to construct the filtered data set
+    # If no filters specified then no filtering is done
+    # Note the creation of a local copy of netData
+    if(!is.null(graphCfg[[gcPtr]][["filterMode"]])) {
+      if(graphCfg[[gcPtr]][["filterMode"]] %in% c("filter", "nbhood1", "expand")) {
+        filter <- graphCfg[[gcPtr]][["filter"]]
+        if(!is.null(filter)) {
+          k <- 1:nrow(netData)
+          for(i in 1:length(filter))
+            k <- intersect(k, which(netData[,names(filter)[i]] %in% filter[[i]]))
+          netData <- netData[k,]
+        }
+      # Nearest node neighborhood is accomplished by filtering nodes then selecting connection vars
+      # } else if(graphCfg[[gcPtr]][["filterMode"]]=="nbhood1") {
+        # filter <- graphCfg[[gcPtr]][["filter"]]
+        # if(!is.null(filter)) {
+          # k <- 1:nrow(netData)
+          # for(i in 1:length(filter)) {
+            # # Index rows in filter set
+            # k2 <- which(netData[,names(filter)[i]] %in% filter[[i]])
+            # # Enable connections to alternate variable on rows of filter set
+            # for(i in k2) {
+              # j <- which(
+              # gconn
+            # k <- intersect(k, )
+          # # Enable connections to variables on subset rows
+          # for(i in k) {
+            
+          # netData <- netData[k,]
+        # }
       }
     }
 
@@ -95,20 +135,24 @@ assembleNetworkComponents <- function() {
       # Compose ordered vector of unique indices into vcfg for node construction
       kvar <- sort(unique(c(vpair[,1], vpair[,2])))
 
-      # Tabulate vertices
-      # The resulting list has one element per variable defined in vpair
+      # Tabulate results for each level of each variable in the pair matrix
+      # The result is a data frame with one row per variable
       # If accMethod is unrecognized then frequencies for unique values of a variable are accumulated
       vdat <- do.call(rbind,
+                # Iterate through each variable (i indexes var in vcfg)
                 lapply(kvar,
                   function(i)
-                    setNames(aggregate(1:nrow(netData), by=list(rep(i, nrow(netData)), netData[,vcfg[i,"vID"]],
-                                                                netData[,vcfg[i,"dbID"]]),
+                    setNames(
+                      # Aggregate row counts by variable and level
+                      # Include the level (lab) and DB ID (value) for the level
+                      aggregate(1:nrow(netData), by=list(rep(i, nrow(netData)), netData[,vcfg[i,"vID"]],
+                                                         netData[,vcfg[i,"dbID"]]),
                                function(k)
                                  if(tolower(vcfg[i,"accMethod"]) %in% c("pid", "v1pidv2nen", "v1pidv2piden")) {
                                    length(unique(netData[k,"participantID"]))
                                  } else {
                                    length
-                                 }), c("vi", "lab", "dbID", "n"))))
+                                 }), c("vi", "lab", "dbValue", "n"))))
 
       # Tabulate edges, one edge for each combination of levels of node variables
       # The resulting list has one element per pair of variables defined in vpair
@@ -146,29 +190,35 @@ assembleNetworkComponents <- function() {
 
         # Compose vertex definitions for those that remain in edge relationships
         vertex <- do.call(rbind,
+                    # Iterate through each variable to be represented by a vertex
                     lapply(kvar,
                       function(k) {
+                        # Index aggregated vertex data for levels with edges
                         kv <- which(vdat[,"vi"]==k &
                                     vdat[,"lab"] %in% c(edat[which(edat[,"vpairi"]==k),"v1"],
-                                                        edat[which(edat[,"vpairj"]==k),"v2"])) 
+                                                        edat[which(edat[,"vpairj"]==k),"v2"]))
+                        # Compose a vertex for each level
                         data.frame("vi"=k,
                                    "fixed"=F,
                                    "label"=vdat[kv,"lab"],
                                    "color"=vcfg[k,"vColor"],
                                    "font"=list("color"=vcfg[k,"tColor"],
                                                "size"=vcfg[k,"tSize"],
+                                               "vadjust"=-10,
+                                               #"align"="left",
                                                "strokeWidth"=1,
                                                "strokeColor"=ifelse(vcfg[k,"tColor"]<"#CCCCCC", fsc1, "#404040")),
                                    "value"=vdat[kv,"n"],
                                    "mass"=graphCfg[[gcPtr]][["vmassf"]]*(5+vdat[kv,"n"]),
                                    "title"=paste(vdat[kv,"lab"], "; n = ", vdat[kv,"n"], sep=""),
                                    # Identify the variable class that a node belongs to
-                                   # This is used, later, during node subsetting and expanding (to further query observations)
                                    "varClass"=vcfg[k,"cID"],
                                    # Groups are used to identify a collection of nodes
                                    # These will also appear in the legend, so use verbose descriptors 
                                    "group"=vcfg[k,"mID"],
-                                   "dbID"=vdat[kv,"dbID"])
+                                   # Identify database variable and value for relating a node with its data source
+                                   "dbVar"=vcfg[k,"dbID"],
+                                   "dbValue"=vdat[kv,"dbValue"])
                       }))
         vertex[,"id"] <- 1:nrow(vertex)
 
@@ -232,10 +282,42 @@ assembleNetworkComponents <- function() {
 composeNetwork <- function(netComponents) {
 
   # Parameters:
-  # netComponents ..... list with "vertex" and "edge" elements, data frames containing vertex and edge
-  #                     configurations in visNetwork format
-print("KKKKKKKKKKKKKKKKKKKKKKKKKKKK")
-print(graphCfg[[gcPtr]][["vcfg"]])
+  # netComponents ... List with two elements:
+  #                   "vertex" ..... data frame of visNetwork formatted vertices
+  #                   "edge" ....... data frame of visNetwork formatted edges
+
+  # Subnet vertices, if configured
+  # This method employs visNetwork controls, but vertex states are not retained during node
+  # expansion and return to parent operations
+  # This section retained for reference
+  #  if(!is.null(graphCfg[[gcPtr]][["subnet"]])) {
+  #    # Retrieve node indices (rows of vertex data frame)
+  #    kv <- graphCfg[[gcPtr]][["subnet"]][["nodeID"]][,"nodeID"]
+  #    if(length(kv)>0)
+  #      # Evaluate subnet mode and execute
+  #      if(graphCfg[[gcPtr]][["subnet"]][["mode"]]=="subnet") {
+  #        # Hide all vertices then make selected vertices visible
+  #        vertex[,"hidden"] <- T
+  #        vertex[kv,"hidden"] <- F
+  #        vertex[,"physics"] <- F
+  #        vertex[kv,"physics"] <- T
+  #        # Identify all edges that connect selected vertices
+  #        # From and to indicate node IDs (vertex row positions)
+  #        # Identify edges between selected nodes
+  #        edge <- edge[which(edge[,"from"] %in% kv & edge[,"to"] %in% kv),]
+  #      } else if(graphCfg[[gcPtr]][["subnet"]][["mode"]]=="nbhood1") {
+  #        # Identify edges that connect selected vertices
+  #        edge <- edge[which(edge[,"from"] %in% kv | edge[,"to"] %in% kv),]
+  #        # Include all vertices on either end of a selected edge
+  #        kv <- which(vertex[,"id"] %in% unique(c(edge[,"from"], edge[,"to"])))
+  #        # Hide all vertices then make selected vertices visible
+  #        vertex[,"hidden"] <- T
+  #        vertex[kv,"hidden"] <- F
+  #        vertex[,"physics"] <- F
+  #        vertex[kv,"physics"] <- T
+  #      }
+  #  }
+
   # Compose legend text and color vectors
   # Color parameters affect legend appearance and should agree with groups specified in netComponents
   legendText <- graphCfg[[gcPtr]][["vcfg"]][unique(netComponents[["vertex"]][,"vi"]),"mID"]
@@ -254,6 +336,7 @@ print(graphCfg[[gcPtr]][["vcfg"]])
     visLayout(randomSeed=1) %>%
     visLegend(useGroups=T, position="right", width=0.1, zoom=F) %>%
     visOptions(highlightNearest=list("enabled"=T, degree=graphCfg[[gcPtr]][["nearestHighlightDeg"]], "hover"=T),
+               # Include node selection controls
                #nodesIdSelection=T, selectedBy=list(variable="group", multiple=T),
                collapse=T) %>%
     visInteraction(hover=T, hoverConnectedEdges=T, navigationButtons=F) %>%
