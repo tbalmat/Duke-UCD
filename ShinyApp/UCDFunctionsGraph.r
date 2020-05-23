@@ -13,10 +13,11 @@ assembleNetworkComponents <- function() {
 
   if(nrow(netData)>0) {
 
-    print("assemble.graphCfg.query:")
+    print("assemble.graphCfg")
+    print("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
     print(graphCfg[[gcPtr]][["query"]])
-    print("assemble.graphCfg.filter:")
     print(graphCfg[[gcPtr]][["filter"]])
+    print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
 
     # Make a local copy of the variable connection list, since it may be modified here
     gconn <- graphCfg[[gcPtr]][["connect"]]
@@ -72,7 +73,30 @@ assembleNetworkComponents <- function() {
         if(!is.null(filter)) {
           k <- 1:nrow(netData)
           for(i in 1:length(filter))
-            k <- intersect(k, which(netData[,names(filter)[i]] %in% filter[[i]]))
+            # Filter database variables specified in filter (treat rxName separately)
+            if(names(filter)[i]!="rxName") {
+              k <- intersect(k, which(netData[,names(filter)[i]] %in% filter[[i]]))
+            } else {
+              # Filter RX names using supplied leading characters
+              # Applies only if Rx nodes in current graph
+              if("Rx" %in% c(unlist(graphCfg[[gcPtr]][["connect"]][which(names(graphCfg[[gcPtr]][["connect"]])!="Rx")]),
+                             unlist(graphCfg[[gcPtr]][["interact"]])) &
+                 nchar(filter[[i]])>0) {
+                # Adjust Rx variable based on subsume setting
+                if(graphCfg[[gcPtr]][["connect"]][["rxSubsume"]]) {
+                  rv <- "rxSubsName"
+                } else {
+                  rv <- "rxName"
+                }
+                k2 <- vector("integer")
+                # Parse leading character strings (comma separated)
+                # Retain the union of record indices satisfying each leading character comparison
+                for(a in strsplit(filter[[i]], ",")[[1]])
+                  k2 <- union(k2, which(tolower(substring(netData[,rv], 1, nchar(a)))==a))
+                # Retain indices that satisfy previous filter constraints and union of Rx char constraints
+                k <- intersect(k, k2)
+              }
+            }
           netData <- netData[k,]
         }
       # Nearest node neighborhood is accomplished by filtering nodes then selecting connection vars
@@ -134,7 +158,6 @@ assembleNetworkComponents <- function() {
 
       # Compose ordered vector of unique indices into vcfg for node construction
       kvar <- sort(unique(c(vpair[,1], vpair[,2])))
-
       # Tabulate results for each level of each variable in the pair matrix
       # The result is a data frame with one row per variable
       # If accMethod is unrecognized then frequencies for unique values of a variable are accumulated
@@ -145,7 +168,8 @@ assembleNetworkComponents <- function() {
                     setNames(
                       # Aggregate row counts by variable and level
                       # Include the level (lab) and DB ID (value) for the level
-                      aggregate(1:nrow(netData), by=list(rep(i, nrow(netData)), netData[,vcfg[i,"vID"]],
+                      aggregate(1:nrow(netData), by=list(rep(i, nrow(netData)),
+                                                         netData[,vcfg[i,"vID"]],
                                                          netData[,vcfg[i,"dbID"]]),
                                function(k)
                                  if(tolower(vcfg[i,"accMethod"]) %in% c("pid", "v1pidv2nen", "v1pidv2piden")) {

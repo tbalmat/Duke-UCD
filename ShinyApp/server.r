@@ -281,6 +281,11 @@ shinyServer(
           } else {
             updateCheckboxGroupInput(session, v[i,"scr"], selected=character())
           }
+        if(length(which(names(graphCfg[[gcPtr]][["filter"]])=="rxName")>0)) {
+          updateTextInput(session, "rxLeadCharFilt", value=graphCfg[[gcPtr]][["filter"]][["rxName"]])
+        } else {
+          updateTextInput(session, "rxLeadCharFilt", value=NA)
+        }
 
       } else if(op=="vcfg" & gcPtr>0) {
 
@@ -482,7 +487,7 @@ shinyServer(
     # Triggered by java script contained in the click element of the visEvents parameter of the graph
     # rendered by composeNetwork()
     # Verify that a vertex has been clicked (input$shiftClick[["nodes"]] length one or greater)
-    # Save node refrence in shift-click table
+    # Include or remove node from current selection table
     ##########################################################################################################
 
     observeEvent(input$shiftClick, {
@@ -492,10 +497,18 @@ shinyServer(
       if(length(v)>0) {
         v0 <- v[[1]][1]
         print(v0)
-        # Record node's row position and current color in vertex data frame
-        shiftClickNode[nrow(shiftClickNode)+1,] <<- c(v0, netComponents[["vertex"]][v0,"color"])
-        # Color selected vertex
-        visUpdateNodes(visNetworkProxy("g1"), nodes=data.frame("id"=netComponents[["vertex"]][v0,"id"], "color"=shiftClickColor))
+        # Determine whether node is to be included or removed from selection table
+        k <- which(shiftClickNode[,"nodeID"]==v0)
+        if(length(k)>0) {
+          # Node exists in table, so recolor then remove it from table
+          visUpdateNodes(visNetworkProxy("g1"), nodes=data.frame("id"=netComponents[["vertex"]][v0,"id"], "color"=shiftClickNode[k,"color"]))
+          shiftClickNode <<- shiftClickNode[-k,]
+        } else {
+          # Record node's row position and current color in vertex data frame
+          shiftClickNode[nrow(shiftClickNode)+1,] <<- c(v0, netComponents[["vertex"]][v0,"color"])
+          # Apply selection color to node
+          visUpdateNodes(visNetworkProxy("g1"), nodes=data.frame("id"=netComponents[["vertex"]][v0,"id"], "color"=shiftClickColor))
+        }
       }
     }, ignoreInit=T)
 
@@ -503,25 +516,14 @@ shinyServer(
     # Vertex alt-click event
     # Triggered by java script contained in the click element of the visEvents parameter of the graph
     # rendered by composeNetwork()
-    # Verify that a vertex has been clicked (input$altClick[["nodes"]] length one or greater)
-    # Remove selected node from shift-click vector, if present
     ##########################################################################################################
 
     observeEvent(input$altClick, {
       print("altClick")
       # Identify selected vertex
       v <- input$altClick[["nodes"]]
-      if(length(v)>0) {
-        v0 <- v[[1]][1]
-        print(v0)
-        # Index node in shift-click table
-        k <- which(shiftClickNode[,"nodeID"]==v0)
-        if(length(k)>0) {
-          # Recolor selected vertex
-          visUpdateNodes(visNetworkProxy("g1"), nodes=data.frame("id"=netComponents[["vertex"]][v0,"id"], "color"=shiftClickNode[k,"color"]))
-          shiftClickNode <<- shiftClickNode[-k,]
-        }
-      }
+      if(length(v)>0)
+        print(v[[1]][1])
     }, ignoreInit=T)
 
     ##########################################################################################################
@@ -561,21 +563,52 @@ shinyServer(
     # Create a vertex filter list for subsetting
     ##########################################################################################################
 
-    subsetNodeFilterCompose <- function(nodeID) {
+    subsetNodeFilterCompose <- function(nodeID, rxLeadCharFilt) {
 
       # Parameters:
-      # nodeID ..... Vector of node IDs (from netComponents[["vertex"]]) to be treated
+      # nodeID ........... Vector of node IDs (from netComponents[["vertex"]]) to be treated
+      # rxLeadCharFilt ... String of comma separated leading characters to use as rx name filters (composite OR)
 
-      # Generate vertex row indices for specified nodes
-      k <- match(nodeID, netComponents[["vertex"]][,"id"])
-      # Generate a list of row indices by database variable
-      v <- split(k, netComponents[["vertex"]][k,"dbVar"])
-      # Construct vectors of DB values to filter, by variable
-      # Package as a graphCfg filter list
-      x <- lapply(1:length(v), function(i) unique(netComponents[["vertex"]][v[[i]],"dbValue"]))
-      # Apply DB variable names
-      names(x) <- names(v)
-      return(x)
+      # Include nodes
+      if(length(nodeID)>0) {
+        # Generate vertex row indices for specified nodes
+        k <- match(nodeID, netComponents[["vertex"]][,"id"])
+        # Generate a list of row indices by database variable
+        v <- split(k, netComponents[["vertex"]][k,"dbVar"])
+        # Construct vectors of DB values to filter, by variable
+        # Package as a graphCfg filter list
+        filter <- lapply(1:length(v), function(i) unique(netComponents[["vertex"]][v[[i]],"dbValue"]))
+        # Apply DB variable names
+        names(filter) <- names(v)
+        # Retain current filter specifications for variables not represented in selected nodes
+        if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
+          # Index current filter elements not in selected node variables
+          k <- which(!names(graphCfg[[gcPtr]][["filter"]]) %in% names(v))
+          if(length(k)>0)
+            filter <- c(filter, graphCfg[[gcPtr]][["filter"]][k])
+        }
+      } else {
+        filter <- NULL
+      }
+
+      # Include filter for leading RX chars if specified
+      if(nchar(gsub(" ", "", rxLeadCharFilt))>0)
+        if(!is.null(filter)) {
+          # Nodes have been selected
+          # Include RX patterns
+          filter[["rxName"]] <- tolower(gsub(" ", "", rxLeadCharFilt))
+        } else {
+          # No selection of nodes
+          # Retain current filter and replace (include) RX patterns
+          if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
+            filter <- graphCfg[[gcPtr]][["filter"]]
+            filter[["rxName"]] <- tolower(gsub(" ", "", rxLeadCharFilt))
+          } else {
+            filter <- list("rxName"=tolower(gsub(" ", "", rxLeadCharFilt)))
+          }
+        }
+
+      return(filter)
 
     }
 
@@ -588,13 +621,13 @@ shinyServer(
     observeEvent(input$nodeSubnet, {
       print("nodeSubnet")
       # shiftClickNode data frame contains IDs (row positions in vertex DF) of selected nodes
-      if(nrow(shiftClickNode)>0) {
+      if(nrow(shiftClickNode)>0 | nchar(gsub(" ", "", input$rxLeadCharFilt))>0) {
         # Push a new graph cfg with additional filter for selected nodes
         # Retain current query filter because it is not changing
         graphCfgOp(op="add",
                    query=graphCfg[[gcPtr]][["query"]],
                    # Include filter list
-                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"]),
+                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"], input$rxLeadCharFilt),
                    filterMode="filter")
         # Render graph
         netComponents <<- assembleNetworkComponents()
@@ -623,14 +656,14 @@ shinyServer(
 
       print("nodeNeighborhood1")
       # shiftClickNode data frame contains IDs (row positions in vertex DF) of selected nodes
-      if(nrow(shiftClickNode)>0) {
+      if(nrow(shiftClickNode)>0 | nchar(gsub(" ", "", input$rxLeadCharFilt))>0) {
         #print(shiftClickNode)
         # Push a new graph cfg with additional filter for selected nodes
         # Retain current query filter because it is not changing
         graphCfgOp(op="add",
                    query=graphCfg[[gcPtr]][["query"]],
                    # Include filter list
-                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"]),
+                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"], input$rxLeadCharFilt),
                    filterMode="nbhood1")
         # Render graph
         netComponents <<- assembleNetworkComponents()
@@ -660,9 +693,11 @@ shinyServer(
     observeEvent(input$nodeExpand, {
 
       print("nodeExpand")
-      if(nrow(shiftClickNode)>0) {
-        #print(shiftClickNode)
+      #print(shiftClickNode)
 
+      # Construct vectors of DB values for querying (concepts) and filtering (concepts or other variables)
+      # Package as graphCfg query and filter lists
+      if(nrow(shiftClickNode)>0) {
         # Configure query and filter instructions
         # Generate vertex row indices for selected nodes
         k <- match(shiftClickNode[,"nodeID"], netComponents[["vertex"]][,"id"])
@@ -671,22 +706,95 @@ shinyServer(
         # Identify selected concept nodes and place database IDs in query instruction
         k <- which(names(v)=="conceptID")
         if(length(k)>0) {
+          # Concept selected - save it
           query <- list("conceptID"=netComponents[["vertex"]][v[[k]],"dbValue"])
+          if(length(v)>1) {
+            # Non-concepts also selected - compose filter form those variables, omitting concepts
+            filter <- lapply(setdiff(1:length(v), k), function(i) unique(netComponents[["vertex"]][v[[i]],"dbValue"]))
+            names(filter) <- names(v)[setdiff(1:length(v), k)]
+          } else if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
+            # Only concept selected and current filter exists - retain filter, excluding concept, if present 
+            k2 <- which(names(graphCfg[[gcPtr]][["filter"]])=="conceptID")
+            if(length(k2)>0) {
+              if(length(graphCfg[[gcPtr]][["filter"]])>1) {
+                # Elements exist in addition to concept - keep only them
+                filter <- graphCfg[[gcPtr]][["filter"]][setdiff(1:length(graphCfg[[gcPtr]][["filter"]]), k2)]
+              } else {
+                # Concept is the only element of current filter - omit it
+                filter <- NULL
+              }
+            } else {
+              # Concept not specified in current filter - retain entire filter (may be null)
+              filter <- graphCfg[[gcPtr]][["filter"]]
+            }
+          } else {
+            filter <- NULL
+          }
         } else {
-          # Retain current value, since no concept nodes were selected
-          query <- list("conceptID"=conceptStack[csPtr,"sctid"]) 
+          # Concept node not selected - must have been non-concepts
+          # NULL query instructs to use currently specified (on-screen) concept
+          query <- NULL
+          # Compose filter from selected nodes
+          filter <- lapply(v, function(k) unique(netComponents[["vertex"]][k,"dbValue"]))
+          names(filter) <- names(v)
+          # Retain current concept filter, if specified
+          if("conceptID" %in% names(graphCfg[[gcPtr]][["filter"]]))
+            filter[["conceptID"]] <- graphCfg[[gcPtr]][["filter"]][["conceptID"]]
         }
-        # Construct vectors of DB values to filter, by variable
-        # Exclude concepts, since they are being expanded
-        # Package as a graphCfg filter list
-        if(length(v)>1 | length(k)==0) {
-          filter <- lapply(setdiff(1:length(v), k), function(i) unique(netComponents[["vertex"]][v[[i]],"dbValue"]))
-          # Apply DB var names
-          names(filter) <- names(v)[setdiff(1:length(v), k)]
+      } else {
+        query <- NULL
+        filter <- NULL
+      }
+
+        # # Construct vectors of DB values to filter, by variable
+        # # Package as a graphCfg filter list
+        # if(length(v)>1 & length(k)==1) {
+          # # Nodes in addition to concepts selected
+          # # Include filters for all but concepts, since they are being expanded
+          # filter <- lapply(setdiff(1:length(v), k), function(i) unique(netComponents[["vertex"]][v[[i]],"dbValue"]))
+          # names(filter) <- names(v)[setdiff(1:length(v), k)]
+        # } else if(length(v)==1 & length(k)==1) {
+          # # Only concept nodes selected
+          # if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
+            # # Maintain current filters, excluding those for concepts, since they are being expanded
+            # nm <- names(graphCfg[[gcPtr]][["filter"]])
+            # k2 <- which(nm=="conceptID")
+            # if(length(k2)>0 and length(nm)>1) {
+              # graphCfg[[gcPtr]][["filter"]] <- graphCfg[[gcPtr]][["filter"]][setdiff(1:length(nm), nm)]
+            # } else {
+            # k2 <- which(=="conceptID")
+            # filter <- NULL
+          # } else {
+            # filter <- NULL
+          # }
+        # }
+      # } else {
+        # query <- NULL
+        # filter <- NULL
+      # }
+
+      # Include filter for leading RX chars if specified
+      if(nchar(gsub(" ", "", input$rxLeadCharFilt))>0)
+        if(!is.null(filter)) {
+          # Nodes have been selected
+          # Include RX patterns
+          filter[["rxName"]] <- tolower(gsub(" ", "", input$rxLeadCharFilt))
         } else {
-          filter <- NULL
+          # No selection of nodes
+          # Retain current filter and replace (include) RX patterns
+          if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
+            filter <- graphCfg[[gcPtr]][["filter"]]
+            filter[["rxName"]] <- tolower(gsub(" ", "", input$rxLeadCharFilt))
+          } else {
+            filter <- list("rxName"=tolower(gsub(" ", "", input$rxLeadCharFilt)))
+          }
         }
+
+      if(!is.null(query) | !is.null(filter)) {
         # Push a new graph cfg with query and filter instructions
+        # Retain current value, since no concept nodes were selected
+        if(is.null(query))
+          query <- list("conceptID"=conceptStack[csPtr,"sctid"]) 
         graphCfgOp(op="add", query=query, filter=filter, filterMode="expand")
         # Requery observations
         netData <<- queryNetworkData()

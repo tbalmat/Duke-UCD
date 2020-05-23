@@ -24,16 +24,16 @@ queryISAConcept <- function(sctid, filterOpt=NA) {
 
     # Filter concepts, if requested
     # This, global, approach should be refined based on some sort of user-defined filtering
-    # if(ifelse(!is.na(filterOpt), filterOpt=="1", F)) {
-      # k <- which(conceptList[,"FSN"] %in% c("Clinical finding (finding)",
-                                            # "Disease (disorder)",
-                                            # "Mental disorder (disorder)",
-                                            # "Neurological finding (finding)",
-                                            # "Metabolic disease (disorder)",
-                                            # "Motor nervous system finding (finding)",
-                                            # "Disorder of nervous system (disorder)"))
-      # conceptList <- conceptList[k,]
-    # }
+    if(ifelse(!is.na(filterOpt), filterOpt=="1", F)) {
+      k <- which(conceptList[,"FSN"] %in% c("Clinical finding (finding)",
+                                            "Disease (disorder)",
+                                            "Mental disorder (disorder)",
+                                            "Neurological finding (finding)",
+                                            "Metabolic disease (disorder)",
+                                            "Motor nervous system finding (finding)",
+                                            "Disorder of nervous system (disorder)"))
+      conceptList <- conceptList[k,]
+    }
   } else {
 
     query <- "match(x) where x.FSN contains 'SNOMED CT Concept' and x.active='1'

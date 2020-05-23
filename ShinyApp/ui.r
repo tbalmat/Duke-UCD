@@ -153,7 +153,7 @@ shinyUI(
 
       ),
 
-      # Variable interaction (combinitaion) prompts
+      # Variable interaction (combination) prompts
       fluidRow(
 
         column(width=5,
@@ -251,6 +251,15 @@ shinyUI(
                   ),
                   style="margin-top:10px"
                 )
+              )
+            )
+          ),
+
+          # Rx leading character filter
+          fluidRow(width=10,
+            column(width=4,
+              sidebarPanel(width=11,
+                textInput("rxLeadCharFilt", "RX leading character filter (comma separated values)")
               )
             )
           ),
