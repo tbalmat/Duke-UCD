@@ -15,8 +15,10 @@ assembleNetworkComponents <- function() {
 
     print("assemble.graphCfg")
     print("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
+    print(graphCfg[[gcPtr]][["connect"]])
     print(graphCfg[[gcPtr]][["query"]])
     print(graphCfg[[gcPtr]][["filter"]])
+    print(graphCfg[[gcPtr]][["rxLeadCharFilter"]])
     print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
 
     # Make a local copy of the variable connection list, since it may be modified here
@@ -62,62 +64,44 @@ assembleNetworkComponents <- function() {
       }
     }
 
-    # Filter vertices
+    # Filter vertices by node selection
     # This is executed after interaction variables are constructed, in case filters for interactions are specified
     # The intersection of rows satisfying individual variable filters is used to construct the filtered data set
     # If no filters specified then no filtering is done
     # Note the creation of a local copy of netData
-    if(!is.null(graphCfg[[gcPtr]][["filterMode"]])) {
+    if(!is.null(graphCfg[[gcPtr]][["filterMode"]]))
       if(graphCfg[[gcPtr]][["filterMode"]] %in% c("filter", "nbhood1", "expand")) {
         filter <- graphCfg[[gcPtr]][["filter"]]
         if(!is.null(filter)) {
           k <- 1:nrow(netData)
+          # Sequentially intersect observation indices using database variables and values specified in filter
           for(i in 1:length(filter))
-            # Filter database variables specified in filter (treat rxName separately)
-            if(names(filter)[i]!="rxName") {
-              k <- intersect(k, which(netData[,names(filter)[i]] %in% filter[[i]]))
-            } else {
-              # Filter RX names using supplied leading characters
-              # Applies only if Rx nodes in current graph
-              if("Rx" %in% c(unlist(graphCfg[[gcPtr]][["connect"]][which(names(graphCfg[[gcPtr]][["connect"]])!="Rx")]),
-                             unlist(graphCfg[[gcPtr]][["interact"]])) &
-                 nchar(filter[[i]])>0) {
-                # Adjust Rx variable based on subsume setting
-                if(graphCfg[[gcPtr]][["connect"]][["rxSubsume"]]) {
-                  rv <- "rxSubsName"
-                } else {
-                  rv <- "rxName"
-                }
-                k2 <- vector("integer")
-                # Parse leading character strings (comma separated)
-                # Retain the union of record indices satisfying each leading character comparison
-                for(a in strsplit(filter[[i]], ",")[[1]])
-                  k2 <- union(k2, which(tolower(substring(netData[,rv], 1, nchar(a)))==a))
-                # Retain indices that satisfy previous filter constraints and union of Rx char constraints
-                k <- intersect(k, k2)
-              }
-            }
+            k <- intersect(k, which(netData[,names(filter)[i]] %in% filter[[i]]))
+          # Subset to specified observations
           netData <- netData[k,]
+          rownames(netData) <- NULL
         }
-      # Nearest node neighborhood is accomplished by filtering nodes then selecting connection vars
-      # } else if(graphCfg[[gcPtr]][["filterMode"]]=="nbhood1") {
-        # filter <- graphCfg[[gcPtr]][["filter"]]
-        # if(!is.null(filter)) {
-          # k <- 1:nrow(netData)
-          # for(i in 1:length(filter)) {
-            # # Index rows in filter set
-            # k2 <- which(netData[,names(filter)[i]] %in% filter[[i]])
-            # # Enable connections to alternate variable on rows of filter set
-            # for(i in k2) {
-              # j <- which(
-              # gconn
-            # k <- intersect(k, )
-          # # Enable connections to variables on subset rows
-          # for(i in k) {
-            
-          # netData <- netData[k,]
-        # }
       }
+    # Filter vertices by Rx leading character patterns
+    # Note, again the creation or replacement of a local copy of netData
+    # Apply only if Rx nodes specified in current graph
+    if(nchar(graphCfg[[gcPtr]][["rxLeadCharFilter"]])>0 &
+       ("Rx" %in% c(unlist(gconn[which(names(gconn)!="rxSubsume")]), unlist(graphCfg[[gcPtr]][["interact"]])) |
+        length(gconn[["Rx"]])>0)) {
+      # Adjust Rx variable based on subsume setting
+      if(graphCfg[[gcPtr]][["connect"]][["rxSubsume"]]) {
+        rv <- "rxSubsName"
+      } else {
+        rv <- "rxName"
+      }
+      k <- vector("integer")
+      # Parse leading character strings (comma separated)
+      # Retain the union of record indices satisfying each leading character comparison
+      for(a in strsplit(graphCfg[[gcPtr]][["rxLeadCharFilter"]], ",")[[1]])
+        k <- union(k, which(tolower(substring(netData[,rv], 1, nchar(a)))==a))
+      # Subset to specified observations
+      netData <- netData[k,]
+      rownames(netData) <- NULL
     }
 
     # Assemble pairs of node variable indices to be graphed
@@ -132,7 +116,7 @@ assembleNetworkComponents <- function() {
                      return(list())
                    }))
 
-    if(ncol(vpair)>0) {
+    if(nrow(netData)>0 & ncol(vpair)>0) {
 
       # Reconfigure contextual vertex and edge properties
       if(graphCfg[[gcPtr]][["connect"]][["rxSubsume"]]) {
@@ -357,7 +341,7 @@ composeNetwork <- function(netComponents) {
 
   # Apply visualization features
   g <- g %>%
-    visLayout(randomSeed=1) %>%
+    visLayout(randomSeed=1, hierarchical=F) %>%
     visLegend(useGroups=T, position="right", width=0.1, zoom=F) %>%
     visOptions(highlightNearest=list("enabled"=T, degree=graphCfg[[gcPtr]][["nearestHighlightDeg"]], "hover"=T),
                # Include node selection controls

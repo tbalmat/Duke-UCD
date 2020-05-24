@@ -207,7 +207,9 @@ shinyUI(
             sliderInput("vMassFactor", "Vertex mass factor", min=0, max=2, value=0.25, step=0.05),
             sliderInput("vSizeFactor", "Vertex size factor", min=0, max=0.5, step=0.01, value=0.25),
             sliderInput("vFontSize", "Vertex label font size", min=6, max=36, value=16, step=1),
-            sliderInput("nearestHighlightDeg", "Node nearest highlight degree", min=0, max=10, value=1, step=1)
+            sliderInput("nearestHighlightDeg", "Node nearest highlight degree", min=0, max=10, value=1, step=1),
+            sliderInput("renderFixedxScale", "Render fixed x scale (x 100)", min=0, max=10, value=0.5, step=0.5),
+            sliderInput("renderFixedyScale", "Render fixed y scale (x 100)", min=0, max=10, value=0.5, step=0.5)
           )
         ),
 
@@ -247,7 +249,11 @@ shinyUI(
                 ),
                 fluidRow(
                   div(
-                    column(width=4, actionButton("restoreEdgesPostMove", "redraw edges"))
+                    column(width=12,
+                      div(actionButton("restoreEdgesPostMove", "redraw edges"), style="display:inline-block;vertical-align:top"),
+                      div(actionButton("renderFixed", "render fixed"), style="display:inline-block;vertical-align:top"),
+                      div(actionButton("renderFree", "render free"), style="display:inline-block;vertical-align:top")
+                    )
                   ),
                   style="margin-top:10px"
                 )
@@ -259,7 +265,7 @@ shinyUI(
           fluidRow(width=10,
             column(width=4,
               sidebarPanel(width=11,
-                textInput("rxLeadCharFilt", "RX leading character filter (comma separated values)")
+                textInput("rxLeadCharFilter", "Rx leading character filter (comma separated values)")
               )
             )
           ),

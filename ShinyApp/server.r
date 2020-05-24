@@ -203,6 +203,7 @@ shinyServer(
         gcfg <- list("query"=query,
                      "filter"=filter,
                      "filterMode"=filterMode,
+                     "rxLeadCharFilter"=tolower(gsub(" ", "", input$rxLeadCharFilter)),
                      "connect"=list("UCDProxDist"=input$cnUCDProxDist,
                                     "Sex"=input$cnSex,
                                     "UCDDx"=input$cnUCDDx,
@@ -281,10 +282,10 @@ shinyServer(
           } else {
             updateCheckboxGroupInput(session, v[i,"scr"], selected=character())
           }
-        if(length(which(names(graphCfg[[gcPtr]][["filter"]])=="rxName")>0)) {
-          updateTextInput(session, "rxLeadCharFilt", value=graphCfg[[gcPtr]][["filter"]][["rxName"]])
+        if(nchar(graphCfg[[gcPtr]][["rxLeadCharFilter"]])>0) {
+          updateTextInput(session, "rxLeadCharFilter", value=graphCfg[[gcPtr]][["rxLeadCharFilter"]])
         } else {
-          updateTextInput(session, "rxLeadCharFilt", value=NA)
+          updateTextInput(session, "rxLeadCharFilter", value=NA)
         }
 
       } else if(op=="vcfg" & gcPtr>0) {
@@ -434,6 +435,46 @@ shinyServer(
     }, ignoreInit=T)
 
     ##########################################################################################################
+    # Render with fixed coordinates
+    ##########################################################################################################
+
+    observeEvent(c(input$renderFixed, input$renderFixedxScale, input$renderFixedyScale), {
+      print("renderFixed")
+      if(nrow(netComponents[["vertex"]])>0) {
+        # Assign x-axis position by vertex variable class
+        # Assign y-axis by alphabetic vertex label
+        x <- as.integer(factor(netComponents[["vertex"]][,"varClass"]))
+        xn <- aggregate(1:length(x), by=list(x), length)
+        names(xn) <- c("x", "n")
+        xy <- do.call(rbind, lapply(xn[,"x"],
+                               function(ix) {
+                                 k <- which(x==ix)
+                                 yadj <- (max(xn[,"n"])-xn[ix,"n"])/2*input$renderFixedyScale*100
+                                 data.frame("k"=k,
+                                            "x"=ix*input$renderFixedxScale*100,
+                                            "y"=order(netComponents[["vertex"]][k,"varClass"])*input$renderFixedyScale*100+yadj)
+                               }))
+        netComponents[["vertex"]][,c("x", "y")] <- xy[order(xy[,"k"]),c("x", "y")] 
+        netComponents[["vertex"]][,"fixed"] <- T
+        output$g1 <- renderVisNetwork(composeNetwork(netComponents))
+      }
+    }, ignoreInit=T)
+
+    ##########################################################################################################
+    # Render with free coordinates (disable fixed coordinates)
+    ##########################################################################################################
+
+    observeEvent(input$renderFree, {
+      print("renderFree")
+      if(nrow(netComponents[["vertex"]])>0) {
+        netComponents[["vertex"]][,"fixed"] <- F
+        updateRadioButtons(session, "physics", selected=T)
+        output$g1 <- renderVisNetwork(composeNetwork(netComponents))
+        updateRadioButtons(session, "physics", selected=F)
+      }
+    }, ignoreInit=T)
+
+    ##########################################################################################################
     # Redraw edges after moving nodes edge event
     # Redraw by fixing vertex positions, stabilizing, then freeing vertex psitions
     ##########################################################################################################
@@ -448,6 +489,7 @@ shinyServer(
         # Free positions
         #updateTextInput(session=session, inputId="reactiveInst", value="vertexFixedOff")
         visUpdateNodes(visNetworkProxy("g1"), data.frame("id"=netComponents[["vertex"]][,"id"], "fixed"=F))
+        output$g1 <- renderVisNetwork(composeNetwork(netComponents))
       }
     }, ignoreInit=T)
 
@@ -563,11 +605,10 @@ shinyServer(
     # Create a vertex filter list for subsetting
     ##########################################################################################################
 
-    subsetNodeFilterCompose <- function(nodeID, rxLeadCharFilt) {
+    subsetNodeFilterCompose <- function(nodeID) {
 
       # Parameters:
       # nodeID ........... Vector of node IDs (from netComponents[["vertex"]]) to be treated
-      # rxLeadCharFilt ... String of comma separated leading characters to use as rx name filters (composite OR)
 
       # Include nodes
       if(length(nodeID)>0) {
@@ -591,43 +632,26 @@ shinyServer(
         filter <- NULL
       }
 
-      # Include filter for leading RX chars if specified
-      if(nchar(gsub(" ", "", rxLeadCharFilt))>0)
-        if(!is.null(filter)) {
-          # Nodes have been selected
-          # Include RX patterns
-          filter[["rxName"]] <- tolower(gsub(" ", "", rxLeadCharFilt))
-        } else {
-          # No selection of nodes
-          # Retain current filter and replace (include) RX patterns
-          if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
-            filter <- graphCfg[[gcPtr]][["filter"]]
-            filter[["rxName"]] <- tolower(gsub(" ", "", rxLeadCharFilt))
-          } else {
-            filter <- list("rxName"=tolower(gsub(" ", "", rxLeadCharFilt)))
-          }
-        }
-
       return(filter)
 
     }
 
     ##########################################################################################################
     # Node subnet event
-    # Verify that vertices have been selected (shiftClickNode non-empty)
+    # Verify that vertices have been selected (shiftClickNode non-empty) or if Rx char filter has changed
     # Render new graph limited to selected nodes
     ##########################################################################################################
 
     observeEvent(input$nodeSubnet, {
       print("nodeSubnet")
       # shiftClickNode data frame contains IDs (row positions in vertex DF) of selected nodes
-      if(nrow(shiftClickNode)>0 | nchar(gsub(" ", "", input$rxLeadCharFilt))>0) {
+      if(nrow(shiftClickNode)>0 | input$rxLeadCharFilter!=graphCfg[[gcPtr]][["rxLeadCharFilter"]]) {
         # Push a new graph cfg with additional filter for selected nodes
         # Retain current query filter because it is not changing
         graphCfgOp(op="add",
                    query=graphCfg[[gcPtr]][["query"]],
                    # Include filter list
-                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"], input$rxLeadCharFilt),
+                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"]),
                    filterMode="filter")
         # Render graph
         netComponents <<- assembleNetworkComponents()
@@ -656,15 +680,14 @@ shinyServer(
 
       print("nodeNeighborhood1")
       # shiftClickNode data frame contains IDs (row positions in vertex DF) of selected nodes
-      if(nrow(shiftClickNode)>0 | nchar(gsub(" ", "", input$rxLeadCharFilt))>0) {
-        #print(shiftClickNode)
+      if(nrow(shiftClickNode)>0 | input$rxLeadCharFilter!=graphCfg[[gcPtr]][["rxLeadCharFilter"]]) {
         # Push a new graph cfg with additional filter for selected nodes
         # Retain current query filter because it is not changing
         graphCfgOp(op="add",
                    query=graphCfg[[gcPtr]][["query"]],
                    # Include filter list
-                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"], input$rxLeadCharFilt),
-                   filterMode="nbhood1")
+                   filter=subsetNodeFilterCompose(shiftClickNode[,"nodeID"]),
+                   filterMode="filter")
         # Render graph
         netComponents <<- assembleNetworkComponents()
         if(nrow(netComponents[["vertex"]])>0) {
@@ -685,7 +708,7 @@ shinyServer(
 
     ##########################################################################################################
     # Node expand event
-    # Verify that vertices have been selected (shiftClickNode non-empty)
+    # Verify that vertices have been selected (shiftClickNode non-empty) or if Rx char filter has changed
     # Generate new graph using children of selected nodes, if any, otherwise the selected nodes
     # Advance graph configuration stack then assemble and compose graph using current cfg
     ##########################################################################################################
@@ -697,7 +720,7 @@ shinyServer(
 
       # Construct vectors of DB values for querying (concepts) and filtering (concepts or other variables)
       # Package as graphCfg query and filter lists
-      if(nrow(shiftClickNode)>0) {
+      if(nrow(shiftClickNode)>0 | input$rxLeadCharFilter!=graphCfg[[gcPtr]][["rxLeadCharFilter"]]) {
         # Configure query and filter instructions
         # Generate vertex row indices for selected nodes
         k <- match(shiftClickNode[,"nodeID"], netComponents[["vertex"]][,"id"])
@@ -741,56 +764,6 @@ shinyServer(
           if("conceptID" %in% names(graphCfg[[gcPtr]][["filter"]]))
             filter[["conceptID"]] <- graphCfg[[gcPtr]][["filter"]][["conceptID"]]
         }
-      } else {
-        query <- NULL
-        filter <- NULL
-      }
-
-        # # Construct vectors of DB values to filter, by variable
-        # # Package as a graphCfg filter list
-        # if(length(v)>1 & length(k)==1) {
-          # # Nodes in addition to concepts selected
-          # # Include filters for all but concepts, since they are being expanded
-          # filter <- lapply(setdiff(1:length(v), k), function(i) unique(netComponents[["vertex"]][v[[i]],"dbValue"]))
-          # names(filter) <- names(v)[setdiff(1:length(v), k)]
-        # } else if(length(v)==1 & length(k)==1) {
-          # # Only concept nodes selected
-          # if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
-            # # Maintain current filters, excluding those for concepts, since they are being expanded
-            # nm <- names(graphCfg[[gcPtr]][["filter"]])
-            # k2 <- which(nm=="conceptID")
-            # if(length(k2)>0 and length(nm)>1) {
-              # graphCfg[[gcPtr]][["filter"]] <- graphCfg[[gcPtr]][["filter"]][setdiff(1:length(nm), nm)]
-            # } else {
-            # k2 <- which(=="conceptID")
-            # filter <- NULL
-          # } else {
-            # filter <- NULL
-          # }
-        # }
-      # } else {
-        # query <- NULL
-        # filter <- NULL
-      # }
-
-      # Include filter for leading RX chars if specified
-      if(nchar(gsub(" ", "", input$rxLeadCharFilt))>0)
-        if(!is.null(filter)) {
-          # Nodes have been selected
-          # Include RX patterns
-          filter[["rxName"]] <- tolower(gsub(" ", "", input$rxLeadCharFilt))
-        } else {
-          # No selection of nodes
-          # Retain current filter and replace (include) RX patterns
-          if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
-            filter <- graphCfg[[gcPtr]][["filter"]]
-            filter[["rxName"]] <- tolower(gsub(" ", "", input$rxLeadCharFilt))
-          } else {
-            filter <- list("rxName"=tolower(gsub(" ", "", input$rxLeadCharFilt)))
-          }
-        }
-
-      if(!is.null(query) | !is.null(filter)) {
         # Push a new graph cfg with query and filter instructions
         # Retain current value, since no concept nodes were selected
         if(is.null(query))
