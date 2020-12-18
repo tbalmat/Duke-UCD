@@ -1,0 +1,181 @@
+\documentclass[10pt, letterpaper]{article}
+\usepackage{setspace}
+\usepackage[letterpaper, margin=1.0in]{geometry}
+\addtolength{\topmargin}{-0.25in}
+%\usepackage{tocloft}
+\usepackage{titlesec}
+%\titleformat*{\section}{\large\bfseries}
+\titleformat*{\section}{\large}
+\titleformat*{\subsection}{\normalsize}
+\usepackage{longtable}
+%\usepackage[font=normalsize]{caption}
+\usepackage{float} % H causes tables and figures to appear where specified
+\usepackage{array} % ragged right alignment in table cells
+\usepackage{ragged2e} % ragged right alignment
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amsmath}   % includes \boldmath(), \boldsymbol{()}
+\usepackage{bm}        % math fonts, \boldmath{}, \boldsymbol{}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{subcaption}
+\usepackage{xcolor, colortbl}
+\definecolor{gray}{gray}{0.9}
+\definecolor{ltBlue}{rgb}{0.92, 0.95, 0.99}
+%\definecolor{medBlue}{rgb}{0.75, 0.8, 0.9}
+%\definecolor{white}{rgb}{1, 1, 1}
+%\rowcolor{ltBlue}
+%\usepackage[table]{xcolor}
+%\definecolor{lightgray}{gray}{0.9}
+\usepackage{changepage}
+\usepackage{pdflscape}
+\bibliographystyle{plainnat}
+\usepackage[authoryear, round, semicolon]{natbib}
+\newcommand{\mt}[1]{\bm{#1}^{\prime}}
+\newcommand{\mtm}[2]{\bm{#1}^{\prime}\bm{#2}}
+\newcommand{\mi}[1]{\bm{#1}^{-1}}
+\newcommand{\mest}[1]{\hat{\bm{#1}}}
+\usepackage[bottom]{footmisc}
+\setlength{\skip\footins}{12pt}
+\setlength\parindent{0pt}
+
+\title{\Large UCD SNOMED CT Project
+    \footnote{Duke University, University of Michigan, University of Nebraska, Children's National Health System, Baylor University}\\[8pt]
+    \large SNOMED CT Concept Assignment Frequency\\[8pt]
+    \large Version 2.0, September 8, 2020}
+
+\date{}
+
+\author{\normalsize Tom Balmat, Duke University Research Computing}
+
+\begin{document}
+    
+\begin{spacing}{1.0}
+        
+\maketitle
+
+%\vspace{0.25in}
+
+Following are various plots of the distribution of SNOMED CT concept assignment frequency as observed in our data.  Section \ref{sec:cfreq} contains distributions of the number of participant assignments per concept.  Section \ref{sec:pfreq} contains distributions of the number of concepts assigned by various joint categories of participant covariates. 
+
+%\vspace{20pt}
+
+\section{Distribution of assignments per concept}\label{sec:cfreq}
+
+Figure \ref{fig:DistConcept} shows the overall distribution of participant assignment frequency per concept.  The x-axis extends to 224, the maximum number of assignments for any concept.\footnote{The concept assigned to 224 participants happens to be ``Ornithine carbamoyltransferase deficiency (disorder)"}  Figure \ref{fig:DistConceptLE30} limits the x-axis to thirty or fewer assignments, to zoom in on concepts assigned once, twice, three times, etc.  An interesting observation is that most (2,932 of 5,070) concepts are assigned once only (to a single participant).
+
+\begin{figure}[H]
+    \includegraphics[width=4.25in, trim={0 0 0 0.0}, clip]{{ConceptFrequency}.png}
+    \centering
+    \caption{Distribution of number of assignments per concept}
+    \label{fig:DistConcept}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=4.25in, trim={0 0 0 0.0}, clip]{{ConceptFrequency-LE30}.png}
+    \centering
+    \caption{Distribution of number of assignments per concept, assignments of thirty or less}
+    \label{fig:DistConceptLE30}
+\end{figure} 
+
+\clearpage
+
+\section{Distribution of concepts assigned per participant}\label{sec:pfreq}
+
+Figure \ref{fig:ConceptsPerParticipant} shows the distribution of the number of concepts assigned per participant.  Twenty-six participants are assigned a single concept, while one participant is assigned 145 concepts (the maximum assigned).  The median number of concepts assigned per participant is seventeen.  Figures \ref{fig:Concepts-Per-Participant-Prox-Sex} through \ref{fig:Concepts-Per-Participant-HA-Age} show the distribution of participants by various joint categories of covariates.  Observations:
+
+\begin{itemize}
+    \item Figure \ref{fig:Concepts-Per-Participant-Prox-Sex} indicates a difference in distribution of females by proximal-distal category, with an apparent significant shift (lower) in number of concepts assigned per proximal female.  This should be considered when assessing associations involving proximal and sex covariates.
+    \item Figure \ref{fig:Concepts-Per-Participant-Prox-Dx} indicates confounding of proximal-distal category and UCD diagnosis, since diagnoses ALD, ARG, ASD, CITR, and HHH appear strictly with category distal, while diagnoses CPS1, NAGS, and OTC appear strictly with category proximal.  Perhaps there are biological or medical reasons for confounding, but it should be considered when assessing the relationship of UCD diagnosis or proximal-distal category to other covariates since, with our data, there does not appear to be a way of separating the effects of these variables.
+    \item Although figure \ref{fig:Concepts-Per-Participant-Prox-HA} shows a visually similar distribution by level of HA, it also indicates a difference in distribution by proximal-distal category, independent of HA.  In addition to an apparent slight increase in proximal participants, concept diversity appears decreased for these participants (both HA levels), since mass is shifted left, to lesser concepts assigned, on corresponding x-axes.
+    \item Figure \ref{fig:Concepts-Per-Participant-Prox-Age} indicates under-representation of participants of age 11 to 100 days, especially for category proximate.  This should be considered when assessing associations of age with other covariates.
+    \item Figure \ref{fig:Concepts-Per-Participant-Sex-Dx} indicates over-representation of females for diagnosis OTC.
+    \item Figure \ref{fig:Concepts-Per-Participant-Sex-HA} indicates reduced diversity in concepts for non-HA, particularly for females.
+    \item Figure \ref{fig:Concepts-Per-Participant-Sex-Age} indicates an over-representation of females in age categories greater than 100 days.
+    \item Figure \ref{fig:Concepts-Per-Participant-Dx-HA} indicates that most participants have UCD diagnoses of OTC, ALD, or ASD.  Participants appear uniformly distributed (for these diagnoses) between HA and non-HA status, although non-HA exhibits less diversity in concept assignment.
+    \item Figure \ref{fig:Concepts-Per-Participant-Dx-Age} indicates under-representation of ALD and ASD, or over-representation of OTC, participants in age categories greater than 100 days..
+    \item Figure \ref{fig:Concepts-Per-Participant-HA-Age} indicates over-representation of HA participants of age zero to eleven days and over-representation of non-HA participants of age greater than 10,000 days.
+\end{itemize}
+
+\begin{figure}[H]
+    \includegraphics[width=4.25in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant}
+    \label{fig:ConceptsPerParticipant}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Prox-Sex}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by proximal-distal category and sex}
+    \label{fig:Concepts-Per-Participant-Prox-Sex}
+\end{figure} 
+
+\vspace{12pt}
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Prox-Dx}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by proximal-distal category and UCD diagnosis}
+    \label{fig:Concepts-Per-Participant-Prox-Dx}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Prox-HA}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by proximal-distal category and occurrence of HA events}
+    \label{fig:Concepts-Per-Participant-Prox-HA}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Prox-Age}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by proximal-distal category and age (in days)}
+    \label{fig:Concepts-Per-Participant-Prox-Age}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Sex-Dx}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by sex and UCD diagnosis}
+    \label{fig:Concepts-Per-Participant-Sex-Dx}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Sex-HA}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by sex and HA}
+    \label{fig:Concepts-Per-Participant-Sex-HA}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Sex-Age}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by sex and Age (in days)}
+    \label{fig:Concepts-Per-Participant-Sex-Age}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Dx-HA}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by UCD diagnosis and HA}
+    \label{fig:Concepts-Per-Participant-Dx-HA}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-Dx-Age}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by UCD diagnosis and Age}
+    \label{fig:Concepts-Per-Participant-Dx-Age}
+\end{figure}
+
+\begin{figure}[H]
+    \includegraphics[width=3.85in, trim={0 0 0 0 0}, clip]{{Concepts-Per-Participant-HA-Age}.png}
+    \centering
+    \caption{Distribution of number of concepts assigned per participant, by HA and Age}
+    \label{fig:Concepts-Per-Participant-HA-Age}
+\end{figure}
+
+\end{spacing}
+    
+\end{document} 
