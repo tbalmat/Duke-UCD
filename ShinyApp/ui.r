@@ -16,7 +16,7 @@ library(DT)
 
 # Dir location
 dr <- c("local"="C:\\Projects\\Duke\\Nursing\\SemanticsOfRareDisease\\UCD\\UCDApp",
-        "VM"="C:\\Projects\\tjb48\\UCDApp",
+        "VM"="C:\\Projects\\UCDApp",
         "cloud"="")[1]
 setwd(dr)
 
@@ -26,6 +26,13 @@ shinyUI(
     includeCSS("style.css"),
     title="UCD",
 
+    # Reposition and alter appearance of notification window
+    tags$head(
+      tags$style(
+        HTML(".shiny-notification {font-size:20px; color:red; font-style:bold; width:50%; position:fixed; top:calc(50%); left:calc(25%)}")
+        )
+    ),
+
     # Use a div to provide a slight left margin
     div(
       HTML("<h3>UCD SNOMEDCT-Participant Exploration App</h3><br><br>"),
@@ -34,23 +41,89 @@ shinyUI(
 
     div(
 
-      # Concept query prompt
+      # Concept selection prompts
       fluidRow(
         column(width=10,
           sidebarPanel(width="100%",
             fluidRow(
-              column(width=12,
-                HTML("<b>1. Query<br><br><b>"),
-                div(HTML("<b>Current Concept Root:&nbsp;<b>"), style="display:inline-block;vertical-align:top"),
-                div(htmlOutput("currentRoot"), style="display:inline-block;vertical-align:top")
+              column(width=8,
+                HTML("<b>1. Explore concepts</b>")
+              ),
+              column(width=4,
+                div(HTML("<b>Concept path finder&nbsp</b>"), style="display:inline-block;vertical-align:top;margin-top:4px"),
+                div(textInput("conceptFinderText", ""), style="width:300px; display:inline-block; margin-top:-25px"),
+                htmlOutput("conceptFinderPath")
+              )
+            ),
+            fluidRow(
+              column(width=8,
+                div(HTML("<b>Concept root:&nbsp;</b>"), style="display:inline-block;vertical-align:top; margin-left:16px; margin-top:-10px"),
+                div(htmlOutput("exploreCurrRootPath"), style="display:inline-block;vertical-align:top; margin-left:16px; margin-top:-10px")
               )
             ),
             fluidRow(
               column(width=12,
-                div(HTML("<b>Select sub-concept&nbsp&nbsp<b>"), style="display:inline-block;vertical-align:top;margin-top:25px"),
-                div(selectInput("conceptSel", "", choices="", width="520px"), style="display:inline-block;vertical-align:top"),
-                div(actionButton("retParentConcept", "<- parent"), style="display:inline-block;vertical-align:top;margin-left:10px;margin-top:20px"),
-                div(actionButton("queryConcept", "query"), style="display:inline-block;vertical-align:top;margin-left:35px; margin-top:20px")
+                div(HTML("<b>Explore sub-concepts&nbsp&nbsp</b>"), style="display:inline-block; vertical-align:top; margin-left:16px; margin-top:10px"),
+                div(selectInput("exploreChoices", "", choices="", width="750px", selectize=F, size=15),
+                    style="display:inline-block; vertical-align:top; margin-top:-15px")
+                #div(actionButton("retParentConcept", "<- parent", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top; margin-left:10px; margin-top:5px")
+              )
+            ),
+            fluidRow(column(width=12, div(HTML("<hr>")), style="margin-top:-15px")),
+            fluidRow(
+              div(
+                column(width=3,
+                  HTML("<b>2. Select concepts (one of a, b, or c)</b><br>")
+                ),
+                column(width=5,
+                  div(HTML("<b>Selected concepts</b>"), style="margin-left:110px")
+                ),
+                style="margin-top:5px"
+              )
+            ),
+            fluidRow(
+              div(
+                column(width=3,
+                  div(HTML("<b>a.</b>&nbsp"), style="display:inline-block; vertical-align:top; margin-left:16px; margin-top:5px"),
+                  div(actionButton("conceptSelect", "select current (root) concept", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top; margin-left:5px"),
+                  div(actionButton("conceptSelectClear", "clear all", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top; margin-left:10px")
+                ),
+                column(width=5,
+                  div(htmlOutput("queryConceptFSN"), style="margin-left:110px")
+                ),
+                style="margin-top:15px"
+              )
+            ),
+            fluidRow(
+              div(
+                column(width=12,
+                  div(HTML("<b>b.&nbsp;&nbsp; Concept ID(s)"), style="display:inline-block; vertical-align:top; margin-left:16px; margin-top:10px"),
+                  div(textInput("queryConceptID", label="", width="300px"), style="display:inline-block; vertical-align:top; margin-left:28px; margin-top:-15px")
+                ),
+                style="margin-top:15px"
+              )
+            ),
+            fluidRow(
+              div(
+                column(width=4,
+                 div(HTML("<b>c.&nbsp;&nbsp; FSN keyword(s)"), style="display:inline-block; vertical-align:top; margin-left:16px; margin-top:10px"),
+                 div(textInput("queryFSNKeyword", label="", width="300px"), style="display:inline-block; vertical-align:top; margin-left:10px; margin-top:-15px")
+                ),
+                column(width=5,
+                 div(radioButtons("queryFSNKeywordStyle", "", choices=c("exact", "lead", "contains"), selected="exact", inline=T), style="display:inline-block; vertical-align:top; margin-left:-28px; margin-top:-10px"),
+                 div(radioButtons("queryFSNKeywordOp", "", choices=c("or", "and"), selected="or", inline=T), style="display:inline-block; vertical-align:top; margin-left:35px; margin-top:-10px")
+                ),
+                style="margin-top:0px"
+              )
+            ),
+            fluidRow(column(width=12, div(HTML("<hr>")), style="margin-top:-15px")),
+            fluidRow(
+              div(
+                column(width=8,
+                  div(HTML("<b>3.</b>"), style="display:inline-block; vertical-align:top; margin-top:5px"),
+                  div(actionButton("queryConcepts", "query", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top; margin-left:10px; margin-top:0px")
+                ),
+                style="margin-top:0px"
               )
             )
           )
@@ -62,51 +135,49 @@ shinyUI(
         column(width=5,
           # Participant variable connection prompts
           sidebarPanel(width="100%",
-            HTML("<b>2. Specify variables to connect (participant)</b><br><br>"),
+            HTML("<b>4. Specify variables to connect (participant)</b><br><br>"),
             fluidRow(
               column(width=12,
                 checkboxGroupInput("cnUCDProxDist", "UCDProxDist",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-                  inline=T))
-              #column(width=2, div(actionButton("toggleUCDProxDist", "toggle"), style="margin-top:15px"))
-              #column(width=2, div(checkboxInput("interactUCDProxDist", "Interact"), style="margin-left:20px; margin-top:25px"))
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
+                  inline=T)
+              )
             ),
             fluidRow(
               column(width=12,
                 checkboxGroupInput("cnSex", "Sex",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-                  inline=T))
-              #column(width=2, div(actionButton("toggleSex", "toggle"), style="margin-top:15px"))
-              #column(width=2, div(checkboxInput("interactSex", "Interact"), style="margin-left:20px; margin-top:25px"))
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
+                  inline=T)
+              )
             ),
             fluidRow(
               column(width=12,
                 checkboxGroupInput("cnUCDDx", "UCDDx",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-                  inline=T))
-              #column(width=2, div(actionButton("toggleUCDDx", "toggle"), style="margin-top:15px"))
-              #column(width=2, div(checkboxInput("interactUCDDx", "Interact"), style="margin-left:20px; margin-top:25px"))
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
+                  inline=T)
+              )
             ),
             fluidRow(
               column(width=12,
                 checkboxGroupInput("cnAge", "Age (1, 10, 100, 1,000 day(s))",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-                  inline=T))
-              #column(width=2, div(actionButton("toggleAge", "toggle"), style="margin-top:15px"))
-              #column(width=2, div(checkboxInput("interactAge", "Interact"), style="margin-left:20px; margin-top:25px"))
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
+                  inline=T)
+              )
             ),
             fluidRow(
-              column(width=12,
+              column(width=11,
                 checkboxGroupInput("cnHASxLast", "HASxLast",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-                  inline=T))
-              #column(width=2, div(actionButton("toggleHASxLast", "toggle"), style="margin-top:15px"))
-              #column(width=2, div(checkboxInput("interactHASxLast", "Interact"), style="margin-left:20px; margin-top:25px"))
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
+                  inline=T)
+              ),
+              column(width=1,
+                div(checkboxInput("groupHA", "group", value=F), style="margin-left:-30px; margin-top:25px")
+              )
             )
           )
 
@@ -116,36 +187,36 @@ shinyUI(
 
           # Rx, concept, finding site connection prompts
           sidebarPanel(width="100%",
-            HTML("<b>Variables to connect (SNOMEDCT, Rx, finding site)</b><br><br>"),
+            HTML("<b>4. Variables to connect (SNOMEDCT, Rx, finding site)</b><br><br>"),
             fluidRow(
-              column(width=12,
-                checkboxGroupInput("cnConceptFSN", "SNOMEDCT concept",
+              column(width=11,
+                checkboxGroupInput("cnConceptID", "SNOMEDCT concept",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-                  inline=T))
-              #column(width=2, div(actionButton("toggleconceptFSN", "toggle"), style="margin-top:15px"))
-              #column(width=2, div(checkboxInput("interactconceptFSN", "Interact"), style="margin-left:20px; margin-top:25px"))
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
+                  inline=T)
+              ),
+              column(width=1,
+                div(checkboxInput("joinConcept", "join", value=F), style="margin-left:-30px; margin-top:25px")
+              )
             ),
             HTML("<hr>"),
             fluidRow(
               column(width=12,
                 checkboxGroupInput("cnRx", "Rx",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-                  inline=T))
-              #column(width=2, div(actionButton("toggleRx", "toggle"), style="margin-top:15px"))
-              #column(width=2, div(checkboxInput("interactRx", "Interact"), style="margin-left:20px; margin-top:25px"))
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
+                  inline=T)
+              )
             ),
             checkboxInput("rxSubsume", "Subsume Rx", value=F),
             HTML("<hr>"),
             fluidRow(
               column(width=12,
-                checkboxGroupInput("cnFindingSite", "Finding site",
+                checkboxGroupInput("cnfindingSite", "Finding site",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
-                  inline=T))
-              #column(width=2, div(actionButton("toggleFindingSite", "toggle"), style="margin-top:15px"))
-              #column(width=2, div(checkboxInput("interactFindingSite", "Interact"), style="margin-left:20px; margin-top:25px"))
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
+                  inline=T)
+              )
             )
           )
 
@@ -158,16 +229,16 @@ shinyUI(
 
         column(width=5,
           sidebarPanel(width="100%",
-            HTML("<b>3. Specify variables to interact<br><br>"),
+            HTML("<b>5. Specify variables to interact</b><br><br>"),
             fluidRow(
               column(width=12,
                 checkboxGroupInput("interactSet1", "Interaction set 1",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
                   inline=T),
                 checkboxGroupInput("interactConn1", "Connected to",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
                   inline=T)
               )
             )
@@ -175,16 +246,16 @@ shinyUI(
         ),
         column(width=5,
           sidebarPanel(width="100%",
-            HTML("<b>Specify variables to interact<br><br>"),
+            HTML("<b>5. Specify variables to interact</b><br><br>"),
             fluidRow(
               column(width=12,
                 checkboxGroupInput("interactSet2", "Interaction set 2",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
                   inline=T),
                 checkboxGroupInput("interactConn2", "Connected to",
                   choiceNames=c("UCDProxDist", "Sex", "UCDDx", "Age", "HASxLast", "Concept", "Rx", "FndSt"),
-                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptFSN", "Rx", "findingSiteFSN"),
+                  choiceValues=c("UCDProxDist", "Sex", "UCDDx", "onsetAgeDays", "HASxLast", "conceptID", "rxID", "findingSiteID"),
                   inline=T)
               )
             )
@@ -198,7 +269,7 @@ shinyUI(
         # Graph configuration controls
         column(width=2,
           sidebarPanel(width="100%",
-            HTML("<b>4. Adjust<br><br></b>"),
+            HTML("<b>6. Adjust</b><br><br></b>"),
             #sliderInput("log_10_p", HTML("log<sub>10</sub>(p) min filter"), min=4, max=12, value=5.5, step=0.25),
             sliderInput("nedgemin", "Vertex n-edge (min) filter", min=0, max=100, value=0, step=1),
             sliderInput("eopacity", "Edge opacity", min=0, max=1, value=0.35, step=0.05),
@@ -208,8 +279,9 @@ shinyUI(
             sliderInput("vSizeFactor", "Vertex size factor", min=0, max=0.5, step=0.01, value=0.25),
             sliderInput("vFontSize", "Vertex label font size", min=6, max=36, value=16, step=1),
             sliderInput("nearestHighlightDeg", "Node nearest highlight degree", min=0, max=10, value=1, step=1),
-            sliderInput("renderFixedxScale", "Render fixed x scale (x 100)", min=0, max=10, value=0.5, step=0.5),
-            sliderInput("renderFixedyScale", "Render fixed y scale (x 100)", min=0, max=10, value=0.5, step=0.5)
+            radioButtons("renderGeometry", "Render geometry", choices=c("free", "columnar", "radial"), inline=T),
+            sliderInput("renderScaleX", "Render x scale (x 100)", min=0, max=10, value=0.5, step=0.25),
+            sliderInput("renderScaleY", "Render y scale (x 100)", min=0, max=10, value=0.5, step=0.25)
           )
         ),
 
@@ -234,15 +306,15 @@ shinyUI(
           fluidRow(
             column(width=4,
               sidebarPanel(width=11,
-                HTML("<b>5. Explore</b><br>"),
+                HTML("<b>7. Explore</b><br>"),
                 div(HTML("<i>Shift-click, Alt-click to select/deselect<br></i>"), style="margin-left:0px; margin-top:10px"),
                 fluidRow(
                   div(
                     column(width=12,
-                      div(actionButton("nodeSubnet", "subnet"), style="display:inline-block;vertical-align:top"),
-                      div(actionButton("nodeExpand", "expand"), style="display:inline-block;vertical-align:top"),
-                      div(actionButton("nodeNeighborhood1", "neighborhood-1"), style="display:inline-block;vertical-align:top"),
-                      div(actionButton("nodeRestorePrevious", "back"), style="display:inline-block;vertical-align:top")
+                      div(actionButton("nodeSubnet", "subnet", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top"),
+                      div(actionButton("nodeExpand", "expand", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top"),
+                      div(actionButton("nodeNeighborhood1", "neighborhood-1", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top"),
+                      div(actionButton("nodeRestorePrevious", "back", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top")
                     ),
                     style="margin-top:10px"
                   )
@@ -250,9 +322,7 @@ shinyUI(
                 fluidRow(
                   div(
                     column(width=12,
-                      div(actionButton("restoreEdgesPostMove", "redraw edges"), style="display:inline-block;vertical-align:top"),
-                      div(actionButton("renderFixed", "render fixed"), style="display:inline-block;vertical-align:top"),
-                      div(actionButton("renderFree", "render free"), style="display:inline-block;vertical-align:top")
+                      div(actionButton("restoreEdgesPostMove", "redraw edges", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top; color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)")
                     )
                   ),
                   style="margin-top:10px"

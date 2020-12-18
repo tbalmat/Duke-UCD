@@ -9,7 +9,7 @@ gc()
 
 # Specify directory containing ui.r and server.r
 ad <- c("local"="C:\\Projects\\Duke\\Nursing\\SemanticsOfRareDisease\\UCD\\UCDApp",
-        "server"="C:\\Projects\\tjb48\\UCDApp",
+        "server"="C:\\Projects\\UCDApp",
         "cloud"="")[1]
 # Execute 
 runApp(appDir=ad,
