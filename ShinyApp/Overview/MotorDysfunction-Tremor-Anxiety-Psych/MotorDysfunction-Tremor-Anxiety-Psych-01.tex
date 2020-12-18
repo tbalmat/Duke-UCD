@@ -1,0 +1,988 @@
+\documentclass[10pt, letterpaper]{article}
+\usepackage{setspace}
+\usepackage[letterpaper, margin=1.0in]{geometry}
+\addtolength{\topmargin}{-0.25in}
+%\usepackage{tocloft}
+\usepackage{titlesec}
+%\titleformat*{\section}{\large\bfseries}
+\titleformat*{\section}{\large}
+\titleformat*{\subsection}{\normalsize}
+\usepackage{longtable}
+%\usepackage[font=normalsize]{caption}
+\usepackage{float} % H causes tables and figures to appear where specified
+\usepackage{array} % ragged right alignment in table cells
+\usepackage{ragged2e} % ragged right alignment
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amsmath}   % includes \boldmath(), \boldsymbol{()}
+\usepackage{bm}        % math fonts, \boldmath{}, \boldsymbol{}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{subcaption}
+\usepackage{xcolor, colortbl}
+\definecolor{gray}{gray}{0.9}
+\definecolor{ltBlue}{rgb}{0.92, 0.95, 0.99}
+%\definecolor{medBlue}{rgb}{0.75, 0.8, 0.9}
+%\definecolor{white}{rgb}{1, 1, 1}
+%\rowcolor{ltBlue}
+%\usepackage[table]{xcolor}
+%\definecolor{lightgray}{gray}{0.9}
+\usepackage{changepage}
+\usepackage{pdflscape}
+\bibliographystyle{plainnat}
+\usepackage[authoryear, round, semicolon]{natbib}
+\newcommand{\mt}[1]{\bm{#1}^{\prime}}
+\newcommand{\mtm}[2]{\bm{#1}^{\prime}\bm{#2}}
+\newcommand{\mi}[1]{\bm{#1}^{-1}}
+\newcommand{\mest}[1]{\hat{\bm{#1}}}
+\usepackage[bottom]{footmisc}
+\setlength{\skip\footins}{12pt}
+\setlength\parindent{0pt}
+
+\title{\Large UCD SNOMED CT Project
+    \footnote{Duke University, University of Michigan, University of Nebraska, Children's National Health System, Baylor University}\\[8pt]
+    \large Review of Combined Motor Dysfunction, Tremor, Anxiety, and Psychiatric Disorder Concepts with Associations to Combinations of UCD and Hyperammonemia Diagnoses\\[8pt]
+    \large Version 1.0}
+
+\date{}
+
+\author{\normalsize Tom Balmat, Duke University Research Computing}
+
+\begin{document}
+    
+\begin{spacing}{1.0}
+        
+\maketitle
+
+%\vspace{0.25in}
+
+In past meetings and in e-mail communication, team members have expressed interest in possible associations between motor dysfunction, tremor, anxiety, behavioral, developmental, and psychiatric disorder concepts to UCD and hyperammonemia diagnoses.  Until recently, the graphing app lacked the ability to combine concepts, but that has now been developed.  Following are collections of graphs and tables to explore various combinations of concepts and diagnoses of interest.  Results are limited to UCD diagnoses of ALD and ASD, and hyperammonemic conditions are collapsed to a binary state of having or not having hyperammonemic events, since these are common treatments used by the team.
+
+\vspace{20pt}
+
+\begin{table}[H]
+    \centering
+    \caption*{Abbreviations}
+    \small
+    \begin{tabular}{ll}
+        \hline\\[-6pt]
+        Abbreviation & Term \\[2pt]
+        \hline\\[-6pt]
+        AD & Anxiety disorder \\
+        Anx & Anxiety \\
+        Bhv & Behavior \\
+        Dbh & Disruptive behavior \\
+        DD &  Developmental disorder \\
+        DMD & Developmental mental disorder \\
+        DX & UCD diagnosis \\
+        HA & Hyperammonemia \\
+        ID & Intellectual disability/Developmental delay \\
+        MD & Motor dysfunction \\
+        Mood & Mood disorder \\
+        Tr & Tremor \\[4pt]
+        \hline\\[-4pt]
+    \end{tabular}
+    \label{tab:terms}
+\end{table}
+
+\clearpage
+
+\section{Motor dysfunction, tremor, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+SNOMED CT paths:
+
+\small
+\begin{itemize}
+    \item SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Clinical history and observation findings (finding) 250171008; Finding of movement (finding) 298325004; Motor dysfunction (finding) 52559000
+    \item 
+    SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Clinical history and observation findings (finding) 250171008; Finding of movement (finding) 298325004; Involuntary movement (finding) 267078001; Tremor (finding) 26079004
+\end{itemize}
+\normalsize
+
+\vspace{10pt}
+
+Participants included in figure \ref{fig:MD-Tr-Dx-HA-01} and table \ref{tab:MD-Tr-Dx-HA-01} are those with an association to at least one motor dysfunction concept AND at least one tremor concept.  Participant counts for UCDDx-X-HA nodes reflect the total number of participants with the indicated (node) UCDDx/HA diagnosis and an association with either a motor dysfunction OR tremor concept from those composing the concept (blue) connected nodes.  Perhaps frequencies should reflect participants associated with both motor dysfunction AND tremor concepts, since that is what composes the concept nodes.
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{MD-Tr-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of MD-Tr joined to Dx-HA}
+    \label{fig:MD-Tr-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for MD-Tr joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ALD -X- HA Events & 14 \\
+        \rowcolor{ltBlue}
+        ALD -X- No HA Events & 11 \\
+        ASD -X- HA Events & 15 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Chronic tremor (finding) & 1 \\
+        Clumsiness (finding) -X- Fine tremor (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Intention tremor (finding) & 1 \\
+        Clumsiness (finding) -X- Isolated facial tremor (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Chronic tremor (finding) & 1 \\
+        Dyskinesia (finding) -X- Coarse tremor (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Fine tremor (finding) & 1 \\
+        Dyskinesia (finding) -X- Intention tremor (finding) & 5 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Isolated facial tremor (finding) & 1 \\
+        Dyskinesia (finding) -X- On examination - tremor outstretched hands (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Resting tremor (finding) & 1 \\
+        Dyskinesia (finding) -X- Trembles (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Impaired psychomotor development (finding) -X- On examination - tremor outstretched hands (finding) & 1 \\
+        Impaired psychomotor development (finding) -X- Resting tremor (finding) & 1 \\
+        \rowcolor{ltBlue}
+        OTC -X- HA Events & 31 \\
+        Paralysis (finding) -X- Trembles (finding) & 1 \\
+        &\\[-4pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Clumsiness (finding) -X- Chronic tremor (finding); OTC -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Fine tremor (finding); OTC -X- HA Events & 1 \\
+        Clumsiness (finding) -X- Intention tremor (finding); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Isolated facial tremor (finding); ALD -X- No HA Events & 1 \\
+        Dyskinesia (finding) -X- Chronic tremor (finding); OTC -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Coarse tremor (finding); ALD -X- No HA Events & 1 \\
+        Dyskinesia (finding) -X- Fine tremor (finding); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Intention tremor (finding); ALD -X- HA Events & 1 \\
+        Dyskinesia (finding) -X- Intention tremor (finding); ALD -X- No HA Events & 4 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Isolated facial tremor (finding); ALD -X- No HA Events & 1 \\
+        Dyskinesia (finding) -X- On examination - tremor outstretched hands (finding); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Resting tremor (finding); ALD -X- No HA Events & 1 \\
+        Dyskinesia (finding) -X- Trembles (finding); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Impaired psychomotor development (finding) -X- On examination - tremor outstretched hands (finding); ASD -X- HA Events & 1 \\
+        Impaired psychomotor development (finding) -X- Resting tremor (finding); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Paralysis (finding) -X- Trembles (finding); ALD -X- HA Events & 1 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:MD-Tr-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Anxiety disorder, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+SNOMED CT path:  \small SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Clinical history and observation findings (finding) 250171008; Mental state, behavior and/or psychosocial function finding (finding) 384821006; Mental state finding (finding) 36456004; Emotional state finding (finding) 106126000; Anxiety (finding) 48694002; Anxiety disorder (disorder) 197480006
+\normalsize
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{AD-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of AD joined to Dx-HA}
+    \label{fig:AD-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for AD joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ALD -X- No HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Anxiety disorder of childhood OR adolescence (disorder) & 1 \\
+        ASD -X- HA Events & 5 \\
+        \rowcolor{ltBlue}
+        Mixed anxiety and depressive disorder (disorder) & 6 \\
+        Obsessive-compulsive disorder (disorder) & 10 \\
+        \rowcolor{ltBlue}
+        OTC -X- HA Events & 8 \\
+        OTC -X- No HA Events & 5 \\
+        \rowcolor{ltBlue}
+        Posttraumatic stress disorder (disorder) & 3 \\
+        Separation anxiety (disorder) & 1 \\
+        &\\[-6pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Anxiety disorder of childhood OR adolescence (disorder); OTC -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Mixed anxiety and depressive disorder (disorder); OTC -X- HA Events & 5 \\
+        Mixed anxiety and depressive disorder (disorder); OTC -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Obsessive-compulsive disorder (disorder); ALD -X- No HA Events & 2 \\
+        Obsessive-compulsive disorder (disorder); ASD -X- HA Events & 4 \\
+        \rowcolor{ltBlue}
+        Obsessive-compulsive disorder (disorder); OTC -X- HA Events & 2 \\
+        Obsessive-compulsive disorder (disorder); OTC -X- No HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Posttraumatic stress disorder (disorder); ASD -X- HA Events & 1 \\
+        Posttraumatic stress disorder (disorder); OTC -X- No HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Separation anxiety (disorder); OTC -X- HA Events & 1 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:AD-Dx-HA-01}
+    \end{longtable}
+\end{small}
+\clearpage
+
+\section{Motor dysfunction, anxiety, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+SNOMED CT paths:
+
+\small
+\begin{itemize}
+    \item SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Clinical history and observation findings (finding) 250171008; Finding of movement (finding) 298325004; Motor dysfunction (finding) 52559000
+    \item SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Clinical history and observation findings (finding) 250171008; Finding of movement (finding) 298325004; Involuntary movement (finding) 267078001; Tremor (finding) 26079004
+\end{itemize}
+\normalsize
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{MD-Anx-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of MD-Anx joined to Dx-HA}
+    \label{fig:MD-Anx-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for MD-Anx joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ALD -X- No HA Events & 8 \\
+        \rowcolor{ltBlue}
+        ASD -X- HA Events & 20 \\
+        Automatism (finding) -X- Anxiety disorder (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Anxiety disorder (disorder) & 2 \\
+        Clumsiness (finding) -X- Mild anxiety (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- On examination - anxious (finding) & 1 \\
+        Clumsiness (finding) -X- Panic (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Anxiety disorder (disorder) & 1 \\
+        Dyskinesia (finding) -X- On examination - anxious (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Panic (finding) & 2 \\
+        Impaired psychomotor development (finding) -X- Anxiety disorder (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        OTC -X- HA Events & 38 \\
+        OTC -X- No HA Events & 15 \\
+        \rowcolor{ltBlue}
+        Paralysis (finding) -X- Anxiety disorder (disorder) & 1 \\
+        &\\[-4pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Automatism (finding) -X- Anxiety disorder (disorder); OTC -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Anxiety disorder (disorder); ALD -X- No HA Events & 1 \\
+        Clumsiness (finding) -X- Anxiety disorder (disorder); OTC -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Mild anxiety (finding); OTC -X- HA Events & 1 \\
+        Clumsiness (finding) -X- On examination - anxious (finding); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Panic (finding); ALD -X- No HA Events & 1 \\
+        Dyskinesia (finding) -X- Anxiety disorder (disorder); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- On examination - anxious (finding); ALD -X- No HA Events & 1 \\
+        Dyskinesia (finding) -X- Panic (finding); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Panic (finding); ASD -X- HA Events & 1 \\
+        Impaired psychomotor development (finding) -X- Anxiety disorder (disorder); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Paralysis (finding) -X- Anxiety disorder (disorder); OTC -X- HA Events & 1 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:MD-Anx-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Developmental disorder, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+SNOMED CT path:  \small SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Disease (disorder)[64572001]; Developmental disorder (disorder)[5294002]
+\normalsize
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{DD-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of DD joined to Dx-HA}
+    \label{fig:DD-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for DD joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ALD -X- HA Events & 55 \\
+        \rowcolor{ltBlue}
+        ALD -X- No HA Events & 31 \\
+        ASD -X- HA Events & 52 \\
+        \rowcolor{ltBlue}
+        ASD -X- No HA Events & 8 \\
+        Developmental delay (disorder) & 101 \\
+        \rowcolor{ltBlue}
+        Disorder of stature (disorder) & 6 \\
+        Mixed developmental disorder (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        Neurodevelopmental disorder (disorder) & 109 \\
+        Pediatric failure to thrive (disorder) & 2 \\
+        \rowcolor{ltBlue}
+        Precocious sexual development (disorder) & 4 \\
+        Tooth development and eruption disorder (disorder) & 6 \\
+        &\\[-6pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Developmental delay (disorder); ALD -X- HA Events & 40 \\
+        \rowcolor{ltBlue}
+        Developmental delay (disorder); ALD -X- No HA Events & 22 \\
+        Developmental delay (disorder); ASD -X- HA Events & 34 \\
+        \rowcolor{ltBlue}
+        Developmental delay (disorder); ASD -X- No HA Events & 5 \\
+        Disorder of stature (disorder); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Disorder of stature (disorder); ASD -X- HA Events & 5 \\
+        Mixed developmental disorder (disorder); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Neurodevelopmental disorder (disorder); ALD -X- HA Events & 45 \\
+        Neurodevelopmental disorder (disorder); ALD -X- No HA Events & 23 \\
+        \rowcolor{ltBlue}
+        Neurodevelopmental disorder (disorder); ASD -X- HA Events & 33 \\
+        Neurodevelopmental disorder (disorder); ASD -X- No HA Events & 8 \\
+        \rowcolor{ltBlue}
+        Pediatric failure to thrive (disorder); ALD -X- HA Events & 1 \\
+        Pediatric failure to thrive (disorder); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Precocious sexual development (disorder); ALD -X- HA Events & 2 \\
+        Precocious sexual development (disorder); ASD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Tooth development and eruption disorder (disorder); ALD -X- HA Events & 3 \\
+        Tooth development and eruption disorder (disorder); ASD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Tooth development and eruption disorder (disorder); ASD -X- No HA Events & 1 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:DD-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Developmental mental disorder, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+SNOMED CT path:  \small SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Disease (disorder)[64572001]; Developmental disorder (disorder)[5294002]; Neurodevelopmental disorder (disorder)[700364009]; Developmental mental disorder (disorder)[129104009]
+\normalsize
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{DMD-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of DMD joined to Dx-HA}
+    \label{fig:DMD-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for DMD joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ALD -X- HA Events & 43 \\
+        \rowcolor{ltBlue}
+        ALD -X- No HA Events & 20 \\
+        ASD -X- HA Events & 28 \\
+        \rowcolor{ltBlue}
+        ASD -X- No HA Events & 5 \\
+        Developmental academic disorder (disorder) & 6 \\
+        \rowcolor{ltBlue}
+        Developmental language impairment (disorder) & 75 \\
+        Disorder of psychological development (disorder) & 9 \\
+        \rowcolor{ltBlue}
+        Intellectual disability (disorder) & 16 \\
+        &\\[-4pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Developmental academic disorder (disorder); ALD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Developmental academic disorder (disorder); ALD -X- No HA Events & 1 \\
+        Developmental academic disorder (disorder); ASD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Developmental academic disorder (disorder); ASD -X- No HA Events & 1 \\
+        Developmental language impairment (disorder); ALD -X- HA Events & 39 \\
+        \rowcolor{ltBlue}
+        Developmental language impairment (disorder); ALD -X- No HA Events & 12 \\
+        Developmental language impairment (disorder); ASD -X- HA Events & 21 \\
+        \rowcolor{ltBlue}
+        Developmental language impairment (disorder); ASD -X- No HA Events & 3 \\
+        Disorder of psychological development (disorder); ALD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Disorder of psychological development (disorder); ALD -X- No HA Events & 3 \\
+        Disorder of psychological development (disorder); ASD -X- HA Events & 4 \\
+        \rowcolor{ltBlue}
+        Intellectual disability (disorder); ALD -X- HA Events & 4 \\
+        Intellectual disability (disorder); ALD -X- No HA Events & 5 \\
+        \rowcolor{ltBlue}
+        Intellectual disability (disorder); ASD -X- HA Events & 6 \\
+        Intellectual disability (disorder); ASD -X- No HA Events & 1 \\
+        & \\[-4pt]
+        \hline
+        \label{tab:DMD-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Motor dysfunction, developmental mental disorder, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+SNOMED CT paths:
+
+\small
+\begin{itemize}
+    \item SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Clinical history and observation findings (finding) 250171008; Finding of movement (finding) 298325004; Motor dysfunction (finding) 52559000
+    \item SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Disease (disorder)[64572001]; Developmental disorder (disorder)[5294002]; Neurodevelopmental disorder (disorder)[700364009]; Developmental mental disorder (disorder)[129104009]
+\end{itemize}
+\normalsize
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{MD-DMD-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of MD-DMD joined to Dx-HA}
+    \label{fig:MD-DMD-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for MD-DMD joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ALD -X- HA Events & 47 \\
+        \rowcolor{ltBlue}
+        ALD -X- No HA Events & 21 \\
+        ASD -X- HA Events & 34 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Developmental language impairment (disorder) & 4 \\
+        Clumsiness (finding) -X- Disorder of psychological development (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Intellectual disability (disorder) & 1 \\
+        Difficulty controlling posture (finding) -X- Developmental language impairment (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Developmental academic disorder (disorder) & 1 \\
+        Dyskinesia (finding) -X- Developmental language impairment (disorder) & 5 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Disorder of psychological development (disorder) & 1 \\
+        Dyskinesia (finding) -X- Intellectual disability (disorder) & 5 \\
+        \rowcolor{ltBlue}
+        Impaired psychomotor development (finding) -X- Developmental language impairment (disorder) & 2 \\
+        Unable to control posture (finding) -X- Developmental language impairment (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        Unable to control posture (finding) -X- Intellectual disability (disorder) & 2 \\
+        &\\[-4pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Clumsiness (finding) -X- Developmental language impairment (disorder); ALD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Developmental language impairment (disorder); ALD -X- No HA Events & 1 \\
+        Clumsiness (finding) -X- Developmental language impairment (disorder); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Clumsiness (finding) -X- Disorder of psychological development (disorder); ALD -X- No HA Events & 1 \\
+        Clumsiness (finding) -X- Intellectual disability (disorder); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Difficulty controlling posture (finding) -X- Developmental language impairment (disorder); ASD -X- HA Events & 1 \\
+        Dyskinesia (finding) -X- Developmental academic disorder (disorder); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Developmental language impairment (disorder); ALD -X- HA Events & 2 \\
+        Dyskinesia (finding) -X- Developmental language impairment (disorder); ASD -X- HA Events & 3 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Disorder of psychological development (disorder); ALD -X- No HA Events & 1 \\
+        Dyskinesia (finding) -X- Intellectual disability (disorder); ALD -X- No HA Events & 4 \\
+        \rowcolor{ltBlue}
+        Dyskinesia (finding) -X- Intellectual disability (disorder); ASD -X- HA Events & 1 \\
+        Impaired psychomotor development (finding) -X- Developmental language impairment (disorder); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Impaired psychomotor development (finding) -X- Developmental language impairment (disorder); ASD -X- HA Events & 1 \\
+        Unable to control posture (finding) -X- Developmental language impairment (disorder); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Unable to control posture (finding) -X- Intellectual disability (disorder); ASD -X- HA Events & 2 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:MD-DMD-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Mood disorder, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+SNOMED CT path: \small SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Disease (disorder) 64572001; Mental disorder (disorder) 74732009; Mood disorder (disorder) 46206005
+\normalsize
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{Mood-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of Mood joined to Dx-HA}
+    \label{fig:Mood-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for ZZZ joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ALD -X- HA Events & 4 \\
+        \rowcolor{ltBlue}
+        ALD -X- No HA Events & 4 \\
+        ASD -X- HA Events & 3 \\
+        \rowcolor{ltBlue}
+        Bipolar disorder (disorder) & 1 \\
+        Depressive disorder (disorder) & 10 \\
+        \rowcolor{ltBlue}
+        Mood disorder of manic type (disorder) & 1 \\
+        &\\[-6pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Bipolar disorder (disorder); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Depressive disorder (disorder); ALD -X- HA Events & 3 \\
+        Depressive disorder (disorder); ALD -X- No HA Events & 4 \\
+        \rowcolor{ltBlue}
+        Depressive disorder (disorder); ASD -X- HA Events & 3 \\
+        Mood disorder of manic type (disorder); ALD -X- No HA Events & 1 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:Mood-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Disruptive behavior}
+
+\vspace{10pt}
+
+SNOMED CT path:  \small Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Disease (disorder) 64572001; Mental disorder (disorder) 74732009; Mental disorder usually first evident in infancy, childhood AND/OR adolescence (disorder) 111476001; Disruptive behavior disorder (disorder) 54319003\\
+\normalsize
+
+Note that this differs from the current, official SNOMED CT path of:  \small SNOMED CT; Clinical finding; Disease, Mental disorder; Disruptive behavior disorder\\
+\normalsize
+
+Cypher query to locate concept ``Disruptive behavior disorder (disorder)":\\[-16pt]
+\begin{verbatim}
+match(c1:ObjectConcept)-[r:ISA*]->(c0:ObjectConcept)
+where c1.sctid='54319003' and c0.sctid='138875005'
+with c1, r limit 1 unwind reverse(r) as z
+return c1.FSN, endNode(z).sctid, endNode(z).FSN
+\end{verbatim}
+
+Figure \ref{fig:Dbh-Dx-HA-01} and table \ref{tab:Dbh-Dx-HA-01} represent observations associated with Disruptive behavior disorder (disorder), SCT ID 54319003.  Concept ``Conduct disorder" has one participant associated with it.  It was not explored.
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{Dbh-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of Dbh joined to Dx-HA}
+    \label{fig:Dbh-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for Dbh joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        Aggressive type unsocialized behavior disorder (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        ALD -X- HA Events & 4 \\
+        ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        ASD -X- HA Events & 3 \\
+        ASD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Attention deficit hyperactivity disorder, predominantly hyperactive impulsive type (disorder) & 3 \\
+        Attention deficit hyperactivity disorder, predominantly inattentive type (disorder) & 5 \\
+        \rowcolor{ltBlue}
+        Conduct disorder (disorder) & 1 \\
+        &\\[-6pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Aggressive type unsocialized behavior disorder (disorder); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Attention deficit hyperactivity disorder, predominantly hyperactive impulsive type (disorder); ALD -X- HA Events & 1 \\
+        Attention deficit hyperactivity disorder, predominantly hyperactive impulsive type (disorder); ASD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Attention deficit hyperactivity disorder, predominantly inattentive type (disorder); ALD -X- HA Events & 2 \\
+        Attention deficit hyperactivity disorder, predominantly inattentive type (disorder); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Attention deficit hyperactivity disorder, predominantly inattentive type (disorder); ASD -X- HA Events & 1 \\
+        Attention deficit hyperactivity disorder, predominantly inattentive type (disorder); ASD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Conduct disorder (disorder); ASD -X- HA Events & 1 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:Dbh-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Obsessive disorder}
+
+\vspace{10pt}
+
+No UCD participants are observed with an association to concepts containing the text ``obsessive." 
+
+\clearpage
+
+\section{Behavior, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+SNOMED CT path:  \small  SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Clinical history and observation findings (finding)[250171008]; Mental state, behavior and/or psychosocial function finding (finding)[384821006]; Behavior finding (finding)[844005]
+\normalsize
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{Bhv-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of Bhv joined to Dx-HA}
+    \label{fig:Bhv-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for Bhv joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        Abnormal behavior (finding) & 2 \\
+        \rowcolor{ltBlue}
+        ALD -X- HA Events & 14 \\
+        ALD -X- No HA Events & 14 \\
+        \rowcolor{ltBlue}
+        Altered behavior (finding) & 1 \\
+        ASD -X- HA Events & 32 \\
+        \rowcolor{ltBlue}
+        ASD -X- No HA Events & 2 \\
+        Behavior problem of childhood and adolescence (finding) & 4 \\
+        \rowcolor{ltBlue}
+        Compulsive behavior (finding) & 1 \\
+        Demanding behavior (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Difficult to manage behavior (finding) & 1 \\
+        Finding related to ability to control behavior (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Finding related to habits (finding) & 2 \\
+        Finding relating to complex and social behaviors (finding) & 21 \\
+        \rowcolor{ltBlue}
+        Fussy infant (finding) & 2 \\
+        Health-related behavior finding (finding) & 7 \\
+        \rowcolor{ltBlue}
+        Immature behavior (finding) & 4 \\
+        Inappropriate behavior (finding) & 1 \\
+        \rowcolor{ltBlue}
+        Mixed behavior and emotional disorder (disorder) & 1 \\
+        Motor function behavior finding (finding) & 34 \\
+        \rowcolor{ltBlue}
+        On examination - behavioral (finding) & 4 \\
+        Problem behavior (finding) & 8 \\
+        \rowcolor{ltBlue}
+        Repetitious behavior (finding) & 12 \\
+        Self-injurious behavior (finding) & 7 \\
+        &\\[-6pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Abnormal behavior (finding); ASD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Altered behavior (finding); ASD -X- HA Events & 1 \\
+        Behavior problem of childhood and adolescence (finding); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Behavior problem of childhood and adolescence (finding); ASD -X- HA Events & 3 \\
+        Compulsive behavior (finding); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Demanding behavior (finding); ASD -X- HA Events & 1 \\
+        Difficult to manage behavior (finding); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Finding related to ability to control behavior (finding); ASD -X- HA Events & 1 \\
+        Finding related to habits (finding); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Finding related to habits (finding); ASD -X- HA Events & 1 \\
+        Finding relating to complex and social behaviors (finding); ALD -X- HA Events & 3 \\
+        \rowcolor{ltBlue}
+        Finding relating to complex and social behaviors (finding); ALD -X- No HA Events & 3 \\
+        Finding relating to complex and social behaviors (finding); ASD -X- HA Events & 15 \\
+        \rowcolor{ltBlue}
+        Fussy infant (finding); ALD -X- HA Events & 1 \\
+        Fussy infant (finding); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Health-related behavior finding (finding); ALD -X- HA Events & 1 \\
+        Health-related behavior finding (finding); ASD -X- HA Events & 5 \\
+        \rowcolor{ltBlue}
+        Health-related behavior finding (finding); ASD -X- No HA Events & 1 \\
+        Immature behavior (finding); ALD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Immature behavior (finding); ALD -X- No HA Events & 2 \\
+        Inappropriate behavior (finding); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Mixed behavior and emotional disorder (disorder); ALD -X- No HA Events & 1 \\
+        Motor function behavior finding (finding); ALD -X- HA Events & 6 \\
+        \rowcolor{ltBlue}
+        Motor function behavior finding (finding); ALD -X- No HA Events & 8 \\
+        Motor function behavior finding (finding); ASD -X- HA Events & 19 \\
+        \rowcolor{ltBlue}
+        Motor function behavior finding (finding); ASD -X- No HA Events & 1 \\
+        On examination - behavioral (finding); ALD -X- HA Events & 2 \\
+        \rowcolor{ltBlue}
+        On examination - behavioral (finding); ASD -X- HA Events & 2 \\
+        Problem behavior (finding); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Problem behavior (finding); ALD -X- No HA Events & 2 \\
+        Problem behavior (finding); ASD -X- HA Events & 5 \\
+        \rowcolor{ltBlue}
+        Repetitious behavior (finding); ALD -X- HA Events & 1 \\
+        Repetitious behavior (finding); ALD -X- No HA Events & 3 \\
+        \rowcolor{ltBlue}
+        Repetitious behavior (finding); ASD -X- HA Events & 7 \\
+        Repetitious behavior (finding); ASD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Self-injurious behavior (finding); ALD -X- HA Events & 3 \\
+        Self-injurious behavior (finding); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Self-injurious behavior (finding); ASD -X- HA Events & 3 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:Bhv-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Delusional disorder}
+
+\vspace{10pt}
+
+SNOMED CT path:  \small SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Clinical history and observation findings (finding)[250171008]; Mental state, behavior and/or psychosocial function finding (finding)[384821006]; Cognitive function finding (finding)[373930000]; Thought finding (finding)[247619007]; Disturbance in thinking (finding)[26628009]; Disturbance in content of thought (finding)[55956009]; Finding of thought content (finding)[83507006]; Delusions (finding)[2073000];\\
+\normalsize
+
+No observations exist in the UCD data for this concept.  A search for observations associated with any concept containing ``delusion" in its description was attempted.  No observations were found.
+
+\clearpage
+
+\section{Dementia}
+
+\vspace{10pt}
+
+A search for observations associated with any concept containing ``dementia" in its description was attempted.  No observations were found for Dx of ASD and ALD.  A diagnosis of Alzheimer's disease exists for one OTC participant.
+
+\clearpage
+
+\section{Intellectual disability/Developmental delay, UCD diagnosis, and hyperammonemia}\label{sec:ID}
+
+\vspace{10pt}
+
+SNOMED-CT paths:
+
+\small
+\begin{itemize}
+    \item SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Disease (disorder) 64572001; Developmental disorder (disorder) 5294002; Neurodevelopmental disorder (disorder) 700364009; Developmental mental disorder (disorder) 129104009; Intellectual disability (disorder) 110359009
+    \item SNOMED CT Concept (SNOMED RT+CTV3) 138875005; Clinical finding (finding) 404684003; Disease (disorder) 64572001; Developmental disorder (disorder) 5294002; Developmental delay (disorder) 248290002
+\end{itemize}
+\normalsize
+
+Note that, although two distinct concept groups compose figure \ref{fig:ID-Dx-HA-01}, no indication is given as to which concepts (blue nodes) belong to which group.  Perhaps concept group identification would be a useful feature.
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{ID-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of ID joined to Dx-HA}
+    \label{fig:ID-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for ID joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ALD -X- HA Events & 18 \\
+        \rowcolor{ltBlue}
+        ALD -X- No HA Events & 10 \\
+        ASD -X- HA Events & 17 \\
+        \rowcolor{ltBlue}
+        ASD -X- No HA Events & 2 \\
+        Borderline intellectual disability (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        Cognitive developmental delay (disorder) & 16 \\
+        Developmental delay in fine motor function (disorder) & 2 \\
+        \rowcolor{ltBlue}
+        Developmental delay in social skills (disorder) & 1 \\
+        Global developmental delay (disorder) & 21 \\
+        \rowcolor{ltBlue}
+        Intellectual disability, congenital heart disease, blepharophimosis, blepharoptosis and hypoplastic teeth (disorder) & 1 \\
+        Intellectual disability, developmental delay, contracture syndrome (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        Mild intellectual disability (disorder) & 8 \\
+        Moderate intellectual disability (disorder) & 2 \\
+        \rowcolor{ltBlue}
+        Severe intellectual disability (disorder) & 3 \\
+        &\\[-6pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Borderline intellectual disability (disorder); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Cognitive developmental delay (disorder); ALD -X- HA Events & 4 \\
+        Cognitive developmental delay (disorder); ALD -X- No HA Events & 3 \\
+        \rowcolor{ltBlue}
+        Cognitive developmental delay (disorder); ASD -X- HA Events & 9 \\
+        Developmental delay in fine motor function (disorder); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Developmental delay in fine motor function (disorder); ALD -X- No HA Events & 1 \\
+        Developmental delay in social skills (disorder); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Global developmental delay (disorder); ALD -X- HA Events & 9 \\
+        Global developmental delay (disorder); ALD -X- No HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Global developmental delay (disorder); ASD -X- HA Events & 9 \\
+        Global developmental delay (disorder); ASD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Intellectual disability, congenital heart disease, blepharophimosis, blepharoptosis and hypoplastic teeth (disorder); ASD -X- No HA Events & 1 \\
+        Intellectual disability, developmental delay, contracture syndrome (disorder); ALD -X- No HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Mild intellectual disability (disorder); ALD -X- HA Events & 3 \\
+        Mild intellectual disability (disorder); ALD -X- No HA Events & 2 \\
+        \rowcolor{ltBlue}
+        Mild intellectual disability (disorder); ASD -X- HA Events & 3 \\
+        Moderate intellectual disability (disorder); ALD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Moderate intellectual disability (disorder); ALD -X- No HA Events & 1 \\
+        Severe intellectual disability (disorder); ASD -X- HA Events & 3 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:ID-Dx-HA-01}
+    \end{longtable}
+\end{small}
+
+\clearpage
+
+\section{Intellectual disability combined with developmental delay, UCD diagnosis, and hyperammonemia}
+
+\vspace{10pt}
+
+Here, the joint occurrence of intellectual disability and developmental delay are treated.  SNOMED CT concepts and paths are those used in section \ref{sec:ID}.  Participants included in figure \ref{fig:IDDD-Dx-HA-01} and table \ref{tab:IDDD-Dx-HA-01} are those with an association to at least one intellectual disability concept AND at least one developmental delay concept.  The participant count for node ASD-X-HA Events is seventeen, just as in section \ref{sec:ID}, to reflect the total number of participants who are candidates for this query (intellectual disability or developmental delay).  Perhaps frequencies should reflect participants associated with both intellectual disability and developmental delay concepts, since that is what composes the concept (blue) nodes.
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \frame{\includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{IDDD-Dx-HA-01}.png}}
+    \centering
+    \caption{Graph of intellectual disability combined with developmental delay, joined to Dx-HA}
+    \label{fig:IDDD-Dx-HA-01}
+\end{figure} 
+
+\vspace{20pt}
+
+\begin{small}
+    \begin{longtable}[H]{p{5in}r}
+        \caption{Node and edge frequency counts for intellectual disability combined with developmental delay, joined to Dx-HA}\\
+        \hline\\[-8pt]
+        Node & n-participants\\
+        \hline\\[-6pt]
+        ASD -X- HA Events & 17 \\
+        \rowcolor{ltBlue}
+        Mild intellectual disability (disorder) -X- Cognitive developmental delay (disorder) & 1 \\
+        Mild intellectual disability (disorder) -X- Global developmental delay (disorder) & 1 \\
+        \rowcolor{ltBlue}
+        Severe intellectual disability (disorder) -X- Cognitive developmental delay (disorder) & 1 \\
+        Severe intellectual disability (disorder) -X- Global developmental delay (disorder) & 2 \\
+        &\\[-6pt]
+        \hline\\[-8pt]
+        Edge & n-participants\\
+        \hline\\[-6pt]
+        Mild intellectual disability (disorder) -X- Cognitive developmental delay (disorder); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Mild intellectual disability (disorder) -X- Global developmental delay (disorder); ASD -X- HA Events & 1 \\
+        Severe intellectual disability (disorder) -X- Cognitive developmental delay (disorder); ASD -X- HA Events & 1 \\
+        \rowcolor{ltBlue}
+        Severe intellectual disability (disorder) -X- Global developmental delay (disorder); ASD -X- HA Events & 2 \\
+        & \\[-6pt]
+        \hline
+        \label{tab:IDDD-Dx-HA-01}
+    \end{longtable}
+\end{small}
+    
+\end{spacing}
+    
+\end{document} 

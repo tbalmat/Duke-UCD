@@ -1,0 +1,465 @@
+\documentclass[10pt, letterpaper]{article}
+\usepackage{setspace}
+\usepackage[letterpaper, margin=1.0in]{geometry}
+\addtolength{\topmargin}{-0.25in}
+%\usepackage{tocloft}
+\usepackage{titlesec}
+%\titleformat*{\section}{\large\bfseries}
+\titleformat*{\section}{\large}
+\titleformat*{\subsection}{\normalsize}
+\usepackage{longtable}
+\usepackage{float} % H causes tables and figures to appear where specified
+\usepackage{array} % ragged right alignment in table cells
+\usepackage{ragged2e} % ragged right alignment
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amsmath}   % includes \boldmath(), \boldsymbol{()}
+\usepackage{bm}        % math fonts, \boldmath{}, \boldsymbol{}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{subcaption}
+%\usepackage{xcolor, colortbl}
+%\definecolor{gray}{gray}{0.9}
+%\definecolor{ltBlue}{rgb}{0.75, 0.85, 0.975}
+%\definecolor{medBlue}{rgb}{0.75, 0.8, 0.9}
+%\definecolor{white}{rgb}{1, 1, 1}
+%\rowcolor{ltBlue}
+\usepackage{changepage}
+\usepackage{pdflscape}
+\bibliographystyle{plainnat}
+\usepackage[authoryear, round, semicolon]{natbib}
+\newcommand{\mt}[1]{\bm{#1}^{\prime}}
+\newcommand{\mtm}[2]{\bm{#1}^{\prime}\bm{#2}}
+\newcommand{\mi}[1]{\bm{#1}^{-1}}
+\newcommand{\mest}[1]{\hat{\bm{#1}}}
+\usepackage[bottom]{footmisc}
+\setlength{\skip\footins}{12pt}
+\setlength\parindent{0pt}
+
+\title{\large University of Nebraska, Duke University UCD-SNOMEDCT\\[8pt]
+       \large Review of Tremor Concepts and Diagnoses\\[4pt]}
+
+\date{}
+
+\author{\normalsize Tom Balmat, Duke University Research Computing}
+
+\begin{document}
+    
+\begin{spacing}{1.0}
+    
+\maketitle
+
+%\vspace{0.25in}
+
+Rima supplied three sets of tremor descriptions from which to query concept FSNs and associated participant diagnoses in the project data.  Following are the results of querying these descriptions.
+
+\section*{Description set 1}
+
+Table \ref{tab:desc1} contains description text as supplied.  Unique leading portions of descriptions were used to identify whether corresponding FSNs exist in the data, their status, and the number of participants with corresponding diagnoses (using the P\_SCT relationship).  Table \ref{tab:res1} shows the results of querying concepts contained in table \ref{tab:desc1}.  Note that participant counts represent the number of participants with a direct relationship to a concept, whereas the graph app generally counts participants having a relationship with any concept in a path leading to a concept of interest.  Using the app method would likely increase participant counts in table \ref{tab:res1}.  Selecting two concepts for examinination, we see that \textit{Essential tremor (finding)} has an active status of 0 in the project data, which explains why the graph app does not generate a diagram for it.  The inactive status of this concept was confirmed using the SNOMEDCT browser and search string ``essential tremor."  Figure \ref{fig:snomedesstrem} is a screen-shot of the resulting browser query, where \textit{Essential tremor (finding)} appears in red, indicating an inactive status.  Examining the concept \textit{Fine tremor (finding)}, using the current version of SNOMEDCT, reveals the path \textit{Clinical finding (finding), Finding of movement (finding), Involuntary movement (finding), Tremor (finding)}.  Figure \ref{fig:snomedfinetrem1} is a screen-shot of this browser hierarchy.  Using the project data, limited to active relationships, \textit{Fine tremor(finding)} is found uniquely in the path \textit{Clinical finding (finding), Clinical history and observation findings (finding), Finding of movement (finding), Involuntary movement (finding), Tremor (finding)}.  The existence of this path was independently verified using the 2017-07-31 SNOMEDCT release data.  Figure \ref{fig:graphfinetrem} shows the graph for this concept related to the interaction of Dx and HA, limited to ALD and ASD.  Several alternate paths leading to \textit{Fine tremor (finding)} were identified in the project data, but none with active relationships in the associated hierarchies.  No path, active or inactive, exists in the project data that relates \textit{Clinical finding (finding)} to \textit{Finding of movement (finding)}, which is the official path in the current release of SNOMEDCT.  The team should consider updating relationships in the project data to agree with those in the current SNOMEDCT release.  Otherwise, the SNOMEDCT browser is of limited use in defining paths to be used for querying project participant data. 
+
+\vspace{10pt}
+
+\begin{footnotesize}
+\begin{longtable}[H]{l}
+    \caption{Tremor FSN description set 1}\\[-4pt]
+    \hline\\[-6pt]
+    Description\\[2pt]
+    \hline\\[-4pt]
+    \endhead
+        [XOther specified forms of tremor (finding) code:194473001 43.8 [SNOMED CT]\\
+        Benign familial tremor (finding) code:192840004 98.4 [SNOMED CT]\\
+        Dissociative tremor (disorder) code:191713008 62.5 [SNOMED CT]\\
+        Dysarthria (finding) code:8011004 100.0 [SNOMED CT]\\
+        Essential tremor (disorder) code:609558009 100.0 [SNOMED CT]\\
+        Essential tremor (disorder) code:609558009 20.4 [SNOMED CT]\\
+        Essential tremor (disorder) code:609558009 35.1 [SNOMED CT]\\
+        Essential tremor (finding) code:192839001 100.0 [SNOMED CT]\\
+        Essential tremor (finding) code:192839001 26.0 [SNOMED CT]\\
+        Essential tremor (finding) code:192839001 62.5 [SNOMED CT]\\
+        Fine tremor (finding) code:42800007  100.0 [SNOMED CT]\\
+        Fine tremor (finding) code:42800007 100.0 [SNOMED CT]\\
+        Fine tremor (finding) code:42800007 39.8 [SNOMED CT]\\
+        Finger-finger test abnormal (finding) code:250064001 33.2 [SNOMED CT]\\
+        Finger-nose test abnormal (finding) code:250063007 100.0 [SNOMED CT]\\
+        Finger jerk finding (finding) code:366462001 27.6 [SNOMED CT]\\
+        Intention tremor (finding) code:30721006 100.0 [SNOMED CT]\\
+        Intention tremor (finding) code:30721006 53.6 [SNOMED CT]\\
+        Intention tremor (finding) code:30721006 59.8 [SNOMED CT]\\
+        Intention tremor (finding) code:30721006 61.5 [SNOMED CT]\\
+        Intention tremor (finding) code:30721006 62.5 [SNOMED CT]\\
+        Intermittent tremor (finding) code:36637003 53.6 [SNOMED CT]\\
+        Intermittent tremor (finding) code:36637003 62.5 [SNOMED CT]\\
+        Isolated facial tremor (finding) code:230340001 100.0 [SNOMED CT]\\
+        Isolated head tremor (finding) code:230339003 35.2 [SNOMED CT]\\
+        Muscle twitch (finding) code:60238002 100.0 [SNOMED CT]\\
+        On examination - coarse tremor - flapping (finding) code:163668002 80.0 [SNOMED CT]\\
+        On examination - fine tremor (finding) code:163667007 20.8 [SNOMED CT]\\
+        On examination - fine tremor (finding) code:163667007 80.0 [SNOMED CT]\\
+        On examination - intention tremor (finding) code:163669005 75.3 [SNOMED CT]\\
+        On examination - intention tremor (finding) code:163669005 77.1 [SNOMED CT]\\
+        On examination - intention tremor (finding) code:163669005 79.5 [SNOMED CT]\\
+        On examination - intention tremor (finding) code:163669005 80.0 [SNOMED CT]\\
+        On examination - tremor outstretched hands (finding) code:417418002  100.0 [SNOMED CT]\\
+        On examination - tremor outstretched hands (finding) code:417418002 100.0 [SNOMED CT]\\
+        On examination - tremor outstretched hands (finding) code:417418002 12.7 [SNOMED CT]\\
+        On examination - tremor outstretched hands (finding) code:417418002 14.4 [SNOMED CT]\\
+        Repetitive rocking movements (finding) code:30189004 10.5 [SNOMED CT]\\
+        Resting tremor (finding) code:25082004 [SNOMED CT]\\
+        Resting tremor (finding) code:25082004 100.0 [SNOMED CT]\\
+        Resting tremor (finding) code:25082004 62.5 [SNOMED CT]\\
+        Resting tremor (finding) code:25082004Version: 2011.07.11AA Release Date: 2011-09-02 11:17:31.0 [SNOMED CT]\\
+        Tremor (finding) code:26079004  68.8 [SNOMED CT]\\
+        Tremor (finding) code:26079004  76.0 [SNOMED CT]\\
+        Tremor (finding) code:26079004  76.3 [SNOMED CT]\\
+        Tremor (finding) code:26079004 100.0 [SNOMED CT]\\
+        Tremor (finding) code:26079004 20.7 [SNOMED CT]\\
+        Tremor (finding) code:26079004 20.8 [SNOMED CT]\\
+        Tremor (finding) code:26079004 50.9 [SNOMED CT]\\
+        Tremor (finding) code:26079004 56.6 [SNOMED CT]\\
+        Tremor (finding) code:26079004 57.8 [SNOMED CT]\\
+        Tremor (finding) code:26079004 66.6 [SNOMED CT]\\
+        Tremor (finding) code:26079004 67.3 [SNOMED CT]\\
+        Tremor (finding) code:26079004 67.5 [SNOMED CT]\\
+        Tremor (finding) code:26079004 68.0 [SNOMED CT]\\
+        Tremor (finding) code:26079004 68.5 [SNOMED CT]\\
+        Tremor (finding) code:26079004 75.7 [SNOMED CT]\\
+        Tremor (finding) code:26079004 76.3 [SNOMED CT]\\
+        Tremor (finding) code:26079004 85.8 [SNOMED CT]\\
+        Tremor (finding) code:26079004 87.0 [SNOMED CT]\\
+        Tremor (finding) code:26079004Version: 2009.07.9AA Release Date: 2009-09-03 02:06:24.0 [SNOMED CT]\\
+        Tremor (finding) code:26079004Version: 2011.07.11AA Release Date: 2011-09-02 11:17:31.0 [SNOMED CT]\\[4pt]
+        \hline\\[-6pt]
+    \label{tab:desc1}
+\end{longtable}
+\end{footnotesize}
+
+\begin{table}[H]
+    \centering
+    \caption{Query results for FSN description set 1}
+    \begin{tabular}{lrrr}
+        \hline\\[-6pt]
+        Description & SCT ID & Active & n-participants\\[2pt]
+        \hline\\[-6pt]
+        [xother specified forms of tremor (finding) & NA & NA & 0\\
+        benign familial tremor (finding) & 192840004 & 0 & 1\\
+        dissociative tremor (disorder) & 191713008 & 1 & 2\\
+        dysarthria (finding) & 229685007 & 1 & 0\\
+        essential tremor (disorder) & 632009 & 0 & 0\\
+        essential tremor (finding) & 192839001 & 0 & 2\\
+        fine tremor (finding) & 42800007 & 1 & 7\\
+        finger-finger test abnormal (finding) & 250064001 & 1 & 0\\
+        finger-nose test abnormal (finding) & 250063007 & 1 & 14\\
+        finger jerk finding (finding) & 366462001 & 1 & 1\\
+        intention tremor (finding) & 140873002 & 0 & 0\\
+        intermittent tremor (finding) & 36637003 & 1 & 2\\
+        isolated facial tremor (finding) & 230340001 & 1 & 1\\
+        isolated head tremor (finding) & 230339003 & 1 & 1\\
+        muscle twitch (finding) & 60238002 & 1 & 6\\
+        on examination - coarse tremor - flapping (finding) & 163668002 & 1 & 1\\
+        on examination - fine tremor (finding) & 163667007 & 1 & 5\\
+        on examination - intention tremor (finding) & 163669005 & 1 & 5\\
+        on examination - tremor outstretched hands (finding) & 417418002 & 1 & 12\\
+        repetitive rocking movements (finding) & 30189004 & 1 & 2\\
+        resting tremor (finding) & 25082004 & 1 & 12\\
+        tremor (finding) & 308909003 & 1 & 0\\[4pt]
+        \hline\\[-4pt]
+    \end{tabular}
+    \label{tab:res1}
+\end{table}
+
+\vspace{20pt}
+
+\begin{figure}[H]
+    \includegraphics[width=6in, trim={0 0 0 0.0}, clip]{{SNOMEDEssentialTremor}.png}
+    \centering
+    \caption{SNOMEDCT browser results for ``essential tremor"}
+    \label{fig:snomedesstrem}
+\end{figure} 
+
+\begin{figure}[H]
+    \includegraphics[width=2.5in, trim={0 0 0 0.0}, clip]{{SNOMEDFineTremor1}.png}
+    \centering
+    \caption{SNOMEDCT browser hierarchy for ``fine tremor (finding)"}
+    \label{fig:snomedfinetrem1}
+\end{figure} 
+
+\vspace{1in}
+
+\begin{figure}[H]
+    \includegraphics[width=6.5in, trim={0 0 0 0.0}, clip]{{FineTremorGraph}.png}
+    \centering
+    \caption{Graph for ``fine tremor (finding)"}
+    \label{fig:graphfinetrem}
+\end{figure} 
+
+\clearpage
+
+\section*{Description set 2}
+
+Table \ref{tab:res2} shows the results of querying concepts contained in supplied description set 2 (text containing lower case ``tremor.")  Note that both the supplied text and database text were converted to lower case within queries.
+
+\vspace{0.25in}
+
+\begin{footnotesize}
+    \begin{longtable}[H]{p{4in}rrr}
+        \caption{Tremor FSN query results for description set 2}\\[-4pt]
+        \hline\\[-6pt]
+        Description & SCT ID & Active & n-participants\\[2pt]
+        \hline\\[-4pt]
+        \endhead
+        benign tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        bilateral intention tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        body tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        coarse intention tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        coarse tremor. & NA &  & 0\\
+        & & &\\[-6pt]
+        essemtial tremor, fine & NA &  & 0\\
+        & & &\\[-6pt]
+        essental tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        essential fine tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        essential tremor & 323258001 & 0 & 0\\
+        & & &\\[-6pt]
+        essential tremor, benign & NA &  & 0\\
+        & & &\\[-6pt]
+        essential tremors & NA &  & 0\\
+        & & &\\[-6pt]
+        facial muscle tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        fine motor tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        fine motor tremor with finger extention and writing & NA &  & 0\\
+        & & &\\[-6pt]
+        fine resting tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        fine tremor & 42800007 & 1 & 7\\
+        & & &\\[-6pt]
+        fine tremors & NA &  & 0\\
+        & & &\\[-6pt]
+        finger to nose tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        finger tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        hand tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        hand tremors & NA &  & 0\\
+        & & &\\[-6pt]
+        has tremor and is slowing on finger-to-nose testing. & NA &  & 0\\
+        & & &\\[-6pt]
+        has tremor and is slowing on finger to nose testing. unable to tandem gait. & NA &  & 0\\
+        & & &\\[-6pt]
+        intention tremor & 140873002 & 0 & 0\\
+        & & &\\[-6pt]
+        intention tremor left hand & NA &  & 0\\
+        & & &\\[-6pt]
+        intentional tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        intentional tremor in hands & NA &  & 0\\
+        & & &\\[-6pt]
+        intentional tremors & NA &  & 0\\
+        & & &\\[-6pt]
+        left hand tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        left hand tremor with menses & NA &  & 0\\
+        & & &\\[-6pt]
+        leg/jaw tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        mild fine tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        mild flapping tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        mild intention tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor at rest & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor bilaterally & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor in fingers & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor in fingers during pronator drift test & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor of hands (bl) & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor of outstretched arm & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor on pronator drift & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor on pronator drift test & NA &  & 0\\
+        & & &\\[-6pt]
+        mild/moderate tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        minimal intention tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        moderate hepatomegaly with a coarse liver. liver is approx. 3cm below costal margin with a soft adge. has up slanting palpebral fissures bilaterally. mildly dysmorphic. history of tremors. needs some assistance with her daily living. when she has fever she has lethargy. history of deevlopmental delay. mildly dysmorphic facial. & NA &  & 0\\
+        & & &\\[-6pt]
+        occasional hand tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        occasional mild tremor x6 mo. & NA &  & 0\\
+        & & &\\[-6pt]
+        occasional tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        occasional tremor with writing & NA &  & 0\\
+        & & &\\[-6pt]
+        occasional tremors & NA &  & 0\\
+        & & &\\[-6pt]
+        occasionally tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        posture tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        residual tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        resting tremor & 25082004 & 1 & 12\\
+        & & &\\[-6pt]
+        resting tremor  upper extremities bilateral & NA &  & 0\\
+        & & &\\[-6pt]
+        resting tremor l > r & NA &  & 0\\
+        & & &\\[-6pt]
+        resting tremors & NA &  & 0\\
+        & & &\\[-6pt]
+        rigtht foot tremor/twitching & NA &  & 0\\
+        & & &\\[-6pt]
+        significatn tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        slight intention tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        slight intention tremor l=r, no other signs- no nystagmus & NA &  & 0\\
+        & & &\\[-6pt]
+        slight resting tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        slight tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        some tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        some tremor on finger tap testing & NA &  & 0\\
+        & & &\\[-6pt]
+        some tremor on pronator drift & NA &  & 0\\
+        & & &\\[-6pt]
+        sometimes has tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor & 66880003 & 1 & 0\\
+        & & &\\[-6pt]
+        tremor action & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor at rest & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor at rest, bilateral upper extremities, head & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor extremeties & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor hands and arm & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor in finger-finger test & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor in finger to nose testing nose & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor in hands & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor in right leg & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor neck & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor of left hand & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor on finger point & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor on pronator drift & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor with dysarthiria & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor, essential & NA &  & 0\\
+        & & &\\[-6pt]
+        tremors & 49958005 & 1 & 0\\
+        & & &\\[-6pt]
+        tremors in hands & NA &  & 0\\
+        & & &\\[-6pt]
+        tremors of fingers & NA &  & 0\\
+        & & &\\[-6pt]
+        tremors of legs, arms, and hands & NA &  & 0\\
+        & & &\\[-6pt]
+        tremors with ha episode & NA &  & 0\\
+        & & &\\[-6pt]
+        very very mild tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        whole body tremors & NA &  & 0\\
+        & & &\\[-6pt]
+        worsening tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        \hline\\[-6pt]
+        \label{tab:res2}
+    \end{longtable}
+\end{footnotesize}
+
+\section*{Description set 3}
+
+Table \ref{tab:res3} shows the results of querying concepts contained in supplied description set 3 (text containing upper case ``Tremor.")  Note that both the supplied text and database text were converted to lower case within queries.
+
+\vspace{0.25in}
+
+\begin{footnotesize}
+    \begin{longtable}[H]{p{4in}rrr}
+        \caption{Tremor FSN query results for description set 3}\\[-4pt]
+        \hline\\[-6pt]
+        Description & SCT ID & Active & n-participants\\[2pt]
+        \hline\\[-4pt]
+        \endhead
+        bilateral tremor on both hands at baseline & NA &  & 0\\
+        & & &\\[-6pt]
+        essential tremor & 323258001 & 0 & 0\\
+        & & &\\[-6pt]
+        fine essential tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        fine motor tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        fine tremor & 42800007 & 1 & 7\\
+        & & &\\[-6pt]
+        hand tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        intention tremor & 140873002 & 0 & 0\\
+        & & &\\[-6pt]
+        left hand tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        mild tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        occasional tremors & NA &  & 0\\
+        & & &\\[-6pt]
+        resting tremor & 25082004 & 1 & 12\\
+        & & &\\[-6pt]
+        trace tremor & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor & 66880003 & 1 & 0\\
+        & & &\\[-6pt]
+        tremor (hands) & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor hand (right>left) & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor in fingers & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor no longer present & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor occasionally noted, not interfering with daily function & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor of both hands & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor of hands & NA &  & 0\\
+        & & &\\[-6pt]
+        tremor upper extremity & NA &  & 0\\
+        & & &\\[-6pt]
+        tremors & 49958005 & 1 & 0\\
+        & & &\\[-6pt]
+        tremors, documentation begins in available medical records in may 1998 & NA &  & 0\\
+        & & &\\[-6pt]
+        \hline\\[-6pt]
+        \label{tab:res3}
+    \end{longtable}
+\end{footnotesize}
+
+\end{spacing}
+
+\end{document} 
