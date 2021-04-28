@@ -64,7 +64,7 @@ shinyUI(
             fluidRow(
               column(width=12,
                 div(HTML("<b>Explore sub-concepts&nbsp&nbsp</b>"), style="display:inline-block; vertical-align:top; margin-left:16px; margin-top:10px"),
-                div(selectInput("exploreChoices", "", choices="", width="750px", selectize=F, size=15),
+                div(selectInput("exploreChoices", "", choices="", width="750px", selectize=F, size=16),
                     style="display:inline-block; vertical-align:top; margin-top:-15px")
                 #div(actionButton("retParentConcept", "<- parent", style="color:white; background:linear-gradient(#54b4eb, #2fa4e7 60%, #0088dd)"), style="display:inline-block; vertical-align:top; margin-left:10px; margin-top:5px")
               )

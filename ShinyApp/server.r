@@ -24,6 +24,7 @@ library(visNetwork)
 library(httr)
 library(rjson)
 library(DT)
+#library(sqldf)
 
 ##########################################################################################################
 # Clear memory, in case execution was resumed (for instance, with the browser refresh operation)
@@ -260,10 +261,13 @@ shinyServer(
       # Tremor (path path Clinical finding, Clinical history, Finding of movement, Involuntary movement)
       #queryConcept <- data.frame("ID"=c("52559000", "26079004"), FSN="")
 
-      # Motor dysfunction and anxiety
+      # Motor dysfunction and
+      # Anxiety disorder (Clinical finding Disease (disorder), Mental disorder, Anxiety disorder)
       #queryConcept <- data.frame("ID"=c("52559000", "48694002", FSN=""))
 
-      # Motor dysfunction and developmental mental disorder
+      # Motor dysfunction and
+      # Developmental mental disorder (Clinical finding, Disease, Mental disorder, Mental disorder first evident
+      # in infancy, Developmental mental disorder
       #queryConcept <- data.frame("ID"=c("52559000", "129104009", FSN=""))
 
       # Anxiety disorder, mood disorder
@@ -280,20 +284,21 @@ shinyServer(
         # Note that this event always establishes a new graph environment
         # Only one of ID or keyword filters are applied, ID takes precedence
         if(nrow(queryConcept)>0) {
-          graphCfgOp("op"="init", query=list("concept"=list("style"="ID", "values"=queryConcept[,"ID"],
-                                             "op"="", "conceptOrder"=1:nrow(queryConcept))))
+          graphCfgOp(op="init", query=list("concept"=list("style"="ID", "values"=queryConcept[,"ID"],
+                                           "op"="", "conceptOrder"=1:nrow(queryConcept))))
         } else {
           # Parse semi-colon delimited search strings
           # Omit double spaces and spaces after semicolons
           a <- input$queryFSNKeyword
           while(regexpr("; ", a)[[1]]>0 | regexpr("  ", a)[[1]]>0)
             a <- gsub("; ", ";", gsub("  ", " ", a))
-          # Parse filter values
+          # Parse concept values
           b <- strsplit(a, ";")[[1]]
-          graphCfgOp("op"="init", query=list("concept"=list("style"=input$queryFSNKeywordStyle,
-                                                            "values"=b,
-                                                            "op"=input$queryFSNKeywordOp,
-                                                            "conceptOrder"=1:length(b))))
+          graphCfgOp(op="init",
+                     query=list("concept"=list("style"=input$queryFSNKeywordStyle,
+                                               "values"=b,
+                                               "op"=input$queryFSNKeywordOp,
+                                               "conceptOrder"=1:length(b))))
         }
 
         # Query observations using the currently selected concept
@@ -357,7 +362,7 @@ shinyServer(
     # Maintain graph configuration stack
     # Initialize, push/remove current configuration onto/from stack
     # Record currently selected concept IDs, participant var filter values, prescription filters, etc.
-    # Note the global declaration to that the function accessible from outside the shiynyServer() env
+    # Note the global declaration so that the function is accessible from outside the shiynyServer() env
     ##########################################################################################################
 
     graphCfgOp <<- function(op, query=NULL, filter=NULL, filterMode=NULL, vcfg=NULL) {
@@ -371,17 +376,18 @@ shinyServer(
       #                "vcfg" ..... update the vcfg element of graphCfg
       # query ........ List of query instruction sets, one set for each variable to be treated
       #                See notes in the queryNetworkData() function for an explanation
-      # filter ....... List of variable value filters, one for each variable to be filtered
-      #                For primary variables (non-joined concepts and non-interactions),
-      #                element names correspond to the database variable to filter
-      #                For primary variables, each element is a vector of values to include
-      #                For joint-concepts and interactions, each element is list with each element
+      # filter ....... List of variable value (vertex) filters, one for each variable type (primary,
+      #                joint-concept, and interaction)
+      #                For primary variables (non-joined concepts and non-interactions), a list with
+      #                element names corresponding to the database variable to filter, each element
+      #                a vector of values to include for the named variable
+      #                For joint-concepts and interactions, each element is a list with each element
       #                containing a vector, where each vector specifies a set of database values
       #                to be included (vertices to be created for)
       #                Joint-concept vectors need not be named (all correspond to concepts)
       #                Interaction filter vector names positionally correspond to database
       #                variables to be evaluated (data column with name = pos i of filter vector
-      #                names is filtered by value in pos i of filter vector 
+      #                names is filtered by value in pos i of filter vector)
       # filterMode ... "filter", "expand", "nbhood1" as used in assembleNetworkComponents()
       # vcfg ......... Data frame of vertex configuration values, a modified version of the global
       #                vcfg data frame that reflects current data set and appearance configuration
@@ -515,7 +521,7 @@ shinyServer(
 
     ##########################################################################################################
     # Record reactive values prior to update
-    # These are useful in evaluating current with prior values 
+    # These are useful in evaluating current values with prior values 
     ##########################################################################################################
 
     onFlush(session=session, once=FALSE,
@@ -586,7 +592,8 @@ shinyServer(
                               length(reactVal[["interactSet1"]])>1 & length(reactVal[["interactConn1"]])>0 |
                               length(reactVal[["interactSet2"]])>1 & length(reactVal[["interactConn2"]])>0)) {
           # Modify current graph cfg
-          graphCfgOp(op="upd")
+          # Omit interaction filters, if any specified
+          graphCfgOp(op="upd", filter=graphCfg[[gcPtr]][["filter"]][[setdiff(names(graphCfg[[gcPtr]][["filter"]]), "interaction")]])
           netComponents <<- assembleNetworkComponents()
           if(nrow(netComponents[["vertex"]])>0) {
             updateRadioButtons(session, "physics", selected=T)
@@ -671,7 +678,6 @@ shinyServer(
     ##########################################################################################################
 
     observeEvent(input$shiftClick, {
-      #print("shiftClick")
       # Identify selected vertex (value of id column in vertex data frame)
       v <- input$shiftClick[["nodes"]]
       if(length(v)>0) {
@@ -699,7 +705,6 @@ shinyServer(
     ##########################################################################################################
 
     observeEvent(input$altClick, {
-      #print("altClick")
       # Identify selected vertex
       v <- input$altClick[["nodes"]]
       if(length(v)>0)
@@ -766,7 +771,9 @@ shinyServer(
           filter[["primary"]] <- lapply(1:length(ivar),
                                    function(i)
                                      # Retrieve database values for current variable
-                                     unlist(lapply(ivar[[i]], function(j) netComponents[["vertexDataValue"]][j])))
+                                     setNames(
+                                       unlist(lapply(ivar[[i]], function(j) netComponents[["vertexDataValue"]][j])),
+                                       NULL))
           names(filter[["primary"]]) <- names(ivar)
           # Retain current filter specifications for variables not represented in specified nodes
           if(!is.null(graphCfg[[gcPtr]][["filter"]])) {
@@ -787,7 +794,8 @@ shinyServer(
         # Identify variables in interaction class
         kc <- kvx[which(netComponents[["vertex"]][kvx,"varClass"]=="interaction")]
         if(length(kc)>0) {
-          # Copy vectors of interaction data values from vertex data to jointConcept filter element
+          # Copy interaction value data frames from vertex data to interaction filter element
+          # Note that variable names appear in the data frame column names
           filter[["interaction"]] <- lapply(kc, function(i) netComponents[["vertexDataValue"]][[i]])
         }
         filter
@@ -884,18 +892,20 @@ shinyServer(
       if(nrow(shiftClickNode)>0) {
         # Retrieve vertex row indices for selected nodes
         knode <- match(shiftClickNode[,"nodeID"], netComponents[["vertex"]][,"id"])
-        # Test for conceptID as a primary variable (prompts for expansion, not filtering)
-        kcp <- intersect(knode[which(netComponents[["vertex"]][knode,"varClass"]=="primary")],
-                         unlist(lapply(knode,
-                                       function(i)
-                                         if(names(netComponents[["vertexDataValue"]][[i]])[1]=="conceptID") {
-                                           i
-                                         } else {
-                                           NA
-                                         })))
+        # Identify concept nodes
+        vnode <- unlist(lapply(knode,
+                          function(i)
+                            if(names(netComponents[["vertexDataValue"]][[i]])[1]=="conceptID") {
+                              i
+                            } else {
+                              NA
+                            }))
+        # Test for conceptID as a primary variable (for expansion, not filtering)
+        kcp <- intersect(knode[which(netComponents[["vertex"]][knode,"varClass"]=="primary")], vnode)
+
         if(length(kcp)>0) {
           # Concept(s) selected and conceptID is a primary, not joined, variable
-          # Compose query instruction for selected concepts, so that a graph of chidren concepts produced
+          # Compose query instruction for selected concepts, so that a graph of chidren concepts is produced
           # Include concept order from previous query (from the parents of selected nodes) 
           # This will maintain continuity of concept orders (numbers in parentheses preceding concept descriptions),
           # so that as concept nodes are subset into children sets, their order corresponds to the initial
@@ -904,9 +914,15 @@ shinyServer(
                                        "values"=unlist(lapply(kcp, function(i) netComponents[["vertexDataValue"]][[kcp]])),
                                        "op"="",
                                        "conceptOrder"=netComponents[["vertex"]][kcp,"conceptOrder"]))
-          # Compose filter for non-concept variables
-          filter <- subsetNodeFilterCompose(shiftClickNode[,"nodeID"])
-          # Eliminate concepts from primary variable filter, since the query will limit concepts
+
+          # Compose filter for selected nodes of non-concept variables
+          # If all shift-click nodes represent conepts then retain current filter, less concepts
+          if(length(knode!=length(kcp))) {
+            filter <- subsetNodeFilterCompose(shiftClickNode[which(is.na(vnode)),"nodeID"])
+          } else {
+            filter <- graphCfg[[gcPtr]][["filter"]]
+          }
+          # Omit concept filter, since they will be queried
           filter[["primary"]] <- filter[["primary"]][which(names(filter[["primary"]])!="conceptID")]
           filterMode <- "expand"
         } else {
@@ -933,6 +949,7 @@ shinyServer(
             showNotification("No data exist for specified SNOMED CT concept(s) or related covariates", type="error")
           }
         }
+
         # Filter nodes and edges then render graph
         netComponents <<- assembleNetworkComponents()
         if(nrow(netComponents[["vertex"]])>0) {
@@ -945,12 +962,14 @@ shinyServer(
           output$g1 <- NULL
           #output$gTable <- NULL
         }
+
       } else if(input$rxLeadCharFilter!=graphCfg[[gcPtr]][["rxLeadCharFilter"]]) {
         # Filter nodes by leading Rx characters
         # Note that the current Rx filter is saved by filterNodes()
         # The filtered graph is also rendered by filterNodes()
         filterNodes()
       }
+
       # Clear selected node indices
       shiftClickNode <<- shiftClickNode[F,]
 

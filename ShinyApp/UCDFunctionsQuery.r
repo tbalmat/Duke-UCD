@@ -26,7 +26,8 @@
 ########################################################################################################## 
 
 ##########################################################################################################
-# Neo4j query function implemented using PUT operation
+# The Neo4jQuery function is implemented using PUT operation
+# Parameters neo4jPort, neo4jDB, neo4jUID, and neo4jPW are used to connect to the DB service
 # Parameter query contains a properly formatted Cypher query
 # Return value is a list with two elements:
 #   status .... "", if no errors reported by Neo4j service
@@ -35,7 +36,7 @@
 #               0-row, 0-column data frame, if PUT() or Neo4j report an error
 ##########################################################################################################
 
-neo4jQuery <- function(neo4jPortDB, neo4jUID, neo4jPW, query) {
+neo4jQuery <- function(neo4jPort, neo4jDB, neo4jUID, neo4jPW, query) {
 
   # Establish connection and begin transaction
   # All queries, even those limited to record selection, are executed within a transaction
@@ -126,7 +127,7 @@ queryISAConcept <- function(sctid) {
               with     reduce(a='', b in labels(x)|a+', '+b) as label, x.sctid as sctid, x.FSN as FSN
               return   label, sctid, FSN limit 1"
   }
-  conceptMbr <- neo4jQuery(neo4jPortDB, neo4jUID, neo4jPW, query)
+  conceptMbr <- neo4jQuery(neo4jPort, neo4jDB, neo4jUID, neo4jPW, query)
   if(conceptMbr[["status"]]=="") {
     if(!is.na(conceptMbr[["data"]][1,1])) {
       return(data.frame("label"=conceptMbr[["data"]][,"label"],
@@ -160,8 +161,8 @@ queryNetworkData <- function() {
   #        Style "contains" instructs to parse elements of the values element, a semi-colon delimited
   #          string of terms into "a,", "b,", ... , "c" and to compose a where clause containing
   #          "(and x.FSN contains 'a' * x.FSN contains 'b' * ... * x.FSN contains 'c')" where
-  #          x is the ObjectConcept node referenced in the Cypher query and op is the value contained
-  #          in the "op" element (either "and" or "or")
+  #          x is the ObjectConcept node referenced in the Cypher query and * (operation) op is the
+  #          value contained in the "op" element of the query element of graphCfg (either "and" or "or")
   #          NOTE that style "contains" can cause artificial weighting of concepts by return multiple paths
   #          for a single concept
   #          Consider concepts a, b, and c, where c is a child of b and b is a child of a, both
@@ -175,7 +176,8 @@ queryNetworkData <- function() {
   #          that does not complete efficiently, unless very restrictive search terms are specified.
   #        Style "lead" instructs to parse elements of the values element, a semi-colon delimited
   #          string of terms into "a,", "b,", ... , "c" and to compose a where clause containing
-  #          "(and left(x.FSN, length('a'))='a' * left(x.FSN, length('b'))='b' * ... * left(x.FSN, length('c')) contains 'c')"
+  #          "(and left(x.FSN, length('a'))='a' * left(x.FSN, length('b'))='b' * ... *
+  #          left(x.FSN, length('c')) contains 'c')"
   #          NOTE that, because text searches are limited to leading text, this style remedies the
   #          duplicate weighting problem mentioned above, for the "contains" style, provided that
   #          sufficient, distuinguishing search terms are specified
@@ -354,25 +356,26 @@ queryNetworkData <- function() {
                  "   match  (prt:Participant)-[:P_SCT]->(sct0:ObjectConcept)-[rsct:ISA*]->(sct2:ObjectConcept)",
                  "   where  1=1", filtConcept,
                  "          and sct0.active='1' and sct2.active='1'",
-                 # Due to [rsct:ISA*] having indeterminate length, we must evaluate all relationships in the path
+                            # Due to [rsct:ISA*] having indeterminate length, we must evaluate all relationships in the path
                  "          and all(r2 in rsct where r2.active='1')",
-                 # Retrieve leading node (sct1) in final path terminating at sct2
-                 # This accepts paths from any concept with a path (regardless of length) to sct2 and
-                 # aggregates all of them to the immediate child 
-                 "  return  prt, sct0, startNode(last(rsct)) as sct1, sct2.FSN as parentConceptFSN,",
-                 conceptOrder, " as conceptOrder",
-                 "  union",
-                 "  match  (prt:Participant)-[:P_SCT]->(sct2:ObjectConcept)",
-                 "  where  1=1", filtConcept,
-                 "  return prt, sct2 as sct0, sct2 as sct1, sct2.FSN as parentConceptFSN,",
-                 conceptOrder, " as conceptOrder",
+                     # Retrieve leading node (sct1) in final path terminating at sct2
+                     # This accepts paths from any concept with a path (regardless of length) to sct2 and
+                     # aggregates all of them to the immediate child 
+                 "   return  prt, sct0, startNode(last(rsct)) as sct1, sct2.FSN as parentConceptFSN,",
+                             conceptOrder, " as conceptOrder",
+                 # Include paths from participant to the terminating concept
+                 #"   union",
+                 #"   match  (prt:Participant)-[:P_SCT]->(sct2:ObjectConcept)",
+                 #"   where  1=1", filtConcept,
+                 #"   return prt, sct2 as sct0, sct2 as sct1, sct2.FSN as parentConceptFSN,",
+                 #           conceptOrder, " as conceptOrder",
                  " }",
                  " with   prt, sct0, sct1, conceptOrder, parentConceptFSN",
                  " where  sct1.active='1'",
                  # Left join to prescriptions (note that the where clause is applied within the join,
                  # such that nulls are returned in rx0 and rx1 nodes when no prescriptions exist for a prt
                  # or when staus values are not 'active')
-                 # P_SCT relationships have no keys (fields) and, therefore, no status
+                 # P_RX relationships have no keys (fields) and, therefore, no status
                  # All are assumed to be active
                  " optional match(prt)-[:P_RX]->(rx0:RXCUI)",
                  " where  toLower(rx0.status)='active'",
@@ -405,7 +408,7 @@ queryNetworkData <- function() {
                  "        else null",
                  "   end as onsetAgeDays,",
                  "   sct1.sctid as conceptID, sct1.FSN as conceptFSN, conceptOrder, parentConceptFSN,",
-                 #   Use rx for subsuming rx when not subsumed (optional subsuming match returns null)
+                 #   Use rx for subsuming-rx when not subsumed (optional subsuming match returns null)
                  "   coalesce(rx1.id, rx0.id) as rxSubsID, coalesce(rx1.name, rx0.name) as rxSubsName,",
                  "   rx0.id as rxID, rx0.name as rxName,",
                  "   fst.sctid as findingSiteID, fst.FSN as findingSiteFSN, type(role2) as fsRole",
@@ -414,17 +417,19 @@ queryNetworkData <- function() {
                  "   participantID, coalesce(UCDProxDist, 'na') as UCDProxDist,",
                  "   coalesce(Sex, 'na') as Sex, coalesce(HASxLast, 'na') as HASxLast,",
                  "   coalesce(UCDDx, 'na') as UCDDx, coalesce(onsetAgeDays, 'na') as onsetAgeDays,",
-                 "   conceptID,",
+                 "   conceptOrder, conceptID,",
                  #"   case when(conceptOrder>0)then '('+conceptOrder+') ' else '' end + conceptFSN as conceptFSN,",
                  "   '('+conceptOrder+') ' + conceptFSN as conceptFSN,",
-                 "   conceptOrder, parentConceptFSN,",
+                 #"   parentConceptFSN,",
                  "   coalesce(rxSubsID, 'na') as rxSubsID, coalesce(rxSubsName, 'na') as rxSubsName,",
                  "   coalesce(rxID, 'na') as rxID, coalesce(rxName, 'na') as rxName,",
-                 "   coalesce(findingSiteID, 'na') as findingSiteID, coalesce(findingSiteFSN, 'na') as findingSiteFSN,",
-                 "   coalesce(fsRole, 'na') as fsRole", sep="")
+                 "   coalesce(findingSiteID, 'na') as findingSiteID,",
+                 "   '('+conceptOrder+') '  + coalesce(findingSiteFSN, 'na') as findingSiteFSN",
+                 #"   coalesce(fsRole, 'na') as fsRole",
+                 sep="")
 
   print(query)
-  x <- try(neo4jQuery(neo4jPortDB, neo4jUID, neo4jPW, query), silent=T)
+  x <- try(neo4jQuery(neo4jPort, neo4jDB, neo4jUID, neo4jPW, query), silent=T)
   if(x[["status"]]=="") {
     return(x[["data"]])
   } else {
@@ -455,7 +460,7 @@ queryPath <- function(FSN1, FSN2) {
                    " return reduce(x='', y in r | endNode(y).FSN + '[' + endNode(y).sctid + ']; ' + x) + ",
                    "        x.FSN + '[' + x.sctid + ']' as path",
                    sep="")
-    x <- try(neo4jQuery(neo4jPortDB, neo4jUID, neo4jPW, query), silent=T)
+    x <- try(neo4jQuery(neo4jPort, neo4jDB, neo4jUID, neo4jPW, query), silent=T)
     if(x[["status"]]=="") {
       if(nrow(x[["data"]])>0) {
         path <- x[["data"]][,"path"]

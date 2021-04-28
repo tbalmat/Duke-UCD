@@ -16,14 +16,22 @@ assembleNetworkComponents <- function() {
     # Data validation
     #print(aggregate(1:nrow(netData), by=list(netData[,"UCDDx"], netData[,"HASxLast"]), function(k) length(unique(netData[k,"participantID"]))))
 
-    print("assemble.graphCfg")
+    # Force filter
+    #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    #print(netData[1:10, "HASxLast"])
+    #print(netData[1:10, "UCDDx"])
+    #graphCfg[[gcPtr]][["filter"]] <- list("primary"=list("UCDDx"=c("ALD", "ASD")))
+    #                                      #"interaction"=list(data.frame("HASxLast"="z", "UCDDx"="z")))
+
+    #print("assemble.graphCfg")
     #print("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
+    #print(str(graphCfg[[gcPtr]]))
     #print(graphCfg[[gcPtr]][["connect"]])
     #print(graphCfg[[gcPtr]][["filter"]])
     #print(graphCfg[[gcPtr]][["rxLeadCharFilter"]])
     #print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
 
-    # Copy graph cfg values (for ease of script interpretation)
+    # Copy graph connection cfg (for ease of script interpretation)
     vconn <- graphCfg[[gcPtr]][["connect"]]
 
     # Retrieve concept groups
@@ -42,46 +50,75 @@ assembleNetworkComponents <- function() {
                           data.frame()
                         }))
 
-    # Copy interaction sets
+    # Copy interaction cfg
     cInteract <- graphCfg[[gcPtr]][["interact"]]
 
     # Proceed if any connections specified
     if(nrow(cPri)>0 | length(cInteract[["set1"]])>0 & length(cInteract[["conn1"]])>0 |
                       length(cInteract[["set2"]])>0 & length(cInteract[["conn2"]])>0) {
 
-      # Eliminate synonymous connection pairs (1->2 requested with 2->1)
-      # Arrange all pairs alphabetically
+      # Compose set of non-interaction vertices to be constructed
+      # This includes primary and vertices that interaction vertices are connected to
       if(nrow(cPri)>0) {
+        # Eliminate synonymous connection pairs (1->2 requested with 2->1)
+        # Arrange all pairs alphabetically
         k <- which(cPri[,"v1"]>cPri[,"v2"])
         x <- cPri[k,"v1"]
         cPri[k,"v1"] <- cPri[k,"v2"]
         cPri[k,"v2"] <- x
         # Eliminate duplicate pairs
-        # Note that pairs with ID1=ID2 are retained so that inter-variable connections are
+        # Note that pairs with ID1=ID2 are retained so that intra-variable connections are
         # possible (to relate SNOMED concepts from different groups (order), for instance)
         cPri <- cPri[which(!duplicated(cPri)),]
-        # Compose vector of primary variables for vertex creation
-        # Concepts are excluded when being joined
-        # Interaction vertices combine levels of primary variables and are created separately
-        vxPri <- unique(c(cPri[,"v1"], cPri[,"v2"], unlist(cInteract)))
+        # Compose vector of primary and interaction variables for vertex creation
+        vxPri <- unique(c(cPri[,"v1"], cPri[,"v2"], cInteract[["conn1"]], cInteract[["conn2"]]))
       } else {
-        vxPri <- unique(unlist(cInteract))
+        vxPri <- unique(c(cInteract[["conn1"]], cInteract[["conn2"]]))
       }
 
-      # Configure join-concept flag (joint-concepts requested, multiple concepts specified, and
-      # concept appears in a connection specification)
-      # Omit concepts from individual variable vector when joining concepts
-      # Vertex data for joint-concepts are created separately
-      if(vconn[["joinConcept"]]==T & "conceptID" %in% vxPri & length(conceptOrder)>1) {
-        vxPri <- setdiff(vxPri, "conceptID")
+      # Collapse observations by omitting Rx when not specified in any vertex or connection cfg
+      # Participants are, typically, associated with multiple Rx, causing the following joins to
+      # produce many duplicates of observation segments (coneptID, FSN, etc.) that are not needed
+      # Note the creation of a local copy of netData
+      if(!"rxID" %in% c(vxPri, cInteract[["set1"]], cInteract[["set2"]])) {
+        netData[,c("rxSubsID", "rxSubsName", "rxID", "rxName")] <- "na"
+        netData <- netData[!duplicated(netData),]
+      }
+
+      # Configure joint-concepts when requested, multiple concepts specified, and concept appears in a connection specification
+      # Note the creation or use of a local copy of netData
+      if(vconn[["joinConcept"]]==T & "conceptID" %in% c(vxPri, cInteract[["set1"]], cInteract[["set2"]]) & length(conceptOrder)>1) {
+        # Join concepts of successive order by participant ID
+        # Retain IDs, FSNs, and finding sites for composition of vertex labels
+        k <- which(netData[,"conceptOrder"]==conceptOrder[1])
+        jc <- netData[k,]
+        # Copy columns associated with concepts of first order
+        jc <- cbind(jc, jc[,c("conceptID", "conceptFSN", "findingSiteID", "findingSiteFSN")])
+        names(jc) <- c(names(netData), paste("jt", c("conceptID", "conceptFSN", "findingSiteID", "findingSiteFSN"), conceptOrder[1], sep=""))
+        for(j in 2:length(conceptOrder)) {
+          nm <- names(jc)
+          k <- which(netData[,"conceptOrder"]==conceptOrder[j])
+          # Join prior concepts with columns associated with jth order
+          jc <- merge(jc, netData[k,c("participantID", "conceptID", "conceptFSN", "findingSiteID", "findingSiteFSN")],
+                      by="participantID")
+          names(jc) <- c(nm, paste("jt", c("conceptID", "conceptFSN", "findingSiteID", "findingSiteFSN"), conceptOrder[j], sep=""))
+        }
+        netData <- jc
+        # Construct composite concept and finding site FSNs
+        j <- paste("jtconceptFSN", conceptOrder, sep="")
+        netData[,"conceptFSN"] <- unlist(lapply(1:nrow(netData), function(i) paste(netData[i,j], collapse=" -X- ", sep="")))
+        j <- paste("jtfindingSiteFSN", conceptOrder, sep="")
+        netData[,"findingSiteFSN"] <- unlist(lapply(1:nrow(netData), function(i) paste(netData[i,j], collapse=" -X- ", sep="")))
+        #print(head(netData))
+        rm(jc)
         joinConcept <- T
       } else {
         joinConcept <- F
       }
 
       # Collapse HA, if requested and HA appears in any connection
-      # Note that a local copy of netData is made
-      if(vconn[["groupHA"]] & "HASxLast" %in% c(vxPri, unlist(cInteract))) {
+      # Note the creation or use of a local copy of netData
+      if(vconn[["groupHA"]] & "HASxLast" %in% c(vxPri, cInteract[["set1"]], cInteract[["set2"]])) {
         k1 <- which(netData[,"HASxLast"]=="HA Events with or without Symptoms")
         k2 <- which(netData[,"HASxLast"] %in% c("Symptoms but no HA events", "No Reported HA Symptoms"))
         netData[k1,"HASxLast"] <- "HA Events"
@@ -91,9 +128,9 @@ assembleNetworkComponents <- function() {
 
       # Subsume Rx, if requested
       # Note the creation or use of a local copy of netData
-      if(vconn[["rxSubsume"]] & "RxID" %in% c(vxPri, unlist(cInteract))) {
-        netData[,"RxID"] <- netData[,"rxSubsID"]
-        netData[,"RxName"] <- netData[,"rxSubsName"]
+      if(vconn[["rxSubsume"]] & "rxID" %in% c(vxPri, cInteract[["set1"]], cInteract[["set2"]])) {
+        netData[,"rxID"] <- netData[,"rxSubsID"]
+        netData[,"rxName"] <- netData[,"rxSubsName"]
       }
 
       # Extract filter for ease of script interpretation
@@ -111,462 +148,233 @@ assembleNetworkComponents <- function() {
       # 1. dbVar ..... vector of database variable(s) corresponding to the vertex level
       # 2. dbValue ... vector of database values corresponding to the variable(s) and level
       # 3. label ..... vector of labels, each positionally corresponding to elements of dbValue
-      # 4. obsID ..... observation IDs containing dbValue in the respective variable
-      # 5. pid ....... unique participant IDs associated with dbValue in the respective variable
-      # Note that obsID is needed to assemble interactions, later
-      # Although pid could be assembled as needed using obsID, saving it here avoids redundant
-      # observation scans later  
+      # 4. pid ....... unique participant IDs associated with dbValue in the respective variable
+      # 6. vid ....... vertex ID, used to identify vertices for edge construction
 
-      # Compose vertex data for primary variables
-      # Iterate through all primary variables
-      if(length(vxPri)>0) {
-        # Primary filter is NULL if absent (length 0)
-        primaryFilter <- vfilter[["primary"]]
-        vdat <- list("primary"=setNames(
-                                 lapply(vxPri,
-                                   function(v) {
-                                     # Identify observations that satisfy filter specification
-                                     # Note that the primary conceptID filter is named "conceptID"
-                                     # The joint-concept filter is named "jointConcept" which should not
-                                     # appear in vxPri
-                                     if(length(primaryFilter)>0) {
-                                       if(length(which(names(primaryFilter)==v))>0) {
-                                         k <- which(netData[,v] %in% primaryFilter[[v]])
-                                       } else {
-                                         k <- 1:nrow(netData)
-                                       }
-                                     } else {
-                                       k <- 1:nrow(netData)
-                                     }
-                                     # Subset observations by variable level
-                                     # lev is a list of vectors, one for each level
-                                     lev <- split(k, netData[k,v])
-                                     # Iterate through each level and assemble vector of participant IDs
-                                     setNames(lapply(1:length(lev),
-                                                function(i) {
-                                                  # Use data and label values from split values
-                                                  # Assign vertex IDs (vid) for visNetwork graph composition
-                                                  # Save order for concepts
-                                                  nvid <<- nvid+1
-                                                  list("dbVar"=v,
-                                                       "dbValue"=names(lev)[i],
-                                                       "label"=netData[lev[[i]][1],vcfg[v,"labVar"]],
-                                                       "obsID"=lev[[i]],
-                                                       "pid"=unique(netData[lev[[i]],"participantID"]),
-                                                       "vid"=as.character(nvid),
-                                                       "conceptOrder"=ifelse(v=="conceptID", netData[lev[[i]][1],"conceptOrder"],0))
-                                                }),
-                                              names(lev))
-                                   }),
-                                 vxPri))
-      } else {
-        vdat <- list("primary"=list())
-      }
+      # Compose vertex data for primary, joint-concept, and interaction variables
+      vdat <- lapply(c("primary", "jointConcept", "interaction"),
+                function(vclass)
 
-      # Compose vertex data for joint-concepts (if joint-concepts specified and concept appears in
-      # primary or interaction connections)
-      # One vertex will be generated for each combination of levels of each concept of each concept order
-      # Concept order is supplied in the queried data, each user-specified concept having a distinct order
-      # Here, order is used to group concepts
-      # Given k groups then for each combination of k concepts to be joined, observations are chosen such that
-      # each participant appearing on an observation with any one of the k concepts also appears on other
-      # observations with the remaining k-1 concepts
-      # The result is that all participants associated with a combination are associated with each concept in
-      # the combination
-      # This is somewhat like an interaction, in that contrasts in the effect of A when combined with B vs.
-      # when A is combined with C are measurable (visualized)
-      if(joinConcept) {
-        # Copy concept filter, if present, for ease of script interpretation
-        if("conceptID" %in% names(vfilter[["primary"]])) {
-          priConceptFilter <- vfilter[["primary"]][["conceptID"]]
-        } else {
-          priConceptFilter <- vector("character")
-        }
-        # Compose participant ID list by joint concept level
-        # If joint-concept filters are specified then generate vertex data for each, limiting participants
-        # to those associated with each concept specified in the filter (one per concept order)
-        # If no joint-concept filter is specified then:
-        # 1. Limit observations to those specified in the primary concept filter, if specified
-        # 2. Generate vertex data using all combinations of concepts of order i, order j, order k, ... 
-        if("jointConcept" %in% names(vfilter)) {
-          # Joint concept filter specified
-          # Iterate through all joint combination filters
-          vdat[["jointConcept"]][["level"]] <-
-            setNames(
-              lapply(1:length(vfilter[["jointConcept"]]),
-                function(i) {
-                  # SNOMED concepts appear in the subset of a single parent concept, so that concept
-                  # order segregates concepts into parent groups
-                  # It is assumed that the concept appearing in position j of the filter corresponds
-                  # to conceptOrder[j]
-                  # Identify observations containing concept specified in first position of joint
-                  # filter and also present in primary filter (if one specified)
-                  kc <- which(netData[,"conceptID"]==vfilter[["jointConcept"]][[i]][1] &
-                              (length(priConceptFilter)==0 | netData[,"conceptID"] %in% priConceptFilter))
-                  # Iterate through each concept in the current joint filter and limit indices to
-                  # those with participant IDs associated with each successive concept in the joint
-                  # filter (and also present in primary concept filter, if specified)
-                  for(j in 2:length(vfilter[["jointConcept"]][[i]]))
-                    kc <- which(netData[,"conceptID"]==vfilter[["jointConcept"]][[i]][j] &
-                                (length(priConceptFilter)==0 | netData[,"conceptID"] %in% priConceptFilter) &
-                                netData[,"participantID"] %in% netData[kc,"participantID"])
-                  nvid <<- nvid+1
-                  list("dbValue"=vfilter[["jointConcept"]][[i]],
-                       # Compose label from first observations corresponding to dbValues
-                       # match() returns the first observation for each concept in the joint group,
-                       # The label variable for concepts is then supplied
-                       "label"=paste(netData[match(vfilter[["jointConcept"]][[i]], netData[,"conceptID"]),vcfg["conceptID","labVar"]],
-                                     collapse=" -X- ", sep=""),
-                       "obsID"=kc,
-                       "pid"=unique(netData[kc,"participantID"]),
-                       "vid"=as.character(nvid))
-                }),
-              rep("jointConcetpLevel", length(vfilter[["jointConcept"]])))
-        } else {
-          # Compose combinations of concepts, with one from each order
-          # Identify, for each combination, participants associated with each concept
-          # Limit to concepts in primary concept filter, if one exists 
-          if(length(priConceptFilter)>0) {
-            kpc <- which(netData[,"conceptID"] %in% priConceptFilter)
-          } else {
-            kpc <- 1:nrow(netData)
-          }
-          # Compose combinations in stepwise concept order, beginning with concepts of order
-          # conceptOrder[1] then appending columns for concepts of order conceptOrder[2], etc.
-          # The result is a data frame with n-order columns, one for each group (order) of concepts
-          # Each combination of concepts of order n are represented
-          cset <- data.frame()
-          for(j in 1:length(conceptOrder)) {
-            # Combine existing combinations (previous orders) with all concepts of current order
-            # Establish data frame with first order with elements
-            # Expand with orders that have elements only
-            x <- unique(netData[kpc[which(netData[kpc,"conceptOrder"]==conceptOrder[j])],"conceptID"])
-            if(length(x)>0)
-              if(nrow(cset)>0) {
-                # Append the expanded (second) column returned by expand.grid()
-                cset <- data.frame(cset, expand.grid(1:nrow(cset), x, stringsAsFactors=F)[,2])
-              } else {
-                cset <- data.frame(x)
-            }
-          }
-          # Assign cset col names
-          if(ncol(cset)>0)
-            colnames(cset) <- paste("c", 1:ncol(cset), sep="")
-          # Iterate through all concept sets, composing index vectors for observations
-          # with participants associated with each concept in each set
-          # Concept order and position in concept set are not used when searching for concepts, since each
-          # concept is associated with a single order
-          # Note that concept sets have been filtered to include only those satisfying the
-          # primary concept filter, if specified
-          if(nrow(cset)>0) {
-            # Save to a temporary list so that NULL elements can be removed
-            # Proceed only if multiple concept orders remain after filtering
-            vtx <- lapply(1:nrow(cset),
-                     function(i) {
-                       # Identify observations with concepts in current set
-                       kc <- which(netData[,"conceptID"] %in% cset[i,])
-                       # Enumerate distinct concepts by participant
-                       pid <- aggregate(kc, by=list(netData[kc,"participantID"]),
-                                        function(m) length(unique(netData[m,"conceptID"])))
-                       # Identify participants associated with each concept (n distinct concepts = number in set)
-                       kp <- which(pid[,2]==ncol(cset))
-                       if(length(kp)>0) {
-                         nvid <<- nvid+1
-                         list("dbValue"=as.character(cset[i,]),
-                              # Compose label from first observations corresponding to dbValues
-                              "label"=paste(netData[match(cset[i,], netData[,"conceptID"]),vcfg["conceptID","labVar"]],
-                                            collapse=" -X- ", sep=""),
-                              # Save observation IDs for participant/concept combinations where a participant is
-                              # associated with each concept in the set
-                              "obsID"=kc[which(netData[kc,"participantID"] %in% pid[kp,1])],
-                              "pid"=pid[kp,1],
-                              "vid"=as.character(nvid))
-                       } else {
-                         NULL
-                       }
-                     })
-          } else {
-            vtx <- list(NULL)
-          }
-          # Omit NULL elements
-          k <- na.omit(unlist(lapply(1:length(vtx), function(j) ifelse(!is.null(vtx[[j]]), j, NA))))
-          if(length(k)>0) {
-            vdat[["jointConcept"]][["level"]] <- setNames(vtx[k], rep("jointConceptLevel", length(k)))
-          } else {
-            vdat[["jointConcept"]][["level"]] <- list()
-          }
-        }
-      } else {
-        vdat[["jointConcept"]] <- list()
-      }
+                  # Primary vars, including conceptID when not joined
+                  if(vclass=="primary") {
+                    # Construct vector of primary variables, omitting conceptID when joint-concepts are specified
+                    # Joint-concept vertices are composed separately
+                    if(joinConcept) {
+                      vxPri0 <- setdiff(vxPri, "conceptID")
+                    } else {
+                      vxPri0 <- vxPri
+                    }
+                    if(length(vxPri0)>0) {
+                      setNames(
+                        lapply(vxPri0,
+                          function(v) {
+                            # Identify observations that satisfy filter specification
+                            # The primary conceptID filter is named "conceptID"
+                            # Primary filter is NULL when absent (length 0)
+                            if(length(vfilter[["primary"]])>0) {
+                              if(length(which(names(vfilter[["primary"]])==v))>0) {
+                                k <- which(netData[,v] %in% vfilter[["primary"]][[v]])
+                              } else {
+                                k <- 1:nrow(netData)
+                              }
+                            } else {
+                              k <- 1:nrow(netData)
+                            }
+                            # Filter for Rx leading characters, if specified
+                            if(v=="rxID" & nchar(graphCfg[[gcPtr]][["rxLeadCharFilter"]])>0) {
+                              a <- graphCfg[[gcPtr]][["rxLeadCharFilter"]]
+                              k <- intersect(k, k[which(substring(netData[k,"rxName"], 1, nchar(a))==a)])
+                            }
+                            # Subset observations by variable level
+                            # The result is a data frame where the "k" column is a list of observation IDs
+                            lev <- aggregate(k, by=list(netData[k,v]), function(i) i)
+                            names(lev) <- c("lev", "k")
+                            # Iterate through each level and assemble vertex data, including vertex ID,
+                            # vector of observation IDs, participant IDs, and concept order
+                            setNames(lapply(1:nrow(lev),
+                                       function(i) {
+                                         # Assign vertex ID for visNetwork graph composition
+                                         nvid <<- nvid+1
+                                         list("dbVar"=v,
+                                              "dbValue"=lev[i,"lev"],
+                                              # Use first observation for label
+                                              "label"=netData[lev[,"k"][[i]][1],vcfg[v,"labVar"]],
+                                              "pid"=unique(netData[lev[,"k"][[i]],"participantID"]),
+                                              "vid"=as.character(nvid),
+                                              # Save concept order for conceptIDs
+                                              # It is used to limit edges between concepts to those of different order
+                                              "conceptOrder"=ifelse(v=="conceptID", netData[lev[,"k"][[i]][1],"conceptOrder"],0))
+                                       }),
+                                     lev[,"lev"])
+                          }),
+                        vxPri0)
+                    } else {
+                      list()
+                    }
 
-      # Compose vertex data for interactions
-      if(length(cInteract[["set1"]])>0 & length(cInteract[["conn1"]])>0 |
-         length(cInteract[["set2"]])>0 & length(cInteract[["conn2"]])>0) {
-        # Copy concept filter, if present, for ease of script interpretation
-        if("interaction" %in% names(vfilter)) {
-          interactionFilter <- vfilter[["interaction"]]
-        } else {
-          interactionFilter <- vector("character")
-        }
-        # Iterate through both user-specified interaction sets, consisting of interacting and
-        # connection variables
-        # Note that no check or adjustment is made for duplicate interaction specifications,
-        # where both interaction sets specify identical sets of variables
-        # Save to a temporary list so that NULL elements can be removed
-        vtx <- lapply(1:2,
-                 function(iset) {
-                   # Compose vector of variables in interaction
-                   vset <- cInteract[[paste("set", iset, sep="")]]
-                   # Proceed if at least two variables being interacted and at least one being connected
-                   if(length(vset)>0 & length(cInteract[[paste("conn", iset, sep="")]])>0) {
-                     # Assemble joint levels from combinations of each level of interacting variables
-                     if(!joinConcept | !"conceptID" %in% vset) {
-                       # Concepts absent or treated as a primary variable
-                       # Assemble joint interaction levels from previously assembled primary vertices,
-                       # since they contain indices to observations with filtered values
-                       # Iterate through each variable in the interaction set
-                       k <- 1:nrow(netData)
-                       for(v in vset)
-                         k <- intersect(k, unlist(lapply(1:length(vdat[["primary"]][[v]]),
-                                                         function(j) vdat[["primary"]][[v]][[j]][["obsID"]])))
-                       # Apply filters, if specified
-                       if(length(k)>0 & length(interactionFilter)>0)
-                         k <- unlist(lapply(1:length(interactionFilter),
-                                       function(j)
-                                         # Filters are database values in vectors with names
-                                         # corresponding to interacting database variables
-                                         # Test filter only if variables in filter specification
-                                         # correspond to those in current vset (filters from
-                                         # the other set are ignored)
-                                         # Note that R will attempt to recycle the shorter of two
-                                         # vectors being compared for equality, so use union-intersect
-                                         # Also, if() evaluates scalars, selecting the first element of
-                                         # vectors being compared (therefore, use all))
-                                         if(all(sort(intersect(names(interactionFilter[[j]]), vset)) ==
-                                                sort(union(names(interactionFilter[[j]]), vset)))) {
-                                           # Note that ==() makes comparisons in row, col order and produces
-                                           # a matrix of T/F values for each cell, but which() converts
-                                           # an individual scalar values for each row (the first column)
-                                           # Therefore, evaluate ==() for each row, requiring each column
-                                           # position to be true
-                                           k[which(unlist(lapply(k, function(m) all(netData[m,vset]==interactionFilter[[j]][vset]))))]
-                                         } else {
-                                           # Filter is ignored
-                                           NULL
-                                         }))
-                       if(length(k)>0) {
-                         # Compose sets of observation indices by variable level combination
-                         lev <- split(k, netData[k,vset], drop=T, sep=" -X- ")
-                         # Compose list containing levels, observation indices, and unique participant IDs
-                         vtxi <- lapply(1:length(lev),
-                                        function(j) {
-                                          nvid <<- nvid+1
-                                          # Parse database values from split list
-                                          dbValue <- strsplit(names(lev)[j], " -X- ")[[1]]
-                                          # Assemble label using label variables corresponding to db values of first obs in subset
-                                          lab <- paste(netData[lev[[j]][1],vcfg[vset,"labVar"]], collapse=" -X- ", sep="")
-                                          list("dbVar"=vset,
-                                               # Parse variable values from split() levels
-                                               "dbValue"=dbValue,
-                                               "label"=lab,
-                                               "obsID"=lev[[j]],
-                                               "pid"=unique(netData[lev[[j]],"participantID"]),
-                                               "vid"=as.character(nvid))
-                                        })
-                       } else {
-                         NULL
-                       }
-                       # Omit NULL elements
-                       k <- na.omit(unlist(lapply(1:length(vtxi), function(j) ifelse(!is.null(vtxi[[j]]), j, NA))))
-                       if(length(k)>0) {
-                         setNames(vtxi[k], rep(paste(vset, collapse=" -X- ", sep=""), length(k)))
-                       } else {
-                         list()
-                       }
-                     } else if(length(vdat[["jointConcept"]][["level"]])>0) {
-                       # Joint-concepts exist and are specified in interaction set
-                       # Note that length() returns 0 for non-existent elements
-                       # Assemble interaction vertex data for the current variable set as follows:
-                       # 1. Compose subset of variables excluding conceptID (vset0)
-                       # 2. Assemble set of observation IDs that represent data satisfying primary
-                       #    variable filters (this excludes interaction combinations that have
-                       #    one or more component variable levels that have been excluded)
-                       # 3. Assemble sets of observation indices for each combination of vset0 levels
-                       # 4. Combine each vset0 combination with each joint-concept combination
-                       # 4a. Iterate through each vset0 level combination
-                       # 4b. Filter non-concept interaction variable combinations
-                       # 4c. If observations exist after non-concept filtering then identify
-                       #     joint-concepts that satisfy filters (since each observation contains
-                       #     a single concept, joint-concepts involve multiple observations and
-                       #     filtering is applied to previously composed joint-concept vertices
-                       # 4d. Join filtered non-concept and joint-concept levels
-                       # 
-                       # Step 1. Subset non-concept variables
-                       vset0 <- setdiff(vset, "conceptID")
-                       # Step 2. Assemble observation indices to satisfy primary variable filters
-                       # Iterate through each variable in the interaction set
-                       # Intersect success index vectors with prior indices
-                       kpr <- 1:nrow(netData)
-                       for(v in vset0)
-                         kpr <- intersect(kpr, unlist(lapply(1:length(vdat[["primary"]][[v]]),
-                                                             function(j) vdat[["primary"]][[v]][[j]][["obsID"]])))
-                       if(length(kpr)>0) {
-                         # Step 3. Assemble sets of observation indices by (non-concept) variable combination
-                         lev0 <- split(kpr, netData[kpr,vset0], drop=T, sep=" -X- ")
-                         # Step 4. Iterate through all non-concept level combinations
-                         # Combine non-concept and joint concept levels
-                         # vset0 and joint-concept index sets include observations with participants
-                         # associated with corresponding vset0 variable levels and all concepts in
-                         # in the joint-concept combination
-                         # The intersection of vset0 and join-concept indices limit observations
-                         # to desired variable levels, but it is possible for, say, two different
-                         # vset0 levels to correspond to observations represented by a given
-                         # joint-concept index
-                         # Therefore, for each vset0, joint-concept index intersection, retain
-                         # observations for participants who are associated with each concept in the
-                         # joint combination
-                         # Step 4a. Iterate through each vset0 level combination
-                         vtxi <- lapply(1:length(lev0),
-                                        function(ilev0) {
-                                          ks0 <- lev0[[ilev0]]
-                                          # Filter
-                                          if(length(interactionFilter)>0) {
-                                            # Step 4b. Subset vset0 level observations using applicable filters
-                                            ks0 <- unlist(lapply(1:length(interactionFilter),
-                                                                 function(j)
-                                                                   # Filters are database values in vectors with names
-                                                                   # corresponding to interacting database variables
-                                                                   # Test filter only if variables in filter specification
-                                                                   # correspond to those in current vset (filters from
-                                                                   # the other set are ignored)
-                                                                   # Note that all variable names (including conceptID)
-                                                                   # are used to determine if a filter applies, but
-                                                                   # only non-concept variables are actually filtered here
-                                                                   if(all(sort(intersect(names(interactionFilter[[j]]), vset)) ==
-                                                                          sort(union(names(interactionFilter[[j]]), vset)))) {
-                                                                     # Use all() to evaluate all columns (variables) of each row
-                                                                     ks0[unlist(lapply(ks0, function(m) which(all(netData[m,vset0]==interactionFilter[[j]][vset0]))))]
-                                                                   } else {
-                                                                     # Filter is ignored
-                                                                     NULL
-                                                                   }))
-                                            # Step 4c. Identify joint-concepts that satisfy applicable filters
-                                            # Note that, to be applicable, filters must correspond to vset0 levels
-                                            # Since a node containing an interaction involving joint-concepts was
-                                            # selected for filtering (that's why we have a filter), joint-concepts
-                                            # with the selected level must exist
-                                            if(length(ks0)>0) {
-                                              njc <- length(vdat[["jointConcept"]])
-                                              # Iterate through each filter
-                                              kjc <- unlist(lapply(1:length(interactionFilter),
-                                                                   function(j1)
-                                                                     # Evaluate only if filter applies to current variable set
-                                                                     if(all(sort(intersect(names(interactionFilter[[j1]]), vset)) ==
-                                                                            sort(union(names(interactionFilter[[j1]]), vset)))) {
-                                                                       # Iterate through each joint-concept and indicate which
-                                                                       # satisfy joint-concept portion of current filter
-                                                                       lapply(1:njc,
-                                                                              function(j2)
-                                                                                if(all(vdat[["jointConcept"]][["level"]][[j2]][["dbValue"]]==
-                                                                                       interactionFilter[[j1]][which(names(interactionFilter[[j1]])=="conceptID")])) {
-                                                                                  j2
-                                                                                } else {
-                                                                                  # Joint-concept does not satisfy current filter - ignore
-                                                                                  NULL
-                                                                                })
-                                                                     } else {
-                                                                       # Ignore filter
-                                                                       NULL
-                                                                     }))
-                                            } else {
-                                              kjc <- NULL
-                                            }
+                  # Joint-concepts
+                  } else if(vclass=="jointConcept") {
+                    if(joinConcept) {
+                      # Note that jointConcept==T => joint-concepts specified and concept appears in connection cfg
+                      # One vertex will be generated for each combination of levels of each concept of each order
+                      # Participants associated with each vertex are associated with each concept in the combination
+                      # Edges will be drawn between vertices with non-null participant intersection, representing
+                      # interaction-like relationships, where contrasts in the effect of A combined with B vs. A
+                      # combined with C are presented
+                      # Identify columns containing composite concept IDs
+                      v <- paste("jt", "conceptID", conceptOrder, sep="")
+                      # Filter observations using joint-concept filter, if present
+                      if("jointConcept" %in% names(vfilter)) {
+                        # Iterate through each joint filter and compose union of satisfying observations
+                        # It is assumed that the order of concepts in both the filter and data agree (ascending conceptOrder)
+                        kc <- unique(unlist(lapply(vfilter[["jointConcept"]], function(cid) which(all(netData[,v]==cid)))))
+                      } else {
+                        kc <- 1:nrow(netData)
+                      }
+
+                      # Filter observations using primary conceptID filters, if present
+                      # This limits joint-concepts to those with at least one component concept appearing a primary filter
+                      # It is assumed that there exist, at most, one coneptID element in the primary filter
+                      if("conceptID" %in% names(vfilter[["primary"]]))
+                        # Iterate through each concept filter value, compose union of satisfying observations, then
+                        # intersect with joint-filtered observations
+                        kc <- intersect(kc, unlist(lapply(vfilter[["primary"]][["conceptID"]], function(cid) which(any(netData[,v]==cid)))))
+                      # Compose vertices
+                      if(length(kc)>0) {
+                        # Subset observations by variable level
+                        # The result is a data frame where the "k" column is a list of observation IDs
+                        lev <- aggregate(kc, by=lapply(v, function(j) netData[kc,j]), function(i) i)
+                        names(lev) <- c(v, "k")
+                        # Iterate through each level and assemble vertex data, including vector of concept IDs,
+                        # vertex ID, vector of observation IDs, and vector of participant IDs
+                        list("level"=
+                          setNames(lapply(1:nrow(lev),
+                                     function(i) {
+                                       # Assign vertex ID for visNetwork graph composition
+                                       nvid <<- nvid+1
+                                       list("dbVar"=rep("conceptID", length(v)),
+                                            "dbValue"=unlist(lev[i,v]),
+                                            # Use first observation for label
+                                            "label"=netData[lev[["k"]][[i]][1],vcfg["conceptID","labVar"]],
+                                            "pid"=unique(netData[lev[,"k"][[i]],"participantID"]),
+                                            "vid"=as.character(nvid))
+                                     }),
+                                   rep("jointConceptLevel", nrow(lev)))
+                        )
+                      } else {
+                        list()
+                      }
+                    } else {
+                      list()
+                    }
+
+                  # Interactions
+                  } else if(vclass=="interaction") {
+                    # Require at least two interacting vars and one connecting var for each set
+                    cset <- which(c(length(cInteract[["set1"]])>1 & length(cInteract[["conn1"]])>0,
+                                    length(cInteract[["set2"]])>1 & length(cInteract[["conn2"]])>0))
+                    if(length(cset>0)) {
+                      # Identify netData conceptID columns when joint-concepts specified
+                      if(joinConcept) {
+                        vc <- paste("jt", "conceptID", conceptOrder, sep="")
+                      } else {
+                        vc <- "conceptID"
+                      }
+                      # Apply interaction filters, if specified
+                      # Note that this limits interactions strictly to those satisfying filter values (each level
+                      # of each interaction filter variable must be satisfied) regardless of which variabes appear
+                      # in interaction sets
+                      if(length(vfilter[["interaction"]])>0) {
+                        k <- unique(
+                               unlist(lapply(1:length(vfilter[["interaction"]]),
+                                        function(i) {
+                                          # Interaction filters are single row data frames with netData vars as column names
+                                          vfilt <- vfilter[["interaction"]][[i]]
+                                          v <- colnames(vfilt)
+                                          if(!joinConcept | !"conceptID" %in% v) {
+                                            # Non-joint-concept
+                                            # Identify observations with equality in all filter variables
+                                            which(apply(as.matrix(1:nrow(netData)), 1,
+                                                        function(j) all(netData[j,v]==vfilt[,v])))
                                           } else {
-                                            kjc <- 1:length(vdat[["jointConcept"]][["level"]])
-                                          }
-                                          # Step 4d. Generate vertex data for combinations of vset0 joint-concepts that satisfy filters
-                                          if(length(ks0)>0 & length(kjc)>0) {
-                                            # For each vset0 and joint-concept level combination, subset observations by intersecting
-                                            # indices corresponding to vset0 levels with indices corresponding to the joint-concept
-                                            # Since joint-concept observation IDs indicate participants associated with all concepts
-                                            # in a joint combination, each observation in the vset0, joint-combination ID intersection
-                                            # contains the necessary vset0 levels and one of the joint-concepts
-                                            # The number of observations per participant is at least the number of concepts in the
-                                            # joint combination
-                                            vtxj <- lapply(kjc, function(j) {
-                                                                  k <- intersect(ks0, vdat[["jointConcept"]][["level"]][[j]][["obsID"]])
-                                                                  if(length(k)>0) {
-                                                                    nvid <<- nvid+1
-                                                                    dbVal0 <- strsplit(names(lev0)[ilev0], " -X- ")[[1]]
-                                                                    dbValConcept <- vdat[["jointConcept"]][["level"]][[j]][["dbValue"]]
-                                                                    # Compose vset0 portio of label from first observation in current ilev subset
-                                                                    # Compose concept portion (one labe for each concept) from initial observations
-                                                                    # corresponding to each concept ID in the joint set
-                                                                    # Note that match() returns the first observation index for each concept
-                                                                    lab <- paste(c(netData[lev0[[ilev0]][1],vcfg[vset0,"labVar"]],
-                                                                                   netData[match(dbValConcept, netData[,"conceptID"]),vcfg["conceptID","labVar"]]),
-                                                                                 collapse=" -X- ", sep="")
-                                                                    list(# Include "conceptID" once for each concept in vars and values
-                                                                         "dbVar"=c(vset0, rep("conceptID", length(dbValConcept))),
-                                                                         "dbValue"=c(dbVal0, dbValConcept),
-                                                                         "label"=lab,
-                                                                         "obsID"=k,
-                                                                         "pid"=unique(netData[k,"participantID"]),
-                                                                         "vid"=as.character(nvid))
-                                                                  } else {
-                                                                    NULL
-                                                                  }
-                                                                })
-                                            # Omit NULL entries
-                                            k <- na.omit(unlist(lapply(1:length(vtxj), function(j) ifelse(!is.null(vtxj[[j]]), j, NA))))
-                                            if(length(k)>0) {
-                                              # Compose names from variables in interaction (conceptID appearing once for each joint-concept)
-                                              nm <- unlist(lapply(k, function(j) paste(vtxj[[j]][["dbVar"]], collapse=" -X- ", sep="")))
-                                              setNames(vtxj[k], nm)
-                                            } else {
-                                              NULL
-                                            }
-                                          } else {
-                                            NULL
-                                          }
-                                        })
-                         # Omit NULL entries
-                         k <- na.omit(unlist(lapply(1:length(vtxi), function(j) ifelse(!is.null(vtxi[[j]]), j, NA))))
-                         if(length(k)>0) {
-                           unlist(vtxi[k], recursive=F)
-                         } else {
-                           NULL
-                         }
-                       } else {
-                         NULL
-                       }
-                     } else {
-                       NULL
-                     }
-                   } else {
-                     NULL
-                   }
-                 })
-        # Omit NULL elements at top level of return list (set 1 and set 2)
-        k <- na.omit(unlist(lapply(1:length(vtx), function(j) ifelse(!is.null(vtx[[j]]), j, NA))))
-        if(length(k)>0) {
-          vdat[["interaction"]] <- setNames(vtx[k], c("set1", "set2")[k])
-        } else {
-          vdat[["interaction"]] <- list()
-        }
-      } else {
-        vdat[["interaction"]] <- list()
-      }
+                                            # Joint-concept and conceptID in filter
+                                            # Identify observations with equality in non-concept vars and
+                                            # all specified filter concept values in joint-concept vars
+                                            # It is assumed that concept order is identical in both the filter and netData 
+                                            vnc <- setdiff(v, "conceptID")
+                                            vcfilt <- setdiff(v, vnc)
+                                            which(apply(as.matrix(1:nrow(netData)), 1,
+                                                        function(j)
+                                                          all(netData[j,vnc]==vfilt[,vnc]) &
+                                                          all(netData[j,vc]==vfilt[,vcfilt])))
+                                          }})))
+                      } else {
+                        k <- 1:nrow(netData)
+                      }
+                      # Iterate through interaction sets
+                      # Create vertices for each combination of interaction variable level
+                      setNames(
+                        lapply(cset,
+                          function(s) {
+                            v <- cInteract[[paste("set", s, sep="")]]
+                            # Filter observations using primary filters, if specified
+                            # Retain observations with any interaction variable containing a corresponding filter value
+                            for(v2 in v) {
+                              vf <- vfilter[["primary"]][[v2]]
+                              if(length(vf)>0)
+                                if(v2!="conceptID") {
+                                  k <- intersect(k, which(netData[,v2] %in% vf))
+                                } else {
+                                  k <- unlist(lapply(k, function(i) if(any(netData[i,vc] %in% vf)) {i} else {NULL}))
+                                }
+                            }
+                            # Substitute joint-concept columns when concept in interaction and concepts are joined
+                            if("conceptID" %in% v)
+                              v <- c(setdiff(v, "conceptID"), vc)
+                            # Subset observations by unique combinations of variable levels (values)
+                            # The result is a data frame where the "k" column is a list of observation IDs
+                            lev <- aggregate(k, by=lapply(v, function(w) netData[k,w]), function(i) i)
+                            names(lev) <- c(v, "k")
+                            # Iterate through each level and assemble vertex data, including vertex ID,
+                            # vector of observation IDs, and participant IDs
+                            setNames(lapply(1:nrow(lev),
+                                       function(i) {
+                                         # Assign vertex ID for visNetwork graph composition
+                                         nvid <<- nvid+1
+                                         # Replace joint-concept variables with "conceptID" for labeling
+                                         v2 <- unlist(lapply(v, function(w) if(w %in% vc) {"conceptID"} else {w}))
+                                         list("dbVar"=v2,
+                                              "dbValue"=lev[i,v],
+                                              # Assemble label using label variables corresponding to db values of first obs in subset
+                                              "label"=paste(netData[lev[,"k"][[i]][1],vcfg[v2,"labVar"]], collapse=" -X- ", sep=""),
+                                              "pid"=unique(netData[lev[,"k"][[i]],"participantID"]),
+                                              "vid"=as.character(nvid))
+                                       }),
+                                     rep("level", nrow(lev)))
+                          }),
+                        paste("set", cset, sep="")
+                      )
+                    } else {
+                      list()
+                    }
+                  } else {
+                    list()
+                  }
+              )
+      names(vdat) <- c("primary", "jointConcept", "interaction")
+      #print(str(vdat))
 
       if(F) {
-        print("VDATVDAT")
+        print("VDAT-VDAT")
         print(str(vdat))
-        print("VDATVDAT")
+        print("VDAT-VDAT")
       }
 
-      # Configure a function to created edge data for pairs involving the three types of vertices
-      edger <- function(v1, v2, reqDiffOrder) {
+      # Configure a function to create edge data for pairs of vertices
+      # v1 and v2 are lists containing one element for each level of variables corresponding to vertex 1 and vertex 2
+      # Each vertex ID (vid) of v1 is combined with each vertex ID of v2
+      # Vertex ID pairs for edges
+      edger <- function(v1, v2, diffOrder) {
                  # Note that the length of NULL list elements is 0
                  if(length(v1)>0 & length(v2)>0) {
                    do.call(rbind,
@@ -575,7 +383,8 @@ assembleNetworkComponents <- function() {
                                    do.call(rbind,
                                            apply(as.matrix(1:length(v2)), 1,
                                              function(i2) {
-                                               if(reqDiffOrder) {
+                                               # Limit edges between concepts of different order, if requested
+                                               if(diffOrder) {
                                                  go <- v1[[i1]][["conceptOrder"]]!=v2[[i2]][["conceptOrder"]]
                                                } else {
                                                  go <- T
@@ -596,32 +405,41 @@ assembleNetworkComponents <- function() {
       # Compose edge data
       # Edges connect pairs of vertices as specified in the cPri matrix and interaction vectors
       # Iterate through each specified connection and create associated edges for referenced vertices
+      # Edges are defined by pairs of vertex IDs (vid)
       edat <- rbind(
-                # Primary variables (including concepts when not joined)
+                # Primary variables and joint-concepts
                 # Iterate through each connection pair
                 if(nrow(cPri)>0) {
                   do.call(rbind,
                           apply(as.matrix(cPri), 1,
-                                function(v)
-                                  if(!"conceptID" %in% v) {
-                                    edger(vdat[["primary"]][[v[1]]], vdat[["primary"]][[v[2]]], reqDiffOrder=F)
-                                  } else if(v[1]=="conceptID" & v[2]!="conceptID") {
+                                function(v) {
+                                  # Identify concept and non-concepts in specified vars
+                                  # Note that v is a length-two vwctor
+                                  k1 <- which(v=="conceptID")
+                                  k2 <- setdiff(1:2, k1)
+                                  if(length(k1)==0) {
+                                    # Neither var is a concept
+                                    # Construct edges between vertices of each
+                                    edger(vdat[["primary"]][[v[1]]], vdat[["primary"]][[v[2]]], diffOrder=F)
+                                  } else if(length(k1)==1) {
+                                    # One var in pair is a concept
+                                    # Construct edges between vertices of primary or joint concepts and those of second var
                                     if(!joinConcept) {
-                                      edger(vdat[["primary"]][["conceptID"]], vdat[["primary"]][[v[2]]], reqDiffOrder=F)
+                                      edger(vdat[["primary"]][["conceptID"]], vdat[["primary"]][[v[k2]]], diffOrder=F)
                                     } else {
-                                      edger(vdat[["jointConcept"]][["level"]], vdat[["primary"]][[v[2]]], reqDiffOrder=F)
+                                      edger(vdat[["jointConcept"]][["level"]], vdat[["primary"]][[v[k2]]], diffOrder=F)
                                     }
-                                  } else if(v[1]!="conceptID" & v[2]=="conceptID") {
-                                    if(!joinConcept) {
-                                      edger(vdat[["primary"]][[v[1]]], vdat[["primary"]][["conceptID"]], reqDiffOrder=F)
-                                    } else {
-                                      edger(vdat[["primary"]][[v[1]]], vdat[["jointConcept"]][["level"]], reqDiffOrder=F)
-                                    }
-                                  } else if(!joinConcept) {
-                                    edger(vdat[["jointConcept"]][["level"]], vdat[["jointConcept"]][["level"]], reqDiffOrder=F)
                                   } else {
-                                    edger(vdat[["primary"]][["conceptID"]], vdat[["primary"]][["conceptID"]], reqDiffOrder=T)
+                                    # Both vars are concepts
+                                    # Construct edges between vertices of each
+                                    if(!joinConcept) {
+                                      # Limit edges to concepts of different order
+                                      edger(vdat[["primary"]][["conceptID"]], vdat[["primary"]][["conceptID"]], diffOrder=T)
+                                    } else {
+                                      edger(vdat[["jointConcept"]][["level"]], vdat[["jointConcept"]][["level"]], diffOrder=F)
+                                    }
                                   }
+                                }
                           )
                   )
                 } else {
@@ -638,12 +456,13 @@ assembleNetworkComponents <- function() {
                                   # Iterate through all variables in the connection specification for the current set
                                   do.call(rbind,
                                           apply(as.matrix(cInteract[[conn]]), 1,
-                                                function(vc)
+                                                function(vc) {
                                                   if(!joinConcept | vc!="conceptID") {
-                                                    edger(vdat[["interaction"]][[set]], vdat[["primary"]][[vc]], reqDiffOrder=F)
+                                                    edger(vdat[["interaction"]][[set]], vdat[["primary"]][[vc]], diffOrder=F)
                                                   } else {
-                                                    edger(vdat[["interaction"]][[set]], vdat[["jointConcept"]][["level"]], reqDiffOrder=F)
-                                                  }))
+                                                    edger(vdat[["interaction"]][[set]], vdat[["jointConcept"]][["level"]], diffOrder=F)
+                                                  }
+                                                }))
                                 } else {
                                   data.frame()
                                 }
@@ -652,10 +471,10 @@ assembleNetworkComponents <- function() {
                 )
               )
 
-      if(F) {
-        print("EDATEDAT")
-        print(edat)
-        print("EDATEDAT")
+      if(T) {
+        print("EDAT-EDAT")
+        print(str(edat))
+        print("EDAT-EDAT")
       }
 
       # Compose visNetwork vertex data frame
@@ -733,6 +552,7 @@ assembleNetworkComponents <- function() {
                                            # Assign a group
                                            # visNetwork uses this to relate nodes to legend entries (by color)
                                            "group"=labLegend,
+                                           # Concept order is needed for filtering and expansion operations
                                            "conceptOrder"=ifelse(vtype=="primary" & names(vdat[[vtype]])[i]=="conceptID",
                                                                  vdat[[vtype]][[i]][[j]][["conceptOrder"]], 0))
                                        } else {
@@ -746,92 +566,78 @@ assembleNetworkComponents <- function() {
                 )
 
       if(F) {
-        print("VERTEXVERTEX")
-        print(vertex)
-        print("VERTEXVERTEX")
+        print("VERTEX-VERTEX")
+        print(str(vertex))
+        print("VERTEX-VERTEX")
       }    
 
-      # Compose vertex data list
-      # The ith element contains a named vector of data values corresponding to the ith row in the vertex data frame
-      # Vector names are netData columns corresponding to the data values
-      # For reference, list elements are named with vertex IDs that corresponf to those in the vertex data frame
+      # Compose vertex data set list
+      # The ith element contains
+      #   For primary vertices .... a vector of length one containing the data value corresponding to the ith row of the vertex
+      #                             data frame (vector element name is that of the corresponding netData variable)
+      #   For joint-concepts ...... a vector of conceptIDs corresponding to the ith row of the vertex data frame (elements named "conceptID")
+      #   For interactions ........ a single row data frame with one coumn for each interaction variable (col names correspond to vars)
+      # List elements are named with vertex IDs corresponding to those in the vertex data
       vid <- vector("character")
-      k <- which(unlist(lapply(1:length(vdat), function(i) length(vdat[[i]])))>0)
-      vertexDataValue <- unlist(unlist(
-                           lapply(names(vdat)[k],
-                                  function(vtype)
-                                    lapply(1:length(vdat[[vtype]]),
-                                           function(i)
-                                             lapply(1:length(vdat[[vtype]][[i]]),
-                                                    function(j) {
-                                                      # Primary variable vertex data may have been generated for interaction filters
-                                                      # Render primary vertices only if specified in a primary connection or in the
-                                                      # connection vector of an interaction
-                                                      if(vtype=="primary") {
-                                                        vCreate <- (vdat[[vtype]][[i]][[j]][["dbVar"]] %in% c(unlist(cPri), cInteract[["conn1"]], cInteract[["conn2"]]))
-                                                      } else {
-                                                        vCreate <- T
-                                                      }
-                                                      if(vCreate) {
-                                                        vid <<- c(vid, vdat[[vtype]][[i]][[j]][["vid"]])
-                                                        if(vtype %in% c("primary", "interaction")) {
-                                                          # Variable name(s) in dbVar element
-                                                          setNames(vdat[[vtype]][[i]][[j]][["dbValue"]], vdat[[vtype]][[i]][[j]][["dbVar"]])
-                                                        } else if(vtype=="jointConcept") {
-                                                          # Use "conceptID" once for each member concept
-                                                          setNames(vdat[[vtype]][[i]][[j]][["dbValue"]],
-                                                                   rep("conceptID", length(vdat[[vtype]][[i]][[j]][["dbValue"]])))
-                                                        } else {
-                                                          NULL
-                                                        }
-                                                      } else {
-                                                        NULL
-                                                      }
-                                                    }))),
-                           recursive=F), recursive=F)
-        # Omit NULL elements
-        k <- na.omit(unlist(lapply(1:length(vertexDataValue), function(j) ifelse(!is.null(vertexDataValue[[j]]), j, NA))))
-        if(length(k)>0) {
-          vertexDataValue <- setNames(vertexDataValue[k], vid)
-        } else {
-          vdat[["interaction"]] <- list()
-        }
-
-      if(F) {
-        print("VERTEXDATAVERTEXDATA")
-        print(vertexDataValue)
-        print("VERTEXDATAVERTEXDATA")
+      vertexDataValue <- unlist(
+                           lapply(1:length(vdat),
+                                  function(i)
+                                    if(length(vdat[[i]])>0) {
+                                      vtype <- names(vdat)[i]
+                                      # Iterate through each level of each vertex variable
+                                      lapply(unlist(vdat[[i]], recursive=F),
+                                             function(v) {
+                                               # Save vertex ID for vertex data list element names
+                                               vid <<- c(vid, v[["vid"]])
+                                               setNames(v[["dbValue"]], v[["dbVar"]])
+                                             })
+                                    } else {
+                                      NULL
+                                    }),
+                         recursive=F)
+      # Omit NULL elements
+      k <- na.omit(unlist(lapply(1:length(vertexDataValue), function(j) ifelse(!is.null(vertexDataValue[[j]]), j, NA))))
+      if(length(k)>0) {
+        vertexDataValue <- setNames(vertexDataValue[k], vid)
+      } else {
+        vertexDataValue <- list()
       }
 
-        # Filter edges, omitting those with frequency 0 or below minimum specified frequency
-        # Note that zeroes can arise when relating a variable to itself (observations may exist for
-        # two distinct levels of the variable, but the participant ID sets for the levels may be disjoint)
-        k <- which(edat[,"nParticipant"]>0 & edat[,"nParticipant"]>=graphCfg[[gcPtr]]["nedgemin"])
+      if(F) {
+        print("VERTEX-DATA-VERTEX-DATA")
+        print(str(vertexDataValue))
+        print("VERTEX-DATA-VERTEX-DATA")
+      }
 
-        # Compose visNetwork edge data frame
-        edge <- do.call(rbind,
-                  lapply(k,
-                    function(i) {
-                      data.frame("from"=edat[i,"vid1"],
-                                 "to"=edat[i,"vid2"],
-                                 # Line weight
-                                 value=edat[i,"nParticipant"],
-                                 #"label"=paste("n = ", edat[i,"lab"], sep=""), 
-                                 # Hover text
-                                 "title"=paste("n=", edat[i,"nParticipant"], sep=""),
-                                 "hoverWidth"=0,
-                                 "selectionWidth"=0,
-                                 "color"=list("color"=ec1, "opacity"=graphCfg[[gcPtr]][["eopacity"]], "highlight"=ec2),
-                                 # Font size scaled to node observation frequency seems like a good idea, but introduces distracting variation
-                                 #"font"=list("color"="white", "size"=vfontsz[1]*10*vertex0[match(vid[edat[,"v1"]],
-                                 #       vertex[,"id"]),"n"]/max(vertex0[,"n"]), strokeWidth=1, "strokeColor"=fsc1),
-                                 "font"=list("color"="white",
-                                             "size"=mean(vertex[which(vertex[,"id"] %in% edat[i,c("vid1", "vid2")]),"font.size"]),
-                                             "strokeWidth"=1, "strokeColor"=fsc1),
-                                 #"length"=20,
-                                 "physics"=T,
-                                 "smooth"=T)
-                    }))
+      # Filter edges, omitting those with frequency 0 or below minimum specified frequency
+      # Note that zeroes can arise when relating a variable to itself (observations may exist for
+      # two distinct levels of the variable, but the participant ID sets for the levels may be disjoint)
+      k <- which(edat[,"nParticipant"]>0 & edat[,"nParticipant"]>=graphCfg[[gcPtr]]["nedgemin"])
+
+      # Compose visNetwork edge data frame
+      edge <- do.call(rbind,
+                lapply(k,
+                  function(i) {
+                    data.frame("from"=edat[i,"vid1"],
+                               "to"=edat[i,"vid2"],
+                               # Line weight
+                               value=edat[i,"nParticipant"],
+                               #"label"=paste("n = ", edat[i,"lab"], sep=""), 
+                               # Hover text
+                               "title"=paste("n=", edat[i,"nParticipant"], sep=""),
+                               "hoverWidth"=0,
+                               "selectionWidth"=0,
+                               "color"=list("color"=ec1, "opacity"=graphCfg[[gcPtr]][["eopacity"]], "highlight"=ec2),
+                               # Font size scaled to node observation frequency seems like a good idea, but introduces distracting variation
+                               #"font"=list("color"="white", "size"=vfontsz[1]*10*vertex0[match(vid[edat[,"v1"]],
+                               #       vertex[,"id"]),"n"]/max(vertex0[,"n"]), strokeWidth=1, "strokeColor"=fsc1),
+                               "font"=list("color"="white",
+                                           "size"=mean(vertex[which(vertex[,"id"] %in% edat[i,c("vid1", "vid2")]),"font.size"]),
+                                           "strokeWidth"=1, "strokeColor"=fsc1),
+                               #"length"=20,
+                               "physics"=T,
+                               "smooth"=T)
+                  }))
 
       netComponents <- list("vertex"=vertex, "vertexDataValue"=vertexDataValue, "edge"=edge)
 
