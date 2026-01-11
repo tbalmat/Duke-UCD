@@ -1,0 +1,6 @@
+match(p:Participant)-[P_SCT]->(c0:ObjectConcept)-[rsct:ISA*]->(c2:ObjectConcept)
+where c2.sctid in['52559000', '26079004'] and startNode(last(rsct)).FSN in['Dyskinesia (finding)', 'Intention tremor (finding)']
+return distinct p.ParticipantId, p.UCDDx, p.HASxLast,
+       sum(case when(startNode(last(rsct)).FSN='Dyskinesia (finding)')then 1 else 0 end) as c1,
+       sum(case when(startNode(last(rsct)).FSN='Intention tremor (finding)')then 1 else 0 end) as c2
+order by p.UCDDx, p.HASxLast

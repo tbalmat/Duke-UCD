@@ -1,0 +1,802 @@
+Total node count:
+match(n) return count(1)
+╒══════════╕
+│"count(1)"│
+╞══════════╡
+│3563662   │
+└──────────┘
+
+
+List node labels (labels are how nodes are referenced in queries, similar to records in SQL)
+----------------------------------------------------------------------------------------------
+match (x) return distinct labels(x), count(1) as n order by labels(x)
+╒═══════════════════════════════════════════════════════════════════════════╤═══════╕
+│"labels(x)"                                                                │"n"    │
+╞═══════════════════════════════════════════════════════════════════════════╪═══════╡
+│["Description"]                                                            │1407643│
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["NDC"]                                                                    │540114 │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept"]                                                          │418662 │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Behav"]                                                  │2      │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Behav","PBehav","PSCT"]                                  │1      │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro"]                                                  │22542  │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","PNeuro","PSCT"]                                  │1049   │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","Psych"]                                          │1719   │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","Psych","Behav"]                                  │53     │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","Psych","Behav","PNeuro","PPsych","PBehav","PSCT"]│9      │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","Psych","Behav","SZ"]                             │1      │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","Psych","PNeuro","PPsych","PSCT"]                 │135    │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","Psych","SZ"]                                     │24     │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","SZ"]                                             │322    │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Neuro","SZ","PNeuro","PSZ","PSCT"]                       │56     │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","PSCT"]                                                   │3919   │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Psych"]                                                  │3859   │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Psych","Behav"]                                          │2103   │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Psych","Behav","PPsych","PBehav","PSCT"]                 │123    │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["ObjectConcept","Psych","PPsych","PSCT"]                                  │216    │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["Participant"]                                                            │306    │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["Participant","UCD_Proximal"]                                             │510    │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["RXCUI"]                                                                  │657179 │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["RXCUI","PRXCUI"]                                                         │1720   │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["RoleGroup"]                                                              │489306 │
+├───────────────────────────────────────────────────────────────────────────┼───────┤
+│["Visit"]                                                                  │12089  │
+└───────────────────────────────────────────────────────────────────────────┴───────┘
+
+Note the hierarchical structure of object concepts
+
+Explore hierarchical relationships of concept nodes
+--------------------------------------------------------------------------------------------------------
+
+match (n) where labels(n)=["ObjectConcept","Psych"] RETURN count(1)
+╒══════════╕
+│"count(1)"│
+╞══════════╡
+│3859      │
+└──────────┘
+
+match (n) where labels(n)=["ObjectConcept","Psych","Behav"] RETURN count(1)
+╒══════════╕
+│"count(1)"│
+╞══════════╡
+│2103      │
+└──────────┘
+
+Reverse labels (empty):
+match (n) where labels(n)=["ObjectConcept","Behav","Psych"] RETURN count(1)
+╒══════════╕
+│"count(1)"│
+╞══════════╡
+│0         │
+└──────────┘
+
+Active property
+--------------------------------------------------
+match(x) return distinct x.active, count(1)
+╒══════════╤══════════╕
+│"x.active"│"count(1)"│
+╞══════════╪══════════╡
+│"0"       │344740    │
+├──────────┼──────────┤
+│"1"       │1517612   │
+├──────────┼──────────┤
+│null      │1701310   │
+└──────────┴──────────┘
+
+Explore labels within Psych, Behav
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+Psych and Psych, Behav appear to be disjoint (following set is null)
+match(x), (y) where labels(x)=["ObjectConcept","Psych"] and labels(y)=["ObjectConcept","Psych","Behav"] and x.id=y.id return x limit 25
+
+Psych, Behav nodes are children of Psych nodes (following is non-null, all relationships are of type ISA)
+match(x)-[r]->(y) where labels(x)=["ObjectConcept","Psych","Behav"] and labels(y)=["ObjectConcept","Psych"] return distinct type(r)
+
+Participants
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+MATCH (x:Participant) RETURN count(1)
+╒══════════╕
+│"count(1)"│
+╞══════════╡
+│816       │
+└──────────┘
+
+Note that there 816 Participant nodes, the sum of Participant label counts, above
+Participants are disjoint by UCD_Proximal label and by UCDx property set
+
+Distribution of UCDDx within UCD_Proximal participants (note that node counts sum to 510, the number of nodes labeled ["Participant","UCD_Proximal"])
+match (x) where labels(x)=["Participant","UCD_Proximal"] return distinct(x.UCDDx), count(1) as n
+╒═══════════╤═══╕
+│"(x.UCDDx)"│"n"│
+╞═══════════╪═══╡
+│"OTC"      │476│
+├───────────┼───┤
+│"CPS1"     │29 │
+├───────────┼───┤
+│"NAGS"     │5  │
+└───────────┴───┘
+
+Distribution of UCDDx within non-UCD_Proximal participants (note that node counts sum to 306, the number of nodes labeled ["Participant"])
+match (x) where labels(x)=["Participant"] return distinct(x.UCDDx), count(1) as n
+╒═══════════╤═══╕
+│"(x.UCDDx)"│"n"│
+╞═══════════╪═══╡
+│"ALD"      │127│
+├───────────┼───┤
+│"ASD"      │113│
+├───────────┼───┤
+│"ARG"      │29 │
+├───────────┼───┤
+│"CITR"     │6  │
+├───────────┼───┤
+│"HHH"      │15 │
+├───────────┼───┤
+│null       │16 │
+└───────────┴───┘
+
+There does not appear to be any sort of hierarchy of the Participant and Participant, UCD_Proximal nodes
+The following returns a null set, indicating no relationship between node types
+match(x)-[r]-(y) where labels(x)=["Participant"] and labels(y)=["Participant","UCD_Proximal"] return x, y
+
+Individual participants:
+MATCH (x:Participant) RETURN x
+                                                                                                                                                                                                                           {"LiverTransplantStatus":"No Liver Transplant","StartAgeDays":"4216","VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"Male","UCDDx":"ALD","LocationID":"0","GLabel":" ","NeonatalOnset":"Age > 28 days","HASxDx":"Symptoms but no HA event at Diagnosis","HASx1stAgeDays":"183","YOB":"1994","ParticipantId":"100006","DxMethod":"Clinical Presentation","EnrollmentStatus":"Enrolled Alive, Full Participation","UCDDxAgeDays":"183","OnsetAgeDays":"183","RegisterAgeDays":"4216","HASxLast":"Symptoms but no HA events"}                                                                                                                                                                                          │
+
+│{"LiverTransplantStatus":"No Liver Transplant","StartAgeDays":"2441","VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"Female","UCDDx":"OTC","LocationID":"1","GLabel":" ","NeonatalOnset":"Age > 28 days","HASxDx":"Symptoms but no HA event at Diagnosis","HASx1stAgeDays":"183","YOB":"1999","ParticipantId":"100017","DxMethod":"Clinical Presentation","EnrollmentStatus":"Uncertain","OnsetAgeDays":"183","UCDDxAgeDays":"183","HA1stAgeDays":"1279","RegisterAgeDays":"2430","HASxLast":"HA Events with or without Symptoms"}                                                                                                                                                                                  │
+
+│{"LiverTransplantStatus":"Liver Transplant","StartAgeDays":"4133","VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"Male","UCDDx":"ASD","LocationID":"2","GLabel":" ","NeonatalOnset":"Age < = 28 days","HASxDx":"HA events at Diagnosis","HASx1stAgeDays":"2","YOB":"1995","ParticipantId":"100023","DxMethod":"Clinical Presentation","EnrollmentStatus":"Enrolled Alive, Full Participation","OnsetAgeDays":"2","UCDDxAgeDays":"2","LiverTransplantAgeDays":"7495","HA1stAgeDays":"3","RegisterAgeDays":"4058","HASxLast":"HA Events with or without Symptoms"}                                                                                                                                                    │
+
+│{"LiverTransplantStatus":"No Liver Transplant","StartAgeDays":"2355","VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"Male","UCDDx":"OTC","LocationID":"5","GLabel":" ","TestGroup":"EarlyOnsetProximal","NeonatalOnset":"Age < = 28 days","HASxDx":"HA events at Diagnosis","HASx1stAgeDays":"0","YOB":"1999","ParticipantId":"100038","DxMethod":"Clinical Presentation","EnrollmentStatus":"Enrolled Alive, Full Participation","Test":"EarlyOnsetProximal","OnsetAgeDays":"0","UCDDxAgeDays":"0","HA1stAgeDays":"0","RegisterAgeDays":"2355","HASxLast":"HA Events with or without Symptoms"}                                                                                                                    │
+
+│{"LiverTransplantStatus":"No Liver Transplant","StartAgeDays":"4261","VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"Male","WithdrawnReason":"Lost to Followup","UCDDx":"OTC","LocationID":"6","GLabel":" ","NeonatalOnset":"Age > 28 days","HASxDx":"Symptoms but no HA event at Diagnosis","HASx1stAgeDays":"2922","YOB":"1996","ParticipantId":"100058","WithdrawAgeDays":"7243","DxMethod":"Clinical Presentation","EnrollmentStatus":"Uncertain","OnsetAgeDays":"2922","UCDDxAgeDays":"2922","HA1stAgeDays":"3059","RegisterAgeDays":"3679","HASxLast":"HA Events with or without Symptoms"}                                                                                                                   │
+
+│{"LiverTransplantStatus":"No Liver Transplant","StartAgeDays":"1679","VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"Female","UCDDx":"ARG","LocationID":"9","GLabel":" ","NeonatalOnset":"Age > 28 days","HASxDx":"Symptoms but no HA event at Diagnosis","HASx1stAgeDays":"1461","YOB":"2001","ParticipantId":"100060","DxMethod":"Clinical Presentation","EnrollmentStatus":"Uncertain","OnsetAgeDays":"1461","UCDDxAgeDays":"1461","HA1stAgeDays":"2026","RegisterAgeDays":"1680","HASxLast":"HA Events with or without Symptoms"}                                                                                                                                                                               │
+
+│{"LiverTransplantStatus":"No Liver Transplant","StartAgeDays":"3919","VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"Male","UCDDx":"OTC","LocationID":"10","GLabel":" ","NeonatalOnset":"Age > 28 days","HASxDx":"Symptoms but no HA event at Diagnosis","HASx1stAgeDays":"2922","YOB":"1995","ParticipantId":"100119","DxMethod":"Clinical Presentation","EnrollmentStatus":"Enrolled Alive, Full Participation","UCDDxAgeDays":"2922","OnsetAgeDays":"2922","HA1stAgeDays":"3088","RegisterAgeDays":"3919","HASxLast":"HA Events with or without Symptoms"}                                                                                                                                                       │
+
+│{"LiverTransplantStatus":"No Liver Transplant","StartAgeDays":"559","VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"Female","UCDDx":"ASD","LocationID":"13","GLabel":" ","NeonatalOnset":"Age < = 28 days","HASxDx":"Symptoms but no HA event at Diagnosis","HASx1stAgeDays":"7","YOB":"2004","ParticipantId":"100121","DxMethod":"Clinical Presentation","EnrollmentStatus":"Enrolled Alive, Full Participation","UCDDxAgeDays":"7","OnsetAgeDays":"7","HA1stAgeDays":"20","RegisterAgeDays":"558","HASxLast":"HA Events with or without Symptoms"}                                                                                                                                                                │
+
+
+Object concept nodes
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Properties (note the apparent unique combination of properties - apparently, various nodes wer created with a differet ordering of properties):
+match(x) where labels(x)=["ObjectConcept"] return distinct keys(x)
+╒═══════════════════════════════════════════════════════════════════════════════════════════════════════════╕
+│"keys(x)"                                                                                                  │
+╞═══════════════════════════════════════════════════════════════════════════════════════════════════════════╡
+│["definitionStatusId","active","GLabel","effectiveTime","nodetype","FSN","history","moduleId","id","sctid"]│
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│["GLabel","definitionStatusId","effectiveTime","nodetype","history","moduleId","active","FSN","id","sctid"]│
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│["active","GLabel","nodetype","definitionStatusId","moduleId","effectiveTime","id","sctid","FSN","history"]│
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│["active","GLabel","nodetype","definitionStatusId","moduleId","effectiveTime","FSN","history","id","sctid"]│
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│["GLabel","nodetype","definitionStatusId","moduleId","effectiveTime","FSN","id","sctid","history","active"]│
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│["GLabel","nodetype","definitionStatusId","moduleId","effectiveTime","FSN","history","active","id","sctid"]│
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+It was confirmed (using the source SNOMEDCT data) that:
+1. id and sctid correspond to the SNOMEDCT conceptId field (by comparing FSN and term for sampled IDs)
+2. FSN and GLabel correspond to term in SNOMEDCT
+3. moduleId and definitionStatusId are formatted as SNOMEDCT moduleId and typeId fileds (values differ, but this may be due to use of different SNOMED versions)
+4. active and effectiveTime appears to serve identical functions in UCDDB and SNOMEDCT
+5. Properties id and sctid are identical (match(x) where (labels(x)=["ObjectConcept"] or labels(x)=["ObjectConcept", "Behav"]) and x.id<>x.sctid return x)
+6. FSN and GLabel are identical (match(x) where (labels(x)=["ObjectConcept"] or labels(x)=["ObjectConcept", "Behav"]) and x.FSN<>x.GLabel return x)
+
+id<>sctid when nodetype="description"
+
+node types:
+match(x) return distinct x.nodetype, count(1) as n
+╒═════════════╤═══════╕
+│"x.nodetype" │"n"    │
+╞═════════════╪═══════╡
+│"concept"    │454709 │
+├─────────────┼───────┤
+│"description"│1407643│
+├─────────────┼───────┤
+│"rolegroup"  │489306 │
+├─────────────┼───────┤
+│null         │1212004│
+└─────────────┴───────┘
+
+Distribution of labels by node type
+match(x) return distinct x.nodetype, labels(x), count(1) as n
+╒═════════════╤═══════════════════════════════════════════════════════════════════════════╤═══════╕
+│"x.nodetype" │"labels(x)"                                                                │"n"    │
+╞═════════════╪═══════════════════════════════════════════════════════════════════════════╪═══════╡
+│"concept"    │["ObjectConcept"]                                                          │418662 │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Psych"]                                                  │3859   │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro"]                                                  │22542  │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Psych","Behav"]                                          │2103   │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","PSCT"]                                                   │3833   │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","Psych"]                                          │1719   │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","PNeuro","PSCT"]                                  │1049   │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Psych","PPsych","PSCT"]                                  │216    │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","Psych","PNeuro","PPsych","PSCT"]                 │135    │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","SZ"]                                             │322    │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Psych","Behav","PPsych","PBehav","PSCT"]                 │123    │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","Psych","Behav"]                                  │53     │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","SZ","PNeuro","PSZ","PSCT"]                       │56     │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","Psych","SZ"]                                     │24     │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Behav"]                                                  │2      │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","Psych","Behav","PNeuro","PPsych","PBehav","PSCT"]│9      │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Neuro","Psych","Behav","SZ"]                             │1      │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"concept"    │["ObjectConcept","Behav","PBehav","PSCT"]                                  │1      │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"description"│["Description"]                                                            │1407643│
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│"rolegroup"  │["RoleGroup"]                                                              │489306 │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│null         │["RXCUI"]                                                                  │657179 │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│null         │["RXCUI","PRXCUI"]                                                         │1720   │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│null         │["NDC"]                                                                    │540114 │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│null         │["Participant"]                                                            │306    │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│null         │["Participant","UCD_Proximal"]                                             │510    │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│null         │["Visit"]                                                                  │12089  │
+├─────────────┼───────────────────────────────────────────────────────────────────────────┼───────┤
+│null         │["ObjectConcept","PSCT"]                                                   │86     │
+└─────────────┴───────────────────────────────────────────────────────────────────────────┴───────┘
+
+Description nodes (nodetype and label) example:
+match(x) where (x.nodetype="description" or x.nodetype="concept") and x.sctid="729776005" return x limit 25
+{"FSN":"Entire ulnar collateral ligament of proximal interphalangeal joint of index finger (body structure)","nodetype":"concept","effectiveTime":"20170731","definitionStatusId":"900000000000074008","active":"1","GLabel":"Entire ulnar collateral ligament of proximal interphalangeal joint of index finger (body structure)","history":"","id":"729776005","moduleId":"900000000000207008","sctid":"729776005"}
+
+{"caseSignificanceId":"900000000000448009","nodetype":"description","acceptabilityId":"900000000000548007","effectiveTime":"20170731","refsetId":"900000000000509007","active":"1","history":"","languageCode":"en","id128bit":"63b18683-da1a-44ab-8e34-06f6bddbab82","descriptionType":"FSN","typeId":"900000000000003001","term":"Entire ulnar collateral ligament of proximal interphalangeal joint of index finger (body structure)","id":"3458556010","moduleId":"900000000000207008","sctid":"729776005"}
+
+{"caseSignificanceId":"900000000000448009","nodetype":"description","acceptabilityId":"900000000000548007","effectiveTime":"20170731","refsetId":"900000000000509007","active":"1","history":"","languageCode":"en","id128bit":"d7a00900-02ae-4432-a047-95e1a179984e","descriptionType":"Preferred","typeId":"900000000000013009","term":"Entire ulnar collateral ligament of proximal interphalangeal joint of index finger","id":"3458557018","moduleId":"900000000000207008","sctid":"729776005"}
+
+Nodes of type description contain fields that appear in the SNOMEDCT source (caseSignificanceId and languageCode) that do not appear in concept nodes
+Also, multiple related description nodes appear to have been collapsed into a single concept node 
+Perhaps, description nodes are intended as reference sets, while description nodes are intended for querying
+
+
+Obj Concept Psych nodes
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+It appears that Psych definitions from SNOMED were divided into two sets of nodes: behavioral and non-behavioral
+
+Example Psych concepts:
+match(x) where labels(x)=["ObjectConcept","Psych"] return x.FSN limit 25
+╒═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╕
+│"x.FSN"                                                                                                            │
+╞═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╡
+│"Other personality disorders (disorder)"                                                                           │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Dissociative hallucinations (finding)"                                                                            │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Koro (disorder)"                                                                                                  │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Comprehensive occupational therapy evaluation scale score (observable entity)"                                    │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Suppressed emotion (finding)"                                                                                     │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Predisposed to startle (finding)"                                                                                 │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Eating disorder examination questionnaire eating concern subscale score (observable entity)"                      │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Patient decision status (observable entity)"                                                                      │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"[X]Mental and behavioral disorders due to use of alcohol (disorder)"                                              │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Non-organic psychosis NOS (disorder)"                                                                             │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Fear of natural phenomena (finding)"                                                                              │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Fear of wetting self in public (finding)"                                                                         │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Finding of perceptual performance (finding)"                                                                      │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Bryant and Bradley Rhyming Task score (observable entity)"                                                        │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Conflicting attitude towards exercise (finding)"                                                                  │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Tends to manipulate others (finding)"                                                                             │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Withdrawal symptoms from therapeutic use of drugs in newborn (finding)"                                           │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Caregiver stressors (observable entity)"                                                                          │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Pregnancy with mental disorders (disorder)"                                                                       │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Alexithymia (finding)"                                                                                            │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Elation (finding)"                                                                                                │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Able to divide attention (finding)"                                                                               │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Comprehensive Assessment of At-risk Mental States non-bizarre ideas global rating scale score (observable entity)"│
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Finding of problem solving (finding)"                                                                             │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│"Finding of level of mood (finding)"                                                                               │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+Example Psych, Behavioral concepts:
+match(x) where labels(x)=["ObjectConcept","Psych","Behav"] return x.FSN limit 25
+╒═════════════════════════════════════════════════════════════╕
+│"x.FSN"                                                      │
+╞═════════════════════════════════════════════════════════════╡
+│"Ex-problem drinker (finding)"                               │
+├─────────────────────────────────────────────────────────────┤
+│"Kicking other person (finding)"                             │
+├─────────────────────────────────────────────────────────────┤
+│"Tolerating oral fluid (finding)"                            │
+├─────────────────────────────────────────────────────────────┤
+│"Parental role conflict (finding)"                           │
+├─────────────────────────────────────────────────────────────┤
+│"Inappropriate verbal response (finding)"                    │
+├─────────────────────────────────────────────────────────────┤
+│"Clinging to special objects - stereotyped routine (finding)"│
+├─────────────────────────────────────────────────────────────┤
+│"Enjoys moderate exercise (finding)"                         │
+├─────────────────────────────────────────────────────────────┤
+│"Sexually obscene thoughts (finding)"                        │
+├─────────────────────────────────────────────────────────────┤
+│"Inappropriate illness behavior (finding)"                   │
+├─────────────────────────────────────────────────────────────┤
+│"Ex-tobacco chewer (finding)"                                │
+├─────────────────────────────────────────────────────────────┤
+│"Takes inadequate exercise (finding)"                        │
+├─────────────────────────────────────────────────────────────┤
+│"Victim of bullying (finding)"                               │
+├─────────────────────────────────────────────────────────────┤
+│"Absenteeism at work (finding)"                              │
+├─────────────────────────────────────────────────────────────┤
+│"Suspicious behavior (finding)"                              │
+├─────────────────────────────────────────────────────────────┤
+│"Defecating in public (finding)"                             │
+├─────────────────────────────────────────────────────────────┤
+│"Opiate misuse (finding)"                                    │
+├─────────────────────────────────────────────────────────────┤
+│"Not aware of danger from traffic (finding)"                 │
+├─────────────────────────────────────────────────────────────┤
+│"Row with wife (finding)"                                    │
+├─────────────────────────────────────────────────────────────┤
+│"Frequency of substance misuse (finding)"                    │
+├─────────────────────────────────────────────────────────────┤
+│"Lipid lowering therapy declined (situation)"                │
+├─────────────────────────────────────────────────────────────┤
+│"Drinks at home (finding)"                                   │
+├─────────────────────────────────────────────────────────────┤
+│"Sexual assault with oral penetration by penis (event)"      │
+├─────────────────────────────────────────────────────────────┤
+│"Frankl behavioral rating definitely positive (finding)"     │
+├─────────────────────────────────────────────────────────────┤
+│"Violence between parents (finding)"                         │
+├─────────────────────────────────────────────────────────────┤
+│"Malicious damage (finding)"                                 │
+└─────────────────────────────────────────────────────────────┘
+
+Psych, Behav hierarchy:
+Behavioral nodes are associate with parent Psych nodes
+match(x)-[r]-(y) where labels(x)=["ObjectConcept","Psych"] and labels(y)=["ObjectConcept","Psych","Behav"] return x.FSN, y.FSN limit 25
+╒═══════════════════════════════════════════════════════════════════════════════╤══════════════════════════════════════════════════════════════════════════╕
+│"x.FSN"                                                                        │"y.FSN"                                                                   │
+╞═══════════════════════════════════════════════════════════════════════════════╪══════════════════════════════════════════════════════════════════════════╡
+│"Thoughts of violence (finding)"                                               │"Thoughts of sexual violence (finding)"                                   │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Thoughts of violence (finding)"                                               │"Homicidal thoughts (finding)"                                            │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Substance abuse (disorder)"                                                   │"Misuse of prescription only drugs (finding)"                             │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Substance abuse (disorder)"                                                   │"Misuse of drugs NOS (finding)"                                           │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Nondependent opioid abuse (disorder)"                                         │"Intravenous nondependent opioid abuse (disorder)"                        │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Emotional relationship (finding)"                                             │"Abusive emotional relationship (finding)"                                │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Unable to resist obsessional thoughts (finding)"                              │"Compulsion to act on thoughts (finding)"                                 │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Feeling anxious (finding)"                                                    │"Parental anxiety (finding)"                                              │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Character trait finding of level of sociability (finding)"                    │"Increased sociability (finding)"                                         │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Finding related to ability to cope (finding)"                                 │"Anxiety about not coping with parenthood (finding)"                      │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Finding related to ability to cope (finding)"                                 │"Avoidance coping (finding)"                                              │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Nondependent amphetamine or other psychostimulant abuse (disorder)"           │"Nondependent amphetamine or psychostimulant abuse, continuous (disorder)"│
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Nondependent amphetamine or other psychostimulant abuse (disorder)"           │"Nondependent amphetamine or psychostimulant abuse, episodic (disorder)"  │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Unable to resist dangerous thoughts (finding)"                                │"Compulsion to act on dangerous thoughts (finding)"                       │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Finding of role relationship pattern (finding)"                               │"Developing organized infant behavior (finding)"                          │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Finding of role relationship pattern (finding)"                               │"Parenting finding (finding)"                                             │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Disorientated in place (finding)"                                             │"Wandering (finding)"                                                     │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Activity tolerance (observable entity)"                                       │"Hyperactivity level (observable entity)"                                 │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Mental state, behavior / psychosocial function observable (observable entity)"│"Behavior observable (observable entity)"                                 │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Readiness finding (finding)"                                                  │"Ready for enhanced power (finding)"                                      │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Readiness finding (finding)"                                                  │"Developing parenting skills (finding)"                                   │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Readiness finding (finding)"                                                  │"Ready for enhanced parenting (finding)"                                  │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Readiness finding (finding)"                                                  │"Ready for enhanced immunization status (finding)"                        │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Readiness finding (finding)"                                                  │"Developing enhanced empowerment (finding)"                               │
+├───────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────┤
+│"Readiness finding (finding)"                                                  │"Ready for enhanced management of therapeutic regimen (finding)"          │
+└───────────────────────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────┘
+
+All relationships from Psych, Behav nodes to Psych nodes are of type ISA
+match (x)-[r]-(y) where labels(x)=["ObjectConcept", "Psych"] and labels(y)=["ObjectConcept", "Psych", "Behav"] return distinct type(r)
+╒═════════╕
+│"type(r)"│
+╞═════════╡
+│"ISA"    │
+└─────────┘
+
+
+Catalog relationships and associated node types
+match (x)-[r]-(y) return distinct labels(x), labels(y), type(r), count(1) order by labels(x), labels(y), type(r)
+Output saved in external file Relationships.txt
+
+Schizophrenia
+-----------------------------------------------------------------------------------------------------------------------------------------
+match(x:ObjectConcept:Neuro:Psych)-[:ISA]->(y) where x.FSN contains "schizophrenia" return x, y, labels(y)
+╒════════════════════════════════════════════╤════════════════════════════════════════════╤═════════════════════════════════════════╕
+│"x"                                         │"y"                                         │"labels(y)"                              │
+╞════════════════════════════════════════════╪════════════════════════════════════════════╪═════════════════════════════════════════╡
+│{"FSN":"Subchronic undifferentiated schizoph│{"FSN":"Subchronic undifferentiated schizoph│["ObjectConcept","Neuro","Psych"]        │
+│renia with acute exacerbations (disorder)","│renia (disorder)","nodetype":"concept","effe│                                         │
+│nodetype":"concept","effectiveTime":"2002013│ctiveTime":"20020131","definitionStatusId":"│                                         │
+│1","definitionStatusId":"900000000000074008"│900000000000074008","active":"1","GLabel":"S│                                         │
+│,"active":"1","GLabel":"Subchronic undiffere│ubchronic undifferentiated schizophrenia (di│                                         │
+│ntiated schizophrenia with acute exacerbatio│sorder)","history":"","id":"85861002","modul│                                         │
+│ns (disorder)","history":"","id":"7025000","│eId":"900000000000207008","sctid":"85861002"│                                         │
+│moduleId":"900000000000207008","sctid":"7025│}                                           │                                         │
+│000"}                                       │                                            │                                         │
+├────────────────────────────────────────────┼────────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"FSN":"Subchronic undifferentiated schizoph│{"FSN":"Subchronic schizophrenia with acute │["ObjectConcept","Psych"]                │
+│renia with acute exacerbations (disorder)","│exacerbations (disorder)","nodetype":"concep│                                         │
+│nodetype":"concept","effectiveTime":"2002013│t","effectiveTime":"20020131","definitionSta│                                         │
+│1","definitionStatusId":"900000000000074008"│tusId":"900000000000074008","active":"1","GL│                                         │
+│,"active":"1","GLabel":"Subchronic undiffere│abel":"Subchronic schizophrenia with acute e│                                         │
+│ntiated schizophrenia with acute exacerbatio│xacerbations (disorder)","history":"","id":"│                                         │
+│ns (disorder)","history":"","id":"7025000","│111482003","moduleId":"900000000000207008","│                                         │
+│moduleId":"900000000000207008","sctid":"7025│sctid":"111482003"}                         │                                         │
+│000"}                                       │                                            │                                         │
+├────────────────────────────────────────────┼────────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"FSN":"Subchronic undifferentiated schizoph│{"FSN":"Disorder of brain (disorder)","nodet│["ObjectConcept","Neuro","PNeuro","PSCT"]│
+│renia (disorder)","nodetype":"concept","effe│ype":"concept","effectiveTime":"20020131","d│                                         │
+│ctiveTime":"20020131","definitionStatusId":"│efinitionStatusId":"900000000000073002","ptc│                                         │
+│900000000000074008","active":"1","GLabel":"S│ount":6,"GLabel":"Disorder of brain (disorde│                                         │
+│ubchronic undifferentiated schizophrenia (di│r)","active":"1","history":"","id":"81308009│                                         │
+│sorder)","history":"","id":"85861002","modul│","moduleId":"900000000000207008","sctid":"8│                                         │
+│eId":"900000000000207008","sctid":"85861002"│1308009"}                                   │                                         │
+│}                                           │                                            │                                         │
+├────────────────────────────────────────────┼────────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"FSN":"Subchronic undifferentiated schizoph│{"FSN":"Subchronic schizophrenia (disorder)"│["ObjectConcept","Psych"]                │
+│renia (disorder)","nodetype":"concept","effe│,"nodetype":"concept","effectiveTime":"20020│                                         │
+│ctiveTime":"20020131","definitionStatusId":"│131","definitionStatusId":"90000000000007400│                                         │
+│900000000000074008","active":"1","GLabel":"S│8","active":"1","GLabel":"Subchronic schizop│                                         │
+│ubchronic undifferentiated schizophrenia (di│hrenia (disorder)","history":"","id":"169900│                                         │
+│sorder)","history":"","id":"85861002","modul│05","moduleId":"900000000000207008","sctid":│                                         │
+│eId":"900000000000207008","sctid":"85861002"│"16990005"}                                 │                                         │
+│}                                           │                                            │                                         │
+├────────────────────────────────────────────┼────────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"FSN":"Subchronic undifferentiated schizoph│{"FSN":"Undifferentiated schizophrenia (diso│["ObjectConcept","Psych"]                │
+│renia (disorder)","nodetype":"concept","effe│rder)","nodetype":"concept","effectiveTime":│                                         │
+│ctiveTime":"20020131","definitionStatusId":"│"20020131","definitionStatusId":"90000000000│                                         │
+│900000000000074008","active":"1","GLabel":"S│0074008","active":"1","GLabel":"Undifferenti│                                         │
+│ubchronic undifferentiated schizophrenia (di│ated schizophrenia (disorder)","history":"",│                                         │
+│sorder)","history":"","id":"85861002","modul│"id":"111484002","moduleId":"900000000000207│                                         │
+│eId":"900000000000207008","sctid":"85861002"│008","sctid":"111484002"}                   │                                         │
+│}                                           │                                            │                                         │
+└────────────────────────────────────────────┴────────────────────────────────────────────┴─────────────────────────────────────────┘
+
+Trace ISA relationships
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+match(x:ObjectConcept)-[:ISA]-(y)-[:ISA]-(z) where x.id="7025000" and x.active="1" and y.active="1" and z.active="1" return x.FSN, y.FSN, labels(y), z.FSN, labels(z)
+╒══════════════════════════════════════════╤══════════════════════════════════════════╤═════════════════════════════════╤══════════════════════════════════════════╤═════════════════════════════════════════╕
+│"x.FSN"                                   │"y.FSN"                                   │"labels(y)"                      │"z.FSN"                                   │"labels(z)"                              │
+╞══════════════════════════════════════════╪══════════════════════════════════════════╪═════════════════════════════════╪══════════════════════════════════════════╪═════════════════════════════════════════╡
+│"Subchronic undifferentiated schizophrenia│"Subchronic undifferentiated schizophrenia│["ObjectConcept","Neuro","Psych"]│"Disorder of brain (disorder)"            │["ObjectConcept","Neuro","PNeuro","PSCT"]│
+│ with acute exacerbations (disorder)"     │ (disorder)"                              │                                 │                                          │                                         │
+├──────────────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────────────┤
+│"Subchronic undifferentiated schizophrenia│"Subchronic undifferentiated schizophrenia│["ObjectConcept","Neuro","Psych"]│"Subchronic schizophrenia (disorder)"     │["ObjectConcept","Psych"]                │
+│ with acute exacerbations (disorder)"     │ (disorder)"                              │                                 │                                          │                                         │
+├──────────────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────────────┤
+│"Subchronic undifferentiated schizophrenia│"Subchronic undifferentiated schizophrenia│["ObjectConcept","Neuro","Psych"]│"Undifferentiated schizophrenia (disorder)│["ObjectConcept","Psych"]                │
+│ with acute exacerbations (disorder)"     │ (disorder)"                              │                                 │"                                         │                                         │
+├──────────────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────────────┤
+│"Subchronic undifferentiated schizophrenia│"Subchronic schizophrenia with acute exace│["ObjectConcept","Psych"]        │"Acute exacerbation of subchronic catatoni│["ObjectConcept","Psych"]                │
+│ with acute exacerbations (disorder)"     │rbations (disorder)"                      │                                 │c schizophrenia (disorder)"               │                                         │
+├──────────────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────────────┤
+│"Subchronic undifferentiated schizophrenia│"Subchronic schizophrenia with acute exace│["ObjectConcept","Psych"]        │"Subchronic residual schizophrenia with ac│["ObjectConcept","Psych"]                │
+│ with acute exacerbations (disorder)"     │rbations (disorder)"                      │                                 │ute exacerbations (disorder)"             │                                         │
+├──────────────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────────────┤
+│"Subchronic undifferentiated schizophrenia│"Subchronic schizophrenia with acute exace│["ObjectConcept","Psych"]        │"Acute exacerbation of subchronic paranoid│["ObjectConcept","Psych"]                │
+│ with acute exacerbations (disorder)"     │rbations (disorder)"                      │                                 │ schizophrenia (disorder)"                │                                         │
+├──────────────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────────────┤
+│"Subchronic undifferentiated schizophrenia│"Subchronic schizophrenia with acute exace│["ObjectConcept","Psych"]        │"Acute exacerbation of subchronic latent s│["ObjectConcept","Psych"]                │
+│ with acute exacerbations (disorder)"     │rbations (disorder)"                      │                                 │chizophrenia (disorder)"                  │                                         │
+├──────────────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────────────┤
+│"Subchronic undifferentiated schizophrenia│"Subchronic schizophrenia with acute exace│["ObjectConcept","Psych"]        │"Subchronic schizophrenia (disorder)"     │["ObjectConcept","Psych"]                │
+│ with acute exacerbations (disorder)"     │rbations (disorder)"                      │                                 │                                          │                                         │
+├──────────────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────────────────────┼─────────────────────────────────────────┤
+│"Subchronic undifferentiated schizophrenia│"Subchronic schizophrenia with acute exace│["ObjectConcept","Psych"]        │"Subchronic disorganized schizophrenia wit│["ObjectConcept","Psych"]                │
+│ with acute exacerbations (disorder)"     │rbations (disorder)"                      │                                 │h acute exacerbations (disorder)"         │                                         │
+└──────────────────────────────────────────┴──────────────────────────────────────────┴─────────────────────────────────┴──────────────────────────────────────────┴─────────────────────────────────────────┘
+
+Notice that using a label within a node specification causes selection of all sub-types
+match(x:ObjectConcept) where toLower(x.FSN) contains("schizophrenia") and x.active="1" return distinct labels(x)
+╒═════════════════════════════════════════╕
+│"labels(x)"                              │
+╞═════════════════════════════════════════╡
+│["ObjectConcept","Psych"]                │
+├─────────────────────────────────────────┤
+│["ObjectConcept","Neuro","Psych"]        │
+├─────────────────────────────────────────┤
+│["ObjectConcept","Psych","PPsych","PSCT"]│
+├─────────────────────────────────────────┤
+│["ObjectConcept"]                        │
+└─────────────────────────────────────────┘
+
+while strict specification of labels limits results to the specified label
+match(x) where labels(x)=["ObjectConcept"] and toLower(x.FSN) contains("schizophrenia") and x.active="1" return distinct labels(x)
+╒═════════════════╕
+│"labels(x)"      │
+╞═════════════════╡
+│["ObjectConcept"]│
+└─────────────────┘
+
+
+Examine roll groups
+---------------------------------------------------------------------------------------------------------------------------------------------------
+match(x:ObjectConcept)-[r1]->(y:RoleGroup)-[r2]->(z:ObjectConcept) where x.sctid="241522007" and y.sctid="241522007" and z.sctid="360037004" return x, y, z, type(r1), type(r2)
+╒════════════════════════════════════════════════════════╤════════════════════════════════════════════════════════╤════════════════════════════════════════════════════════╤════════════════╤══════════╕
+│"x"                                                     │"y"                                                     │"z"                                                     │"type(r1)"      │"type(r2)"│
+╞════════════════════════════════════════════════════════╪════════════════════════════════════════════════════════╪════════════════════════════════════════════════════════╪════════════════╪══════════╡
+│{"FSN":"Computed tomography of petrous bones (procedure)│{"sctid":"241522007","rolegroup":"2","nodetype":"rolegro│{"FSN":"Imaging - action (qualifier value)","nodetype":"│"HAS_ROLE_GROUP"│"METHOD"  │
+│","nodetype":"concept","effectiveTime":"20020131","defin│up"}                                                    │concept","effectiveTime":"20020131","definitionStatusId"│                │          │
+│itionStatusId":"900000000000073002","active":"1","GLabel│                                                        │:"900000000000074008","active":"1","GLabel":"Imaging - a│                │          │
+│":"Computed tomography of petrous bones (procedure)","hi│                                                        │ction (qualifier value)","history":"","id":"360037004","│                │          │
+│story":"","id":"241522007","moduleId":"90000000000020700│                                                        │moduleId":"900000000000207008","sctid":"360037004"}     │                │          │
+│8","sctid":"241522007"}                                 │                                                        │                                                        │                │          │
+└────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────┴────────────────┴──────────┘
+
+Inspection of the relationships table reveals an identical number of edges from a given concept to a role as from the same role to concept
+A bijection?
+
+HAS_DESCRIPTION edges (the following queries produce the same results because all edges from the initial node to Description nodes are of type HAS_DESCRIPTION
+Also, all HAS_DESCRIPTION edges from the node lead to Description nodes
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+match(x:ObjectConcept)-[:HAS_DESCRIPTION]-(y) where x.sctid="126816002" return x.FSN, y.nodetype, y.term
+╒═════════════════════════════════════════════════════╤═════════════╤═════════════════════════════════════════════════════╕
+│"x.FSN"                                              │"y.nodetype" │"y.term"                                             │
+╞═════════════════════════════════════════════════════╪═════════════╪═════════════════════════════════════════════════════╡
+│"Neoplasm of posterior wall of oropharynx (disorder)"│"description"│"Tumour of posterior wall of oropharynx"             │
+├─────────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────┤
+│"Neoplasm of posterior wall of oropharynx (disorder)"│"description"│"Tumor of posterior wall of oropharynx"              │
+├─────────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────┤
+│"Neoplasm of posterior wall of oropharynx (disorder)"│"description"│"Neoplasm of posterior wall of oropharynx"           │
+├─────────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────┤
+│"Neoplasm of posterior wall of oropharynx (disorder)"│"description"│"Neoplasm of posterior wall of oropharynx (disorder)"│
+└─────────────────────────────────────────────────────┴─────────────┴─────────────────────────────────────────────────────┘
+match(x:ObjectConcept)-[]-(y:Description) where x.sctid="126816002" return x.FSN, y.nodetype, y.term
+╒═════════════════════════════════════════════════════╤═════════════╤═════════════════════════════════════════════════════╕
+│"x.FSN"                                              │"y.nodetype" │"y.term"                                             │
+╞═════════════════════════════════════════════════════╪═════════════╪═════════════════════════════════════════════════════╡
+│"Neoplasm of posterior wall of oropharynx (disorder)"│"description"│"Tumour of posterior wall of oropharynx"             │
+├─────────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────┤
+│"Neoplasm of posterior wall of oropharynx (disorder)"│"description"│"Tumor of posterior wall of oropharynx"              │
+├─────────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────┤
+│"Neoplasm of posterior wall of oropharynx (disorder)"│"description"│"Neoplasm of posterior wall of oropharynx"           │
+├─────────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────┤
+│"Neoplasm of posterior wall of oropharynx (disorder)"│"description"│"Neoplasm of posterior wall of oropharynx (disorder)"│
+└─────────────────────────────────────────────────────┴─────────────┴─────────────────────────────────────────────────────┘
+
+Subsumed prescriptions
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+match(x:RXCUI)-[:SUBSUMES]->(y) return x, y limit 10
+╒════════════════════════════════════════════════════════════════════════════════╤════════════════════════════════════════════════════════════════════════════════╕
+│"x"                                                                             │"y"                                                                             │
+╞════════════════════════════════════════════════════════════════════════════════╪════════════════════════════════════════════════════════════════════════════════╡
+│{"name":"Salicylic Acid 20 MG/ML Topical Lotion [Neutrogena Rapid Clear]","activ│{"name":"Neutrogena Rapid Clear Acne Defense Face (Salicylic Acid) 1 TUBE in 1 C│
+│ated_date":"20120501","GLabel":"Salicylic Acid 20 MG/ML Topical Lotion [Neutroge│ARTON (10812-153-01)  > 50 mL in 1 TUBE","concept_code":"NDC:10812015301","id":"│
+│na Rapid Clear]","concept_code":"RXNORM:1250480","id":"1250480","category":"DRUG│10812015301"}                                                                   │
+│","type":"SBD","status":"Retired","deactiviated_date":"20170301"}               │                                                                                │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Salicylic Acid 20 MG/ML Topical Lotion [Neutrogena Rapid Clear]","activ│{"name":"Neutrogena Rapid Clear Acne Defense Face (Salicylic Acid) 1 TUBE in 1 C│
+│ated_date":"20120501","GLabel":"Salicylic Acid 20 MG/ML Topical Lotion [Neutroge│ARTON (69968-0131-1)  > 50 mL in 1 TUBE","concept_code":"NDC:69968013101","id":"│
+│na Rapid Clear]","concept_code":"RXNORM:1250480","id":"1250480","category":"DRUG│69968013101"}                                                                   │
+│","type":"SBD","status":"Retired","deactiviated_date":"20170301"}               │                                                                                │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Mesna","GLabel":"Mesna","activated_date":"20060501","concept_code":"RXN│{"name":"{5 (Ifosfamide 50 MG/ML Injectable Solution [Ifex]) / 3 (Mesna 100 MG/M│
+│ORM:44","id":"44","category":"INGREDIENT","type":"IN","status":"Active"}        │L Injectable Solution [Mesnex]) } Pack [Ifex Mesnex Kit 5/3]","activated_date":"│
+│                                                                                │20080401","GLabel":"{5 (Ifosfamide 50 MG/ML Injectable Solution [Ifex]) / 3 (Mes│
+│                                                                                │na 100 MG/ML Injectable Solution [Mesnex]) } Pack [Ifex Mesnex Kit 5/3]","concep│
+│                                                                                │t_code":"RXNORM:763275","id":"763275","category":"DRUG","type":"BPCK","status":"│
+│                                                                                │Retired","deactiviated_date":"20081201"}                                        │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Mesna","GLabel":"Mesna","activated_date":"20060501","concept_code":"RXN│{"name":"{5 (Ifosfamide 50 MG/ML Injectable Solution) / 3 (Mesna 100 MG/ML Injec│
+│ORM:44","id":"44","category":"INGREDIENT","type":"IN","status":"Active"}        │table Solution) } Pack","activated_date":"20080401","GLabel":"{5 (Ifosfamide 50 │
+│                                                                                │MG/ML Injectable Solution) / 3 (Mesna 100 MG/ML Injectable Solution) } Pack","co│
+│                                                                                │ncept_code":"RXNORM:763274","id":"763274","category":"DRUG","type":"GPCK","statu│
+│                                                                                │s":"Retired","deactiviated_date":"20081201"}                                    │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Mesna","GLabel":"Mesna","activated_date":"20060501","concept_code":"RXN│{"name":"Mesna 100 MG/ML Injectable Solution [Mesna Nova Plus]","activated_date"│
+│ORM:44","id":"44","category":"INGREDIENT","type":"IN","status":"Active"}        │:"20060501","GLabel":"Mesna 100 MG/ML Injectable Solution [Mesna Nova Plus]","co│
+│                                                                                │ncept_code":"RXNORM:404237","id":"404237","category":"DRUG","type":"SBD","status│
+│                                                                                │":"Retired","deactiviated_date":"20070601"}                                     │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Mesna","GLabel":"Mesna","activated_date":"20060501","concept_code":"RXN│{"name":"{2 (Ifosfamide 50 MG/ML Injectable Solution) / 6 (Mesna 100 MG/ML Injec│
+│ORM:44","id":"44","category":"INGREDIENT","type":"IN","status":"Active"}        │table Solution) } Pack","activated_date":"20080401","GLabel":"{2 (Ifosfamide 50 │
+│                                                                                │MG/ML Injectable Solution) / 6 (Mesna 100 MG/ML Injectable Solution) } Pack","co│
+│                                                                                │ncept_code":"RXNORM:763276","id":"763276","category":"DRUG","type":"GPCK","statu│
+│                                                                                │s":"Retired","deactiviated_date":"20081201"}                                    │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Mesna","GLabel":"Mesna","activated_date":"20060501","concept_code":"RXN│{"name":"Mesna 20 MG/ML Injectable Solution","activated_date":"20090101","GLabel│
+│ORM:44","id":"44","category":"INGREDIENT","type":"IN","status":"Active"}        │":"Mesna 20 MG/ML Injectable Solution","concept_code":"RXNORM:827409","id":"8274│
+│                                                                                │09","category":"DRUG","type":"SCD","status":"Retired","deactiviated_date":"20100│
+│                                                                                │201"}                                                                           │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Mesna","GLabel":"Mesna","activated_date":"20060501","concept_code":"RXN│{"name":"{2 (Ifosfamide 50 MG/ML Injectable Solution [Ifex]) / 6 (Mesna 100 MG/M│
+│ORM:44","id":"44","category":"INGREDIENT","type":"IN","status":"Active"}        │L Injectable Solution [Mesnex]) } Pack [Ifex Mesnex Kit 2/6]","activated_date":"│
+│                                                                                │20080401","GLabel":"{2 (Ifosfamide 50 MG/ML Injectable Solution [Ifex]) / 6 (Mes│
+│                                                                                │na 100 MG/ML Injectable Solution [Mesnex]) } Pack [Ifex Mesnex Kit 2/6]","concep│
+│                                                                                │t_code":"RXNORM:763277","id":"763277","category":"DRUG","type":"BPCK","status":"│
+│                                                                                │Retired","deactiviated_date":"20081201"}                                        │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Mesna","GLabel":"Mesna","activated_date":"20060501","concept_code":"RXN│{"name":"{2 (60 ML Ifosfamide 50 MG/ML Injection) / 6 (Mesna 100 MG/ML Injectabl│
+│ORM:44","id":"44","category":"INGREDIENT","type":"IN","status":"Active"}        │e Solution) } Pack","GLabel":"{2 (60 ML Ifosfamide 50 MG/ML Injection) / 6 (Mesn│
+│                                                                                │a 100 MG/ML Injectable Solution) } Pack","activated_date":"20100401","concept_co│
+│                                                                                │de":"RXNORM:900173","id":"900173","type":"GPCK","category":"DRUG","status":"Acti│
+│                                                                                │ve"}                                                                            │
+├────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│{"name":"Mesna","GLabel":"Mesna","activated_date":"20060501","concept_code":"RXN│{"name":"{10 (Ifosfamide 50 MG/ML Injectable Solution [Ifex]) / 10 (Mesna 100 MG│
+│ORM:44","id":"44","category":"INGREDIENT","type":"IN","status":"Active"}        │/ML Injectable Solution [Mesnex]) } Pack [Ifex / Mesnex Kit 10]","activated_date│
+│                                                                                │":"20100401","GLabel":"{10 (Ifosfamide 50 MG/ML Injectable Solution [Ifex]) / 10│
+│                                                                                │ (Mesna 100 MG/ML Injectable Solution [Mesnex]) } Pack [Ifex / Mesnex Kit 10]","│
+│                                                                                │concept_code":"RXNORM:900172","id":"900172","category":"DRUG","type":"BPCK","sta│
+
+
+match(x:RXCUI)-[:SUBSUMES]->(y) where x.status="Active" and x.name="Phenylephrine" return x, y, labels(y)
+╒════════════════════════════════════════╤════════════════════════════════════════╤══════════════════╕
+│"x"                                     │"y"                                     │"labels(y)"       │
+╞════════════════════════════════════════╪════════════════════════════════════════╪══════════════════╡
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"Acetaminophen 500 MG / Chlorphe│["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│niramine 8 MG / Phenylephrine 40 MG Oral│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│ Tablet [Protid]","activated_date":"2006│                  │
+│ategory":"INGREDIENT","type":"IN","statu│0501","GLabel":"Acetaminophen 500 MG / C│                  │
+│s":"Active"}                            │hlorpheniramine 8 MG / Phenylephrine 40 │                  │
+│                                        │MG Oral Tablet [Protid]","concept_code":│                  │
+│                                        │"RXNORM:261275","id":"261275","category"│                  │
+│                                        │:"DRUG","type":"SBD","status":"Retired",│                  │
+│                                        │"deactiviated_date":"20140101"}         │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"Phenylephrine 1 MG/ML / Pyrilam│["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│ine 6 MG/ML Oral Suspension [Ryna-12]","│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│activated_date":"20060501","GLabel":"Phe│                  │
+│ategory":"INGREDIENT","type":"IN","statu│nylephrine 1 MG/ML / Pyrilamine 6 MG/ML │                  │
+│s":"Active"}                            │Oral Suspension [Ryna-12]","concept_code│                  │
+│                                        │":"RXNORM:261274","id":"261274","categor│                  │
+│                                        │y":"DRUG","type":"SBD","status":"Retired│                  │
+│                                        │","deactiviated_date":"20130401"}       │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"Chlorpheniramine Tannate 0.4 MG│["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│/ML / Phenylephrine Tannate 1 MG/ML / PY│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│RILAMINE TANNATE 2.5 MG/ML Oral Suspensi│                  │
+│ategory":"INGREDIENT","type":"IN","statu│on","activated_date":"20120601","GLabel"│                  │
+│s":"Active"}                            │:"Chlorpheniramine Tannate 0.4 MG/ML / P│                  │
+│                                        │henylephrine Tannate 1 MG/ML / PYRILAMIN│                  │
+│                                        │E TANNATE 2.5 MG/ML Oral Suspension","co│                  │
+│                                        │ncept_code":"RXNORM:1293468","id":"12934│                  │
+│                                        │68","category":"DRUG","type":"SCD","stat│                  │
+│                                        │us":"Active"}                           │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"carbetapentane 6 MG/ML / Chlorp│["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│heniramine 0.8 MG/ML / Phenylephrine 1 M│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│G/ML Oral Suspension [Tussi-12]","activa│                  │
+│ategory":"INGREDIENT","type":"IN","statu│ted_date":"20050401","GLabel":"carbetape│                  │
+│s":"Active"}                            │ntane 6 MG/ML / Chlorpheniramine 0.8 MG/│                  │
+│                                        │ML / Phenylephrine 1 MG/ML Oral Suspensi│                  │
+│                                        │on [Tussi-12]","concept_code":"RXNORM:26│                  │
+│                                        │1273","id":"261273","category":"DRUG","t│                  │
+│                                        │ype":"SBD","status":"Never Active","deac│                  │
+│                                        │tiviated_date":"20050401"}              │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"Hydrocodone Bitartrate 1 MG/ML │["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│/ Phenylephrine 1 MG/ML / Pyrilamine 2.4│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│ MG/ML Oral Solution","activated_date":"│                  │
+│ategory":"INGREDIENT","type":"IN","statu│20090901","GLabel":"Hydrocodone Bitartra│                  │
+│s":"Active"}                            │te 1 MG/ML / Phenylephrine 1 MG/ML / Pyr│                  │
+│                                        │ilamine 2.4 MG/ML Oral Solution","concep│                  │
+│                                        │t_code":"RXNORM:859297","id":"859297","c│                  │
+│                                        │ategory":"DRUG","type":"SCD","status":"R│                  │
+│                                        │etired","deactiviated_date":"20170101"} │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"Chlorpheniramine Tannate 0.9 MG│["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│/ML / Phenylephrine Tannate 1 MG/ML Oral│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│ Suspension","activated_date":"20120601"│                  │
+│ategory":"INGREDIENT","type":"IN","statu│,"GLabel":"Chlorpheniramine Tannate 0.9 │                  │
+│s":"Active"}                            │MG/ML / Phenylephrine Tannate 1 MG/ML Or│                  │
+│                                        │al Suspension","concept_code":"RXNORM:12│                  │
+│                                        │93472","id":"1293472","category":"DRUG",│                  │
+│                                        │"type":"SCD","status":"Active"}         │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"Hydrocodone Bitartrate 1 MG/ML │["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│/ Phenylephrine 1 MG/ML / Pyrilamine 2.4│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│ MG/ML Oral Solution [PhendaCof Plus]","│                  │
+│ategory":"INGREDIENT","type":"IN","statu│activated_date":"20090901","GLabel":"Hyd│                  │
+│s":"Active"}                            │rocodone Bitartrate 1 MG/ML / Phenylephr│                  │
+│                                        │ine 1 MG/ML / Pyrilamine 2.4 MG/ML Oral │                  │
+│                                        │Solution [PhendaCof Plus]","concept_code│                  │
+│                                        │":"RXNORM:859300","id":"859300","categor│                  │
+│                                        │y":"DRUG","type":"SBD","status":"Retired│                  │
+│                                        │","deactiviated_date":"20120101"}       │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"Diphenhydramine 25 MG / Phenyle│["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│phrine 10 MG Chewable Tablet [Uni-Tann D│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│]","activated_date":"20060901","GLabel":│                  │
+│ategory":"INGREDIENT","type":"IN","statu│"Diphenhydramine 25 MG / Phenylephrine 1│                  │
+│s":"Active"}                            │0 MG Chewable Tablet [Uni-Tann D]","conc│                  │
+│                                        │ept_code":"RXNORM:646305","id":"646305",│                  │
+│                                        │"category":"DRUG","type":"SBD","status":│                  │
+│                                        │"Retired","deactiviated_date":"20120501"│                  │
+│                                        │}                                       │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤
+│{"name":"Phenylephrine","GLabel":"Phenyl│{"name":"Acetaminophen 325 MG / Dextrome│["RXCUI"]         │
+│ephrine","activated_date":"20060501","co│thorphan Hydrobromide 15 MG / Phenylephr│                  │
+│ncept_code":"RXNORM:8163","id":"8163","c│ine Hydrochloride 5 MG Oral Tablet","act│                  │
+│ategory":"INGREDIENT","type":"IN","statu│ivated_date":"20130201","GLabel":"Acetam│                  │
+│s":"Active"}                            │inophen 325 MG / Dextromethorphan Hydrob│                  │
+│                                        │romide 15 MG / Phenylephrine Hydrochlori│                  │
+│                                        │de 5 MG Oral Tablet","concept_code":"RXN│                  │
+│                                        │ORM:1367205","id":"1367205","category":"│                  │
+│                                        │DRUG","type":"SCD","status":"Active"}   │                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼──────────────────┤

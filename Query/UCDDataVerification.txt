@@ -1,0 +1,118 @@
+-- Test whether Adjustment participant node -> Adjustment disorder (disorder) concept nodes are strictly female (graph indicates so, count of 3)
+match(x:Participant)-[r]->(:ObjectConcept {FSN: "Adjustment disorder (disorder)"}) return distinct x.Sex, type(r), count(1)
+╒════════╤═════════╤══════════╕
+│"x.Sex" │"type(r)"│"count(1)"│
+╞════════╪═════════╪══════════╡
+│"Female"│"P_SCT"  │3         │
+└────────┴─────────┴──────────┘
+
+-- Test whether Tic disorder is connected by males only (count of 3)
+match(x:Participant)-[r]->(:ObjectConcept {FSN: "Tic disorder (disorder)"}) return distinct x.Sex, type(r), count(1)
+╒═══════╤═════════╤══════════╕
+│"x.Sex"│"type(r)"│"count(1)"│
+╞═══════╪═════════╪══════════╡
+│"Male" │"P_SCT"  │3         │
+└───────┴─────────┴──────────┘
+
+-- Test whether prescription Ethinil Estradiol (subsumed by Levornogestrel) is connected only by concept Attention deficit hyperactivity disorder (disorder) through participant nodes
+-- Note the intentional lack of directional edges to allow visual assesment of relationships
+-- Graph reports two participants
+match(w:RXCUI {name: "Levonorgestrel"})-[r1]-(x:RXCUI)-[r2]-(y:Participant)-[r3]-(z:ObjectConcept {FSN: "Attention deficit hyperactivity disorder (disorder)"})
+return w.name, type(r1), x.name, type(r2), y.ParticipantId, type(r3), z.FSN
+│"w.name"        │"type(r1)"│"x.name"             │"type(r2)"│"y.ParticipantId"│"type(r3)"│"z.FSN"              │
+╞════════════════╪══════════╪═════════════════════╪══════════╪═════════════════╪══════════╪═════════════════════╡
+│"Levonorgestrel"│"SUBSUMES"│"Ethinyl Estradiol 0.│"P_RX"    │"101889"         │"P_SCT"   │"Attention deficit hy│
+│                │          │03 MG / Levonorgestre│          │                 │          │peractivity disorder │
+│                │          │l 0.15 MG Oral Tablet│          │                 │          │(disorder)"          │
+│                │          │"                    │          │                 │          │                     │
+├────────────────┼──────────┼─────────────────────┼──────────┼─────────────────┼──────────┼─────────────────────┤
+│"Levonorgestrel"│"SUBSUMES"│"{21 (Ethinyl Estradi│"P_RX"    │"105100"         │"P_SCT"   │"Attention deficit hy│
+│                │          │ol 0.03 MG / Levonorg│          │                 │          │peractivity disorder │
+│                │          │estrel 0.15 MG Oral T│          │                 │          │(disorder)"          │
+│                │          │ablet) / 7 (Inert Ing│          │                 │          │                     │
+│                │          │redients 1 MG Oral Ta│          │                 │          │                     │
+│                │          │blet) } Pack [Portia │          │                 │          │                     │
+│                │          │28 Day]"             │          │                 │          │                     │
+└────────────────┴──────────┴─────────────────────┴──────────┴─────────────────┴──────────┴─────────────────────┘
+
+-- Verfiy select UCDDx relationships to concepts that are mental disorders
+match(x:Participant {UCDDx: "HHH"})-[]-(y:ObjectConcept)-[:ISA]-(z:ObjectConcept {FSN: "Mental disorder (disorder)"}) return distinct(y.FSN)
+╒═════════════════════════════════════════════════════╕
+│"y.FSN"                                              │
+╞═════════════════════════════════════════════════════╡
+│"Attention deficit hyperactivity disorder (disorder)"│
+└─────────────────────────────────────────────────────┘
+
+-- Verfiy age of participant(s) associated with Adult attention deficit hyperactivity disorder
+match(x:Participant)-[]-(y:ObjectConcept {FSN: "Adult attention deficit hyperactivity disorder (disorder)"}) return x
+╒══════════════════════════════════════════════════════════════════════╕
+│"x"                                                                   │
+╞══════════════════════════════════════════════════════════════════════╡
+│{"LiverTransplantStatus":"No Liver Transplant","StartAgeDays":"8426","│
+│VitalStatus":"Alive or Uncertain","ElibilityStatus":"Eligible","Sex":"│
+│Male","UCDDx":"ALD","LocationID":"81","GLabel":" ","NeonatalOnset":"Ag│
+│e < = 28 days","HASxDx":"HA events at Diagnosis","HASx1stAgeDays":"0",│
+│"YOB":"1983","ParticipantId":"100700","DxMethod":"Clinical Presentatio│
+│n","EnrollmentStatus":"Enrolled Alive, Full Participation","OnsetAgeDa│
+│ys":"0","UCDDxAgeDays":"0","HA1stAgeDays":"0","RegisterAgeDays":"8429"│
+│,"HASxLast":"HA Events with or without Symptoms"}                     │
+└──────────────────────────────────────────────────────────────────────┘
+
+-- Verify RXCUI ID with that reported by the RxNav browser (https://mor.nlm.nih.gov/RxNav/search?searchBy=String&searchTerm=Glycerol%20Phenylbutyrate)
+-- RxNav reports glycerol phenylbutyrate as having ID 1368451
+-- The types, below, are defined at https://www.nlm.nih.gov/research/umls/rxnorm/docs/appendix5.html
+-- IN = ingredient, PIN = precise ingredient
+match(x:RXCUI) where toLower(x.name) contains("glycerol phenylbutyrate") return x
+╒══════════════════════════════════════════════════════════════════════╕
+│"x"                                                                   │
+╞══════════════════════════════════════════════════════════════════════╡
+│{"name":"glycerol phenylbutyrate","ptcount":9,"GLabel":"glycerol pheny│
+│lbutyrate","activated_date":"20130301","concept_code":"RXNORM:1368451"│
+│,"id":"1368451","category":"INGREDIENT","type":"PIN","status":"Active"│
+│}                                                                     │
+├──────────────────────────────────────────────────────────────────────┤
+│{"name":"glycerol phenylbutyrate 1100 MG/ML","activated_date":"2013030│
+│1","GLabel":"glycerol phenylbutyrate 1100 MG/ML","concept_code":"RXNOR│
+│M:1368452","id":"1368452","category":"OTHER","type":"SCDC","status":"A│
+│ctive"}                                                               │
+├──────────────────────────────────────────────────────────────────────┤
+│{"ptcount":8,"name":"glycerol phenylbutyrate 1100 MG/ML Oral Solution"│
+│,"activated_date":"20130301","GLabel":"glycerol phenylbutyrate 1100 MG│
+│/ML Oral Solution","concept_code":"RXNORM:1368453","id":"1368453","cat│
+│egory":"DRUG","type":"SCD","status":"Active"}                         │
+├──────────────────────────────────────────────────────────────────────┤
+│{"ptcount":6,"name":"glycerol phenylbutyrate 1100 MG/ML [Ravicti]","ac│
+│tivated_date":"20130301","GLabel":"glycerol phenylbutyrate 1100 MG/ML │
+│[Ravicti]","concept_code":"RXNORM:1368455","id":"1368455","category":"│
+│OTHER","type":"SBDC","status":"Active"}                               │
+├──────────────────────────────────────────────────────────────────────┤
+│{"ptcount":58,"name":"glycerol phenylbutyrate 1100 MG/ML Oral Solution│
+│ [Ravicti]","activated_date":"20130301","GLabel":"glycerol phenylbutyr│
+│ate 1100 MG/ML Oral Solution [Ravicti]","concept_code":"RXNORM:1368459│
+│","id":"1368459","category":"DRUG","type":"SBD","status":"Active"}    │
+└──────────────────────────────────────────────────────────────────────┘
+
+-- Identify RXCUIs that subsume glycerol phenylbutyrate 1100 MG/ML Oral Solution [Ravicti]
+match(x:RXCUI)-[r]->(y:RXCUI {name: "glycerol phenylbutyrate 1100 MG/ML Oral Solution [Ravicti]"}) return x.name, type(r), y.name
+╒═════════════════════════╤══════════╤════════════════════════════════════════════════════════════╕
+│"x.name"                 │"type(r)" │"y.name"                                                    │
+╞═════════════════════════╪══════════╪════════════════════════════════════════════════════════════╡
+│"phenylbutyrate"         │"SUBSUMES"│"glycerol phenylbutyrate 1100 MG/ML Oral Solution [Ravicti]"│
+├─────────────────────────┼──────────┼────────────────────────────────────────────────────────────┤
+│"glycerol phenylbutyrate"│"SUBSUMES"│"glycerol phenylbutyrate 1100 MG/ML Oral Solution [Ravicti]"│
+└─────────────────────────┴──────────┴────────────────────────────────────────────────────────────┘
+
+-- Complete subsuming RXCUI records
+-- Note the difference in type (ingredient vs. precise ingredient) and ptcount (this is not an RxNorm element)
+╒══════════════════════════════════════════════════════════════════════╕
+│"x"                                                                   │
+╞══════════════════════════════════════════════════════════════════════╡
+│{"ptcount":159,"name":"phenylbutyrate","activated_date":"20060501","GL│
+│abel":"phenylbutyrate","concept_code":"RXNORM:81647","id":"81647","cat│
+│egory":"INGREDIENT","type":"IN","status":"Active"}                    │
+├──────────────────────────────────────────────────────────────────────┤
+│{"name":"glycerol phenylbutyrate","ptcount":9,"GLabel":"glycerol pheny│
+│lbutyrate","activated_date":"20130301","concept_code":"RXNORM:1368451"│
+│,"id":"1368451","category":"INGREDIENT","type":"PIN","status":"Active"│
+│}                                                                     │
+└──────────────────────────────────────────────────────────────────────┘

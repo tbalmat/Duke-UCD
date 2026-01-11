@@ -1,0 +1,12 @@
+Identify obserevations and participants in joint Dx, HA, two-level concept combinations
+Each participant associated with Dx, HA level is associated with both concepts
+Concepts:  191736004 (Obsessive-compulsive disorder, member of Anxiety disorder)
+           35489007 (Depressive disorder, member of Mood disorder) 
+
+match  (p1:Participant)-[:P_SCT]->(c0:ObjectConcept)-[r:ISA*]->(c2:ObjectConcept)
+where  c2.sctid='197480006' and startNode(last(r)).sctid='191736004' and c0.active='1' and c2.active='1' and all(r2 in r where r2.active='1')
+with p1
+match  (p1)-[:P_SCT]->(c0:ObjectConcept)-[r:ISA*]->(c2:ObjectConcept)
+where  c2.sctid='46206005' and startNode(last(r)).sctid='35489007' and c0.active='1' and c2.active='1' and all(r2 in r where r2.active='1')
+return p1.ParticipantId, p1.UCDDx, p1.HASxLast
+

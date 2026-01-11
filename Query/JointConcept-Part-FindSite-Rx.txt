@@ -1,0 +1,168 @@
+// Compose result set with concept IDs and FSNs concatenated to form composite concept nodes
+// Motor dysfunction, Tremor, Anxiety SCTIDs
+// conceptID <- c("52559000", "26079004", "48694002")
+
+// Retrieve participant / SNOMED concept pairs for motor dysfunction
+// Note that P_SCT relationships have no keys (fields) and, therefore, no status
+// All are assumed to be active
+// Participants have an EligibilityStatus field, but no 'active' field
+// Two types of participant->concept path are explored:
+//   1. those with a P_SCT relationship from a participant to a concept that has a path
+//      consisting of ISA relationships to a concept specified in filtConcept and
+//   2. those with a single P_SCT relationship from a participant directly to a concept
+//      specified in filtConcept
+// Type 1 paths result in selecting concepts with a length-one path to a terminating concept
+// Type 2 paths result in selecting the terminating concept itself
+// This strategy overcomes an ambiguity that arises when the path from participant to
+// terminating concept is a single P_SCT relationship
+// If concept selection is limited to those immediately prior to the terminating concept in
+// sequence of ISA relationships then participant->P_SCT->terminating concept paths are
+// excluded and participants "disappear" as a concept is selected for drill-down exploration
+// Consider concepts A, B, and C where C-ISA->B-ISA->A, where -ISA-> indicates an ISA
+// relationship; participants p1 and p2, both with property D; and p1-SCT->B, p2-SCT->C,
+// where -SCT-> indicates a P_SCT relationship
+// When a graph displays A and D with a connecting edge, both p1 and p2 are included in
+// participant counts for the edge, indicating relationships between D and some children of A
+// If B is selected for expansion, the relationship p2->B is retained (because of C-ISA->B)
+// but, unless p1-SCT->B is retained, p1->B disappears and participant counts appear inconsistent
+// To maintain consistency of participant counts as concepts are expanded, the two path types
+// are combined, all paths terminating in a chosen concept, but some leading to children of
+// that concept, some for which the concept has no children (for certain participants)
+// The call{} function of Neo4j was added in version 4 and is needed to execute a union
+// of participant->concept paths
+// It may appear clumsy to reference startNode(last(rsct)) multiple times in a retun statement,
+// but returning entire nodes from within sequential subqueries of unions causes confounding
+// of nodes (nodes appear to be returned intact, but referencing properties of nodes returns
+// values of nodes other thatn that referenced - yikes!)
+call {
+  match  (prt:Participant)-[:P_SCT]->(sct1a:ObjectConcept)-[rsct:ISA*]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  and sct1a.active='1' and sct1c.active='1'
+  and all(r2 in rsct where r2.active='1')
+  return  prt, sct1a, startNode(last(rsct)).FSN as FSN1b, startNode(last(rsct)).sctid as sctid1b, sct1c.FSN as FSN1c
+  union
+  match  (prt:Participant)-[:P_SCT]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  return prt, sct1c as sct1a, sct1c.FSN as FSN1b, sct1c.sctid as sctid1b, sct1c.FSN as FSN1c
+}
+
+// Inner-join (by participant) motor dysfunction concepts with tremor concepts  
+// The with clause appears to cause a result set in which participant nodes can be used to
+// retrieve additional nodes associated with participants (the row set is expanded with additional columns)
+// Execution of another subquery without a preceding with clause causes a cross-join result, where
+// each row of the first subquery is joined to each row of the second subquery
+// The result set should contain participants with both motor dysfunction and tremor concepts
+with prt, sct1a, sctid1b, FSN1b, FSN1c
+call {
+  with prt
+  match  (prt)-[:P_SCT]->(sct2a:ObjectConcept)-[rsct:ISA*]->(sct2c:ObjectConcept)
+  where  sct2c.sctid='26079004'
+         and sct2a.active='1' and sct2c.active='1'
+         and all(r2 in rsct where r2.active='1')
+  return  prt.ParticipantId as pid2, sct2a, startNode(last(rsct)).FSN as FSN2b, startNode(last(rsct)).sctid as sctid2b, sct2c.FSN as FSN2c
+  union
+  with prt
+  match  (prt)-[:P_SCT]->(sct2c:ObjectConcept)
+  where  sct2c.sctid='26079004'
+  return prt.ParticipantId as pid2, sct2c as sct2a, sct2c.FSN as FSN2b, sct2c.sctid as sctid2b, sct2c.FSN as FSN2c
+}
+
+// Inner-join (by participant) motor dysfunction concepts and tremor concepts with anxiety concepts 
+// The with clause appears to cause a result set in which participant nodes can be used to
+// retrieve additional nodes associated with participants (the row set is expanded with additional columns)
+// Execution of another subquery without a preceding with clause causes a cross-join result, where
+// each row of the first subquery is joined to each row of the second subquery
+// The result set should contain participants with motor dysfunction, tremor, and anxiety concepts
+with prt, pid2, sct1a, sctid1b, FSN1b, FSN1c, sct2a, sctid2b, FSN2b, FSN2c
+call {
+  with prt
+  match  (prt)-[:P_SCT]->(sct3a:ObjectConcept)-[rsct:ISA*]->(sct3c:ObjectConcept)
+  where  sct3c.sctid='48694002'
+         and sct3a.active='1' and sct3c.active='1'
+         and all(r2 in rsct where r2.active='1')
+  return prt.ParticipantId as pid3, sct3a, startNode(last(rsct)).FSN as FSN3b, startNode(last(rsct)).sctid as sctid3b, sct3c.FSN as FSN3c
+  union
+  with prt
+  match  (prt)-[:P_SCT]->(sct3c:ObjectConcept)
+  where  sct3c.sctid='48694002'
+  return prt.ParticipantId as pid3, sct3c as sct3a, sct3c.FSN as FSN3b, sct3c.sctid as sctid3b, sct3c.FSN as FSN3c
+}
+
+with prt, prt.ParticipantId as pid1, pid2, pid3, sctid1b, FSN1b, FSN1c, sctid2b, FSN2b, FSN2c, sctid3b, FSN3b, FSN3c,
+     sct1a, sct2a, sct3a
+
+// Left join from initial concept in participant->concept path to finding sites
+// The initial concept is used because finding sites related to subsequent concepts are vague and uninformative
+// Finding sites for each sequential concept
+// Note the successive optional match statements
+// They accomplish an inner-join instead of a cross-join, as with many other queries (this appears to
+// be due to the optional joins involving paths beginning with nodes from disjoint sets - sct1a and sct2a)
+// Each row of the result set prior to the first optional join contains one sct1a node and one sct2a node
+// These are joined to finding sites associated with sct1a in the first join and to finding sites associated
+// with sct2a in the second join
+// Non-sct1a and sct2a finding site columns appear once for each sct1a finding site
+// Non-sct2a and sct1a finding site columns appear once for each sct2a finding site
+optional match(sct1a)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst1:ObjectConcept)
+where    role2.active='1' and fst1.active='1'
+optional match(sct2a)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst2:ObjectConcept)
+where    role2.active='1' and fst2.active='1'
+optional match(sct3a)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst3:ObjectConcept)
+where    role2.active='1' and fst3.active='1'
+
+with prt, pid1, pid2, pid3, sctid1b, FSN1b, FSN1c, sctid2b, FSN2b, FSN2c, sctid3b, FSN3b, FSN3c, sct1a, sct2a, sct3a,
+     fst1.sctid as fstID1, fst1.FSN as fstFSN1, fst2.sctid as fstID2, fst2.FSN as fstFSN2, fst3.sctid as fstID3, fst3.FSN as fstFSN3
+
+// Left join from participants to to prescriptions
+// Note that the where clause is applied within the join, such that nulls are returned in
+// rx0 and rx1 nodes when no prescriptions exist for a prt or when staus values are not 'active'
+// P_RX relationships have no keys (fields) and, therefore, no status
+// All are assumed to be active
+optional match(prt)-[:P_RX]->(rxa:RXCUI)
+where  toLower(rxa.status)='active'
+// SUBSUMES relationships have no keys (fields) and, therefore, no status
+// All are assumed to be active
+optional match(rxa)<-[:SUBSUMES]-(rxb:RXCUI)
+where    toLower(rxb.status)='active'
+         // and rxb.sctid in()
+
+// Result rows, here, are participants associated with all queried concepts, along with associated finding sites and Rx
+// Verify that pids agree
+with prt.ParticipantId as pid, prt.UCDDx as UCDDx,
+     // pid1, pid2, pid3
+     sctid1b+'-X-'+sctid2b+'-X-'+sctid3b as conceptID,
+     '(1) '+FSN1b+' -X- (2) '+FSN2b+' -X- (3) '+FSN3b as FSN,
+     '(1) '+FSN1c+' -X- (2) '+FSN2c+' -X- (3) '+FSN3c as parentFSN,
+     coalesce(fstID1, '')+'-X-'+coalesce(fstID2, '')+'-X-'+coalesce(fstID3, '') as findingSiteID,
+     '(1) '+coalesce(fstFSN1, 'na')+' -X- (2) '+coalesce(fstFSN2, 'na')+' -X- (3) '+coalesce(fstFSN3, 'na') as findingSite,
+     coalesce(rxb.id, coalesce(rxa.id, '')) as rxID, coalesce(rxb.name, coalesce(rxa.name, '')) as rxName
+
+//return   pid, UCDDx, conceptID, FSN, findingSiteID, rxName
+//order by pid, UCDDx, conceptID, FSN, findingSiteID, rxName
+
+// Create vertext sets, consisting of one row for each variable, level, and associated participant
+call{
+  // UCDDx
+  with distinct pid, UCDDx
+  return 'primary' as class, 'UCDDx' as v, 'UCDDx' as dbVar, UCDDx as dbValue, UCDDx as label, pid
+  // where
+  // conceptID
+  //union
+  //with prt, conceptID, FSN
+  //return 'primary' as class, 'conceptID' as v, 'conceptID-X-conceptID-X-conceptID' as dbVar, conceptID as dbValue, FSN as label, prt.ParticipantId as pid
+  // where
+  // conceptID, UCDDx interaction
+  //union
+  //with prt, conceptID, FSN
+  //return 'interaction' as class, 'UCDDx-X-conceptID' as v, 'UCDDx-X-conceptID-X-conceptID-X-conceptID' as dbVar, prt.UCDDx+'-X-'+conceptID as dbValue, prt.UCDDx+'-X-'+FSN as label, prt.ParticipantId as pid
+  // where
+}
+
+return   class, v, dbValue, label, pid, rxName
+order by class, v, dbValue, pid, rxName
+
+
+
+  // Edge:  HASxLast with conceptID, UCDDx interaction
+  union
+  with prt, conceptID, FSN
+  return 'edge' as class, '' as subClass, 'HASxLast' as v1, 'UCDDx-X-conceptID-X-conceptID-X-conceptID' as v2, prt.HASxLast as dbValue1, conceptID as dbValue2, prt.UCDDx+'-X-'+FSN as label, count(distinct prt.ParticipantId) as n

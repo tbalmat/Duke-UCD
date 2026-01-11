@@ -1,0 +1,16 @@
+select d1.conceptid, d1.term, rd.term, d2.term
+from   description d1 join relationship r1 on d1.conceptid=r1.sourceid
+       join description rd on r1.typeid=rd.conceptid
+       join description d2 on r1.destinationid=d2.conceptid
+where  d1.dukeselection=1 and d1.term='dyskinesia (finding)' --'motor dysfunction (finding)'
+       --and r1.dukeselection=1 and rd.dukeselection=1 and d2.dukeselection=1
+
+--select * from relationship r join description d where sourceid='106145009'
+
+select * from description where term like 'snomed ct concept%'
+select * from relationship where destinationid='138875005'
+select * from description where term like '%role group%'
+select * from relationship where sourceid='609096000'
+select * from description where conceptid in(select destinationid from relationship where sourceid='609096000')
+select * from relationship where destinationid='609096000'
+select * from description where term like 'dysdiad%'

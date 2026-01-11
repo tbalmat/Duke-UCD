@@ -1,0 +1,435 @@
+If sequential subqueries are executed without an intervening with clause,
+the resulting sets are cross-joined
+
+The following query accomplishes an inner-join of subquery results (by participant) and
+the complete nodes (sct1b, sct1c) are correctly returned, but qualified FSN values are not
+The value of sct1c.FSN is reported for sct1b.FSN (see results)
+
+
+//match(prt:Participant)
+ call {
+   //with prt
+   match  (prt:Participant)-[:P_SCT]->(sct1a:ObjectConcept)-[rsct:ISA*]->(sct1c:ObjectConcept)
+   where  sct1c.sctid='52559000'
+          and sct1a.active='1' and sct1c.active='1'
+          and all(r2 in rsct where r2.active='1')
+   return  prt, sct1a, startNode(last(rsct)) as sct1b, sct1c
+   union
+   //with prt
+   match  (prt:Participant)-[:P_SCT]->(sct1c:ObjectConcept)
+   where  sct1c.sctid='52559000'
+   return prt, sct1c as sct1a, sct1c as sct1b, sct1c
+ }
+
+with prt, sct1a, sct1b, sct1c
+ call {
+   with prt
+   match  (prt)-[:P_SCT]->(sct2a:ObjectConcept)-[rsct:ISA*]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+          and sct2a.active='1' and sct2c.active='1'
+          and all(r2 in rsct where r2.active='1')
+   return  prt as prt2, sct2a, startNode(last(rsct)) as sct2b, sct2c
+   union
+   with prt
+   match  (prt)-[:P_SCT]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+   return prt as prt2, sct2c as sct2a, sct2c as sct2b, sct2c
+ }
+ 
+return prt.ParticipantId as participantID, prt2.ParticipantId as participantID2,
+sct1b.FSN, sct1c.FSN, sct1b, sct1c, sct2b.FSN, sct2c.FSN
+
+Results:
+
+╒═══════════════╤════════════════╤═════════════════════════════╤═════════════════════════════╤═════════════════════════════════════════╤═════════════════════════════════════════╤══════════════════╤══════════════════╕
+│"participantID"│"participantID2"│"sct1b.FSN"                  │"sct1c.FSN"                  │"sct1b"                                  │"sct1c"                                  │"sct2b.FSN"       │"sct2c.FSN"       │
+╞═══════════════╪════════════════╪═════════════════════════════╪═════════════════════════════╪═════════════════════════════════════════╪═════════════════════════════════════════╪══════════════════╪══════════════════╡
+│"102397"       │"102397"        │"Motor dysfunction (finding)"│"Motor dysfunction (finding)"│{"FSN":"Automatism (finding)","nodetype":│{"FSN":"Motor dysfunction (finding)","nod│"Tremor (finding)"│"Tremor (finding)"│
+│               │                │                             │                             │"concept","effectiveTime":"20020131","def│etype":"concept","effectiveTime":"2002013│                  │                  │
+│               │                │                             │                             │initionStatusId":"900000000000074008","GL│1","definitionStatusId":"9000000000000740│                  │                  │
+│               │                │                             │                             │abel":"Automatism (finding)","active":"1"│08","GLabel":"Motor dysfunction (finding)│                  │                  │
+│               │                │                             │                             │,"lowcaseFSN":"automatism (finding)","his│","active":"1","history":"","ptcount":3,"│                  │                  │
+│               │                │                             │                             │tory":"","id":"52669001","moduleId":"9000│lowcaseFSN":"motor dysfunction (finding)"│                  │                  │
+│               │                │                             │                             │00000000207008","sctid":"52669001"}      │,"id":"52559000","moduleId":"900000000000│                  │                  │
+│               │                │                             │                             │                                         │207008","sctid":"52559000"}              │                  │                  │
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────┼──────────────────┼──────────────────┤
+│"101037"       │"101037"        │"Motor dysfunction (finding)"│"Motor dysfunction (finding)"│{"FSN":"Clumsiness (finding)","nodetype":│{"FSN":"Motor dysfunction (finding)","nod│"Tremor (finding)"│"Tremor (finding)"│
+│               │                │                             │                             │"concept","effectiveTime":"20020131","def│etype":"concept","effectiveTime":"2002013│                  │                  │
+│               │                │                             │                             │initionStatusId":"900000000000074008","GL│1","definitionStatusId":"9000000000000740│                  │                  │
+│               │                │                             │                             │abel":"Clumsiness (finding)","active":"1"│08","GLabel":"Motor dysfunction (finding)│                  │                  │
+│               │                │                             │                             │,"history":"","ptcount":16,"lowcaseFSN":"│","active":"1","history":"","ptcount":3,"│                  │                  │
+│               │                │                             │                             │clumsiness (finding)","id":"7006003","mod│lowcaseFSN":"motor dysfunction (finding)"│                  │                  │
+│               │                │                             │                             │uleId":"900000000000207008","sctid":"7006│,"id":"52559000","moduleId":"900000000000│                  │                  │
+│               │                │                             │                             │003"}                                    │207008","sctid":"52559000"}              │                  │                  │
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────┼──────────────────┼──────────────────┤
+
+
+Returning individual elements corrects invalid reporting of sct1b.FSN, but corrupts that of sct1c.FSN:
+
+call {
+  match  (prt:Participant)-[:P_SCT]->(sct1a:ObjectConcept)-[rsct:ISA*]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  and sct1a.active='1' and sct1c.active='1'
+  and all(r2 in rsct where r2.active='1')
+  return  prt, sct1a, startNode(last(rsct)) as sct1b, sct1c
+  union
+  match  (prt:Participant)-[:P_SCT]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  return prt, sct1c as sct1a, sct1c as sct1b, sct1c
+}
+
+with prt, sct1a, sct1b, sct1b.FSN as FSN1b, sct1c
+ call {
+   with prt
+   match  (prt)-[:P_SCT]->(sct2a:ObjectConcept)-[rsct:ISA*]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+          and sct2a.active='1' and sct2c.active='1'
+          and all(r2 in rsct where r2.active='1')
+   return  prt as prt2, sct2a, startNode(last(rsct)) as sct2b, sct2c
+   union
+   with prt
+   match  (prt)-[:P_SCT]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+   return prt as prt2, sct2c as sct2a, sct2c as sct2b, sct2c
+ }
+ 
+return prt.ParticipantId as participantID, prt2.ParticipantId as participantID2,
+sct1b.FSN, FSN1b, sct1c.FSN, sct1b, sct1c, sct2b.FSN, sct2c.FSN
+
+Results:
+
+╒═══════════════╤════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╕
+│"participantID"│"participantID2"│"sct1b.FSN"       │"FSN1b"           │"sct1c.FSN"       │"sct1b"           │"sct1c"           │"sct2b.FSN"       │"sct2c.FSN"       │
+╞═══════════════╪════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╡
+│"102397"       │"102397"        │"Automatism (findi│"Automatism (findi│"Automatism (findi│{"FSN":"Automatism│{"FSN":"Motor dysf│"Tremor (finding)"│"Tremor (finding)"│
+│               │                │ng)"              │ng)"              │ng)"              │ (finding)","nodet│unction (finding)"│                  │                  │
+│               │                │                  │                  │                  │ype":"concept","ef│,"nodetype":"conce│                  │                  │
+│               │                │                  │                  │                  │fectiveTime":"2002│pt","effectiveTime│                  │                  │
+│               │                │                  │                  │                  │0131","definitionS│":"20020131","defi│                  │                  │
+│               │                │                  │                  │                  │tatusId":"90000000│nitionStatusId":"9│                  │                  │
+│               │                │                  │                  │                  │0000074008","GLabe│00000000000074008"│                  │                  │
+│               │                │                  │                  │                  │l":"Automatism (fi│,"GLabel":"Motor d│                  │                  │
+│               │                │                  │                  │                  │nding)","active":"│ysfunction (findin│                  │                  │
+│               │                │                  │                  │                  │1","lowcaseFSN":"a│g)","active":"1","│                  │                  │
+│               │                │                  │                  │                  │utomatism (finding│history":"","ptcou│                  │                  │
+│               │                │                  │                  │                  │)","history":"","i│nt":3,"lowcaseFSN"│                  │                  │
+│               │                │                  │                  │                  │d":"52669001","mod│:"motor dysfunctio│                  │                  │
+│               │                │                  │                  │                  │uleId":"9000000000│n (finding)","id":│                  │                  │
+│               │                │                  │                  │                  │00207008","sctid":│"52559000","module│                  │                  │
+│               │                │                  │                  │                  │"52669001"}       │Id":"9000000000002│                  │                  │
+│               │                │                  │                  │                  │                  │07008","sctid":"52│                  │                  │
+│               │                │                  │                  │                  │                  │559000"}          │                  │                  │
+├───────────────┼────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│"101037"       │"101037"        │"Clumsiness (findi│"Clumsiness (findi│"Clumsiness (findi│{"FSN":"Clumsiness│{"FSN":"Motor dysf│"Tremor (finding)"│"Tremor (finding)"│
+│               │                │ng)"              │ng)"              │ng)"              │ (finding)","nodet│unction (finding)"│                  │                  │
+│               │                │                  │                  │                  │ype":"concept","ef│,"nodetype":"conce│                  │                  │
+│               │                │                  │                  │                  │fectiveTime":"2002│pt","effectiveTime│                  │                  │
+│               │                │                  │                  │                  │0131","definitionS│":"20020131","defi│                  │                  │
+│               │                │                  │                  │                  │tatusId":"90000000│nitionStatusId":"9│                  │                  │
+│               │                │                  │                  │                  │0000074008","GLabe│00000000000074008"│                  │                  │
+│               │                │                  │                  │                  │l":"Clumsiness (fi│,"GLabel":"Motor d│                  │                  │
+│               │                │                  │                  │                  │nding)","active":"│ysfunction (findin│                  │                  │
+│               │                │                  │                  │                  │1","history":"","p│g)","active":"1","│                  │                  │
+│               │                │                  │                  │                  │tcount":16,"lowcas│history":"","ptcou│                  │                  │
+│               │                │                  │                  │                  │eFSN":"clumsiness │nt":3,"lowcaseFSN"│                  │                  │
+│               │                │                  │                  │                  │(finding)","id":"7│:"motor dysfunctio│                  │                  │
+│               │                │                  │                  │                  │006003","moduleId"│n (finding)","id":│                  │                  │
+│               │                │                  │                  │                  │:"9000000000002070│"52559000","module│                  │                  │
+│               │                │                  │                  │                  │08","sctid":"70060│Id":"9000000000002│                  │                  │
+│               │                │                  │                  │                  │03"}              │07008","sctid":"52│                  │                  │
+│               │                │                  │                  │                  │                  │559000"}          │                  │                  │
+├───────────────┼────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+
+Return sct1b.FSN and sct1c.FSN corrupts sct1c.FSN:
+
+call {
+  match  (prt:Participant)-[:P_SCT]->(sct1a:ObjectConcept)-[rsct:ISA*]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  and sct1a.active='1' and sct1c.active='1'
+  and all(r2 in rsct where r2.active='1')
+  return  prt, sct1a, startNode(last(rsct)) as sct1b, sct1c
+  union
+  match  (prt:Participant)-[:P_SCT]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  return prt, sct1c as sct1a, sct1c as sct1b, sct1c
+}
+
+with prt, sct1a, sct1b, sct1b.FSN as FSN1b, sct1c, sct1c.FSN as FSN1c
+ call {
+   with prt
+   match  (prt)-[:P_SCT]->(sct2a:ObjectConcept)-[rsct:ISA*]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+          and sct2a.active='1' and sct2c.active='1'
+          and all(r2 in rsct where r2.active='1')
+   return  prt as prt2, sct2a, startNode(last(rsct)) as sct2b, sct2c
+   union
+   with prt
+   match  (prt)-[:P_SCT]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+   return prt as prt2, sct2c as sct2a, sct2c as sct2b, sct2c
+ }
+ 
+return prt.ParticipantId as participantID, prt2.ParticipantId as participantID2,
+sct1b.FSN, FSN1b, sct1c.FSN, FSN1c, sct1b, sct1c, sct2b.FSN, sct2c.FSN
+
+Results:
+
+╒═══════════════╤════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╤══════════════════╕
+│"participantID"│"participantID2"│"sct1b.FSN"       │"FSN1b"           │"sct1c.FSN"       │"FSN1c"           │"sct1b"           │"sct1c"           │"sct2b.FSN"       │"sct2c.FSN"       │
+╞═══════════════╪════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╪══════════════════╡
+│"102397"       │"102397"        │"Motor dysfunction│"Motor dysfunction│"Motor dysfunction│"Motor dysfunction│{"FSN":"Automatism│{"FSN":"Motor dysf│"Tremor (finding)"│"Tremor (finding)"│
+│               │                │ (finding)"       │ (finding)"       │ (finding)"       │ (finding)"       │ (finding)","nodet│unction (finding)"│                  │                  │
+│               │                │                  │                  │                  │                  │ype":"concept","ef│,"nodetype":"conce│                  │                  │
+│               │                │                  │                  │                  │                  │fectiveTime":"2002│pt","effectiveTime│                  │                  │
+│               │                │                  │                  │                  │                  │0131","definitionS│":"20020131","defi│                  │                  │
+│               │                │                  │                  │                  │                  │tatusId":"90000000│nitionStatusId":"9│                  │                  │
+│               │                │                  │                  │                  │                  │0000074008","GLabe│00000000000074008"│                  │                  │
+│               │                │                  │                  │                  │                  │l":"Automatism (fi│,"GLabel":"Motor d│                  │                  │
+│               │                │                  │                  │                  │                  │nding)","active":"│ysfunction (findin│                  │                  │
+│               │                │                  │                  │                  │                  │1","lowcaseFSN":"a│g)","active":"1","│                  │                  │
+│               │                │                  │                  │                  │                  │utomatism (finding│history":"","ptcou│                  │                  │
+│               │                │                  │                  │                  │                  │)","history":"","i│nt":3,"lowcaseFSN"│                  │                  │
+│               │                │                  │                  │                  │                  │d":"52669001","mod│:"motor dysfunctio│                  │                  │
+│               │                │                  │                  │                  │                  │uleId":"9000000000│n (finding)","id":│                  │                  │
+│               │                │                  │                  │                  │                  │00207008","sctid":│"52559000","module│                  │                  │
+│               │                │                  │                  │                  │                  │"52669001"}       │Id":"9000000000002│                  │                  │
+│               │                │                  │                  │                  │                  │                  │07008","sctid":"52│                  │                  │
+│               │                │                  │                  │                  │                  │                  │559000"}          │                  │                  │
+├───────────────┼────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│"101037"       │"101037"        │"Motor dysfunction│"Motor dysfunction│"Motor dysfunction│"Motor dysfunction│{"FSN":"Clumsiness│{"FSN":"Motor dysf│"Tremor (finding)"│"Tremor (finding)"│
+│               │                │ (finding)"       │ (finding)"       │ (finding)"       │ (finding)"       │ (finding)","nodet│unction (finding)"│                  │                  │
+│               │                │                  │                  │                  │                  │ype":"concept","ef│,"nodetype":"conce│                  │                  │
+│               │                │                  │                  │                  │                  │fectiveTime":"2002│pt","effectiveTime│                  │                  │
+│               │                │                  │                  │                  │                  │0131","definitionS│":"20020131","defi│                  │                  │
+│               │                │                  │                  │                  │                  │tatusId":"90000000│nitionStatusId":"9│                  │                  │
+│               │                │                  │                  │                  │                  │0000074008","GLabe│00000000000074008"│                  │                  │
+│               │                │                  │                  │                  │                  │l":"Clumsiness (fi│,"GLabel":"Motor d│                  │                  │
+│               │                │                  │                  │                  │                  │nding)","active":"│ysfunction (findin│                  │                  │
+│               │                │                  │                  │                  │                  │1","history":"","p│g)","active":"1","│                  │                  │
+│               │                │                  │                  │                  │                  │tcount":16,"lowcas│history":"","ptcou│                  │                  │
+│               │                │                  │                  │                  │                  │eFSN":"clumsiness │nt":3,"lowcaseFSN"│                  │                  │
+│               │                │                  │                  │                  │                  │(finding)","id":"7│:"motor dysfunctio│                  │                  │
+│               │                │                  │                  │                  │                  │006003","moduleId"│n (finding)","id":│                  │                  │
+│               │                │                  │                  │                  │                  │:"9000000000002070│"52559000","module│                  │                  │
+│               │                │                  │                  │                  │                  │08","sctid":"70060│Id":"9000000000002│                  │                  │
+│               │                │                  │                  │                  │                  │03"}              │07008","sctid":"52│                  │                  │
+│               │                │                  │                  │                  │                  │                  │559000"}          │                  │                  │
+├───────────────┼────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+
+The problem is with the unions inside of the subqueries (the only place they can occur)
+Omitting unions produces correct results:
+
+call {
+  match  (prt:Participant)-[:P_SCT]->(sct1a:ObjectConcept)-[rsct:ISA*]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  and sct1a.active='1' and sct1c.active='1'
+  and all(r2 in rsct where r2.active='1')
+  return  prt, sct1a, startNode(last(rsct)) as sct1b, sct1c
+ // union
+ // match  (prt:Participant)-[:P_SCT]->(sct1c:ObjectConcept)
+ // where  sct1c.sctid='52559000'
+ // return prt, sct1c as sct1a, sct1c as sct1b, sct1c
+}
+
+with prt, sct1a, sct1b.FSN as FSN1b, sct1c.FSN as FSN1c
+ call {
+   with prt
+   match  (prt)-[:P_SCT]->(sct2a:ObjectConcept)-[rsct:ISA*]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+          and sct2a.active='1' and sct2c.active='1'
+          and all(r2 in rsct where r2.active='1')
+   return  prt as prt2, sct2a, startNode(last(rsct)) as sct2b, sct2c
+  // union
+  // with prt
+  // match  (prt)-[:P_SCT]->(sct2c:ObjectConcept)
+  // where  sct2c.sctid='26079004'
+  // return prt as prt2, sct2c as sct2a, sct2c as sct2b, sct2c
+ }
+ 
+return prt.ParticipantId as participantID, prt2.ParticipantId as participantID2,
+FSN1b, FSN1c, sct2b.FSN, sct2c.FSN
+
+Results:
+
+╒═══════════════╤════════════════╤════════════════════════════════╤═════════════════════════════╤════════════════════════════════╤══════════════════╕
+│"participantID"│"participantID2"│"FSN1b"                         │"FSN1c"                      │"sct2b.FSN"                     │"sct2c.FSN"       │
+╞═══════════════╪════════════════╪════════════════════════════════╪═════════════════════════════╪════════════════════════════════╪══════════════════╡
+│"101037"       │"101037"        │"Clumsiness (finding)"          │"Motor dysfunction (finding)"│"Intention tremor (finding)"    │"Tremor (finding)"│
+├───────────────┼────────────────┼────────────────────────────────┼─────────────────────────────┼────────────────────────────────┼──────────────────┤
+│"101037"       │"101037"        │"Clumsiness (finding)"          │"Motor dysfunction (finding)"│"Isolated facial tremor (finding│"Tremor (finding)"│
+│               │                │                                │                             │)"                              │                  │
+├───────────────┼────────────────┼────────────────────────────────┼─────────────────────────────┼────────────────────────────────┼──────────────────┤
+│"101099"       │"101099"        │"Clumsiness (finding)"          │"Motor dysfunction (finding)"│"Fine tremor (finding)"         │"Tremor (finding)"│
+├───────────────┼────────────────┼────────────────────────────────┼─────────────────────────────┼────────────────────────────────┼──────────────────┤
+│"104105"       │"104105"        │"Clumsiness (finding)"          │"Motor dysfunction (finding)"│"Chronic tremor (finding)"      │"Tremor (finding)"│
+├───────────────┼────────────────┼────────────────────────────────┼─────────────────────────────┼────────────────────────────────┼──────────────────┤
+
+Returning node properties, instead of entire nodes, in unions within subqueries appears to correct confounding of values:
+
+call {
+  match  (prt:Participant)-[:P_SCT]->(sct1a:ObjectConcept)-[rsct:ISA*]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  and sct1a.active='1' and sct1c.active='1'
+  and all(r2 in rsct where r2.active='1')
+  return  prt, sct1a, startNode(last(rsct)).FSN as FSN1b, sct1c.FSN as FSN1c
+  union
+  match  (prt:Participant)-[:P_SCT]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  return prt, sct1c as sct1a, sct1c.FSN as FSN1b, sct1c.FSN as FSN1c
+}
+
+with prt, sct1a, FSN1b, FSN1c
+ call {
+   with prt
+   match  (prt)-[:P_SCT]->(sct2a:ObjectConcept)-[rsct:ISA*]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+          and sct2a.active='1' and sct2c.active='1'
+          and all(r2 in rsct where r2.active='1')
+   return  prt as prt2, sct2a, startNode(last(rsct)).FSN as FSN2b, sct2c.FSN as FSN2c
+   union
+   with prt
+   match  (prt)-[:P_SCT]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+   return prt as prt2, sct2c as sct2a, sct2c.FSN as FSN2b, sct2c.FSN as FSN2c
+ }
+ 
+return prt.ParticipantId as participantID, prt2.ParticipantId as participantID2,
+FSN1b, FSN1c, FSN2b, FSN2c
+
+Results:
+
+╒═══════════════╤════════════════╤═════════════════════════════╤═════════════════════════════╤═════════════════════════════╤══════════════════╕
+│"participantID"│"participantID2"│"FSN1b"                      │"FSN1c"                      │"FSN2b"                      │"FSN2c"           │
+╞═══════════════╪════════════════╪═════════════════════════════╪═════════════════════════════╪═════════════════════════════╪══════════════════╡
+│"102397"       │"102397"        │"Automatism (finding)"       │"Motor dysfunction (finding)"│"Tremor (finding)"           │"Tremor (finding)"│
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼──────────────────┤
+│"101037"       │"101037"        │"Clumsiness (finding)"       │"Motor dysfunction (finding)"│"Intention tremor (finding)" │"Tremor (finding)"│
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼──────────────────┤
+│"101037"       │"101037"        │"Clumsiness (finding)"       │"Motor dysfunction (finding)"│"Isolated facial tremor (find│"Tremor (finding)"│
+│               │                │                             │                             │ing)"                        │                  │
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼──────────────────┤
+│"101037"       │"101037"        │"Clumsiness (finding)"       │"Motor dysfunction (finding)"│"Tremor (finding)"           │"Tremor (finding)"│
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼──────────────────┤
+│"101099"       │"101099"        │"Clumsiness (finding)"       │"Motor dysfunction (finding)"│"Fine tremor (finding)"      │"Tremor (finding)"│
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼──────────────────┤
+│"101099"       │"101099"        │"Clumsiness (finding)"       │"Motor dysfunction (finding)"│"Tremor (finding)"           │"Tremor (finding)"│
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼──────────────────┤
+│"104105"       │"104105"        │"Clumsiness (finding)"       │"Motor dysfunction (finding)"│"Chronic tremor (finding)"   │"Tremor (finding)"│
+├───────────────┼────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼──────────────────┤
+
+NOW, is sct1a (a complete node returned by unions) preserved, enabling a search of paths from it?  It appears so:
+
+call {
+  match  (prt1:Participant)-[:P_SCT]->(sct1a:ObjectConcept)-[rsct:ISA*]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  and sct1a.active='1' and sct1c.active='1'
+  and all(r2 in rsct where r2.active='1')
+  return  prt1, sct1a, startNode(last(rsct)).FSN as FSN1b, sct1c.FSN as FSN1c
+  union
+  match  (prt1:Participant)-[:P_SCT]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  return prt1, sct1c as sct1a, sct1c.FSN as FSN1b, sct1c.FSN as FSN1c
+}
+
+with prt1, sct1a, FSN1b, FSN1c
+ call {
+   with prt1
+   match  (prt1)-[:P_SCT]->(sct2a:ObjectConcept)-[rsct:ISA*]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+          and sct2a.active='1' and sct2c.active='1'
+          and all(r2 in rsct where r2.active='1')
+   return  prt1 as prt2, sct2a, startNode(last(rsct)).FSN as FSN2b, sct2c.FSN as FSN2c
+   union
+   with prt1
+   match  (prt1)-[:P_SCT]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+   return prt1 as prt2, sct2c as sct2a, sct2c.FSN as FSN2b, sct2c.FSN as FSN2c
+ }
+
+with prt1.ParticipantId as participantID1, prt2.ParticipantId as participantID2,
+FSN1b, FSN1c, FSN2b, FSN2c, sct1a
+
+// Left join to finding sites
+optional match(sct1a)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst:ObjectConcept)
+where    role2.active='1' and fst.active='1'
+
+return participantID1, participantID2, FSN1b, FSN1c, FSN2b, FSN2c, fst
+
+Results:
+
+├────────────────┼────────────────┼──────────────────────────────────┼─────────────────────────────┼──────────────────────────────────┼──────────────────┼──────────────────────────────────┤
+│"104105"        │"104105"        │"Clumsiness (finding)"            │"Motor dysfunction (finding)"│"Chronic tremor (finding)"        │"Tremor (finding)"│null                              │
+├────────────────┼────────────────┼──────────────────────────────────┼─────────────────────────────┼──────────────────────────────────┼──────────────────┼──────────────────────────────────┤
+│"104105"        │"104105"        │"Clumsiness (finding)"            │"Motor dysfunction (finding)"│"Tremor (finding)"                │"Tremor (finding)"│null                              │
+├────────────────┼────────────────┼──────────────────────────────────┼─────────────────────────────┼──────────────────────────────────┼──────────────────┼──────────────────────────────────┤
+│"111538"        │"111538"        │"Dyskinesia (finding)"            │"Motor dysfunction (finding)"│"Trembles (finding)"              │"Tremor (finding)"│{"FSN":"Structure of nervous syste│
+│                │                │                                  │                             │                                  │                  │m (body structure)","nodetype":"co│
+│                │                │                                  │                             │                                  │                  │ncept","effectiveTime":"20020131",│
+│                │                │                                  │                             │                                  │                  │"definitionStatusId":"900000000000│
+│                │                │                                  │                             │                                  │                  │074008","active":"1","GLabel":"Str│
+│                │                │                                  │                             │                                  │                  │ucture of nervous system (body str│
+│                │                │                                  │                             │                                  │                  │ucture)","lowcaseFSN":"structure o│
+│                │                │                                  │                             │                                  │                  │f nervous system (body structure)"│
+│                │                │                                  │                             │                                  │                  │,"history":"","id":"25087005","mod│
+│                │                │                                  │                             │                                  │                  │uleId":"900000000000207008","sctid│
+│                │                │                                  │                             │                                  │                  │":"25087005"}                     │
+├────────────────┼────────────────┼──────────────────────────────────┼─────────────────────────────┼──────────────────────────────────┼──────────────────┼──────────────────────────────────┤
+│"128080"        │"128080"        │"Dyskinesia (finding)"            │"Motor dysfunction (finding)"│"Intention tremor (finding)"      │"Tremor (finding)"│{"FSN":"Limb structure (body struc│
+│                │                │                                  │                             │                                  │                  │ture)","nodetype":"concept","effec│
+│                │                │                                  │                             │                                  │                  │tiveTime":"20020131","definitionSt│
+│                │                │                                  │                             │                                  │                  │atusId":"900000000000074008","acti│
+│                │                │                                  │                             │                                  │                  │ve":"1","GLabel":"Limb structure (│
+│                │                │                                  │                             │                                  │                  │body structure)","lowcaseFSN":"lim│
+│                │                │                                  │                             │                                  │                  │b structure (body structure)","his│
+│                │                │                                  │                             │                                  │                  │tory":"","id":"66019005","moduleId│
+│                │                │                                  │                             │                                  │                  │":"900000000000207008","sctid":"66│
+│                │                │                                  │                             │                                  │                  │019005"}                          │
+├────────────────┼────────────────┼──────────────────────────────────┼─────────────────────────────┼──────────────────────────────────┼──────────────────┼──────────────────────────────────┤
+
+Finding sites for each sequential concept
+Note the successive optional match statements
+They accomplish an inner-join instead of a cross-join, as with many other queries (this appears to
+be due to the optional joins involving paths beginning with nodes from disjoint sets - sct1a and sct2a)
+Each row of the result set prior to the first optional join contains one sct1a node and one sct2a node
+These are joined to finding sites associated with sct1a in the first join and to finding sites associated
+with sct2a in the second join
+Non-sct1a and sct2a finding site columns appear once for each sct1a finding site
+Non-sct2a and sct1a finding site columns appear once for each sct2a finding site
+
+call {
+  match  (prt1:Participant)-[:P_SCT]->(sct1a:ObjectConcept)-[rsct:ISA*]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  and sct1a.active='1' and sct1c.active='1'
+  and all(r2 in rsct where r2.active='1')
+  return  prt1, sct1a, startNode(last(rsct)).FSN as FSN1b, sct1c.FSN as FSN1c
+  union
+  match  (prt1:Participant)-[:P_SCT]->(sct1c:ObjectConcept)
+  where  sct1c.sctid='52559000'
+  return prt1, sct1c as sct1a, sct1c.FSN as FSN1b, sct1c.FSN as FSN1c
+}
+
+with prt1, sct1a, FSN1b, FSN1c
+ call {
+   with prt1
+   match  (prt1)-[:P_SCT]->(sct2a:ObjectConcept)-[rsct:ISA*]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+          and sct2a.active='1' and sct2c.active='1'
+          and all(r2 in rsct where r2.active='1')
+   return  prt1 as prt2, sct2a, startNode(last(rsct)).FSN as FSN2b, sct2c.FSN as FSN2c
+   union
+   with prt1
+   match  (prt1)-[:P_SCT]->(sct2c:ObjectConcept)
+   where  sct2c.sctid='26079004'
+   return prt1 as prt2, sct2c as sct2a, sct2c.FSN as FSN2b, sct2c.FSN as FSN2c
+ }
+
+with prt1.ParticipantId as participantID1, prt2.ParticipantId as participantID2,
+FSN1b, FSN1c, FSN2b, FSN2c, sct1a, sct2a
+
+// Left join to finding sites
+optional match(sct1a)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst1:ObjectConcept)
+where    role2.active='1' and fst1.active='1'
+optional match(sct2a)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst2:ObjectConcept)
+where    role2.active='1' and fst2.active='1'
+
+return participantID1, participantID2, FSN1b, FSN1c, FSN2b, FSN2c, fst1, fst2

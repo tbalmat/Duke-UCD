@@ -1,0 +1,40 @@
+Exist the following paths from Anxiety disorder of childhood (disorder)[53467004] to concepts containing "anxiety"
+
+SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Disease (disorder)[64572001]; Mental disorder (disorder)[74732009]; Childhood emotional disorder (disorder)[268664001]; Anxiety disorder of childhood OR adolescence (disorder)[109006]; Anxiety disorder of childhood (disorder)[53467004]
+SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Clinical history and observation findings (finding)[250171008]; Mental state, behavior and/or psychosocial function finding (finding)[384821006]; Mental state finding (finding)[36456004]; Emotional state finding (finding)[106126000]; Anxiety (finding)[48694002]; Anxiety disorder (disorder)[197480006]; Anxiety disorder of childhood OR adolescence (disorder)[109006]; Anxiety disorder of childhood (disorder)[53467004]
+SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Disease (disorder)[64572001]; Mental disorder (disorder)[74732009]; Anxiety disorder (disorder)[197480006]; Anxiety disorder of childhood OR adolescence (disorder)[109006]; Anxiety disorder of childhood (disorder)[53467004]
+SNOMED CT Concept (SNOMED RT+CTV3)[138875005]; Clinical finding (finding)[404684003]; Disease (disorder)[64572001]; Mental disorder (disorder)[74732009]; Mental disorder usually first evident in infancy, childhood AND/OR adolescence (disorder)[111476001]; Anxiety disorder of childhood OR adolescence (disorder)[109006]; Anxiety disorder of childhood (disorder)[53467004]
+
+Query for above:
+match(x:ObjectConcept)-[r:ISA*]->(y:ObjectConcept)
+where left(x.lowcaseFSN, 16)='anxiety disorder' and left(y.lowcaseFSN, 17)='snomed ct concept'
+      and reduce(x=0, y in r | x + case when(y.active='0' or endNode(y).active='0')then 1 else 0 end)=0
+return reduce(x='', y in r | endNode(y).FSN + '[' + endNode(y).sctid + ']; ' + x) + x.FSN + '[' + x.sctid + ']' as path
+
+Retrieve participants with paths beginning at 53467004 and terminating with FSN containing 'anxiety'
+ 
+match(x:Participant)-[:P_SCT]->(y:ObjectConcept)-[r:ISA*]->(z:ObjectConcept)
+where y.sctid='53467004' and z.FSN contains 'Anxiety'
+return x.ParticipantId, y.FSN, z.sctid, z.FSN, y.FSN+' '+y.sctid+reduce(a='', b in r|a+'; '+endNode(b).FSN+' '+endnode(b).sctid)
+
+╒═════════════════╤══════════════════════════════════════════╤═══════════╤═══════════════════════════════════════════════╤═══════════════════════════════════════════════╕
+│"x.ParticipantId"│"y.FSN"                                   │"z.sctid"  │"z.FSN"                                        │"y.FSN+' '+y.sctid+reduce(a='', b in r|a+'; '+e│
+│                 │                                          │           │                                               │ndNode(b).FSN+' '+endnode(b).sctid)"           │
+╞═════════════════╪══════════════════════════════════════════╪═══════════╪═══════════════════════════════════════════════╪═══════════════════════════════════════════════╡
+│"101494"         │"Anxiety disorder of childhood (disorder)"│"109006"   │"Anxiety disorder of childhood OR adolescence (│"Anxiety disorder of childhood (disorder) 53467│
+│                 │                                          │           │disorder)"                                     │004; Anxiety disorder of childhood OR adolescen│
+│                 │                                          │           │                                               │ce (disorder) 109006"                          │
+├─────────────────┼──────────────────────────────────────────┼───────────┼───────────────────────────────────────────────┼───────────────────────────────────────────────┤
+│"101494"         │"Anxiety disorder of childhood (disorder)"│"197480006"│"Anxiety disorder (disorder)"                  │"Anxiety disorder of childhood (disorder) 53467│
+│                 │                                          │           │                                               │004; Anxiety disorder of childhood OR adolescen│
+│                 │                                          │           │                                               │ce (disorder) 109006; Anxiety disorder (disorde│
+│                 │                                          │           │                                               │r) 197480006"                                  │
+├─────────────────┼──────────────────────────────────────────┼───────────┼───────────────────────────────────────────────┼───────────────────────────────────────────────┤
+│"101494"         │"Anxiety disorder of childhood (disorder)"│"48694002" │"Anxiety (finding)"                            │"Anxiety disorder of childhood (disorder) 53467│
+│                 │                                          │           │                                               │004; Anxiety disorder of childhood OR adolescen│
+│                 │                                          │           │                                               │ce (disorder) 109006; Anxiety disorder (disorde│
+│                 │                                          │           │                                               │r) 197480006; Anxiety (finding) 48694002"      │
+└─────────────────┴──────────────────────────────────────────┴───────────┴───────────────────────────────────────────────┴───────────────────────────────────────────────┘
+
+When accumulating participants by the leading node of the final pair in a path beginning with 53467004, an participant 101494 is counted once for concept "Anxiety disorder of
+childhood (disorder)" (ID 53467004), once for "Anxiety disorder of childhood OR adolescence (disorder)" (ID 109006), and once for "Anxiety disorder (disorder)" (ID197480006).

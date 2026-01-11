@@ -1,0 +1,14 @@
+// call {} is available in Neo4j version 4
+
+call {
+  match  (prt:Participant)-[:P_SCT]->(sct0:ObjectConcept)-[rsct:ISA*]->(sct2:ObjectConcept)
+  where  1=1 and sct2.sctid in['197480006', '46206005']
+             and sct0.active='1' and sct2.active='1'
+             and all(r2 in rsct where r2.active='1')
+  return prt, sct0, startNode(last(rsct)) as sct1, sct2.FSN as parentConceptFSN
+  union
+  match  (prt:Participant)-[:P_SCT]->(sct2:ObjectConcept)
+  where  sct2.sctid in['197480006', '46206005']
+  return prt, sct2 as sct0, sct2 as sct1, sct2.FSN as parentConceptFSN
+}
+return prt, sct0, sct1, parentConceptFSN

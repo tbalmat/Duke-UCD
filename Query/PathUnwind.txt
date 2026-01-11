@@ -1,0 +1,8 @@
+match(x:ObjectConcept)-[r:ISA*]->(y:ObjectConcept)
+where x.active='1' and x.sctid='26079004' and y.sctid='138875005'
+      and reduce(x=0, y in r | x + case when(y.active=0 or endNode(y).active='0')then 1 else 0 end)=0
+with r limit 1 unwind reverse(r) as z
+return endNode(z).sctid, endNode(z).FSN
+
+match(c1:ObjectConcept)-[r:ISA*]->(c0:ObjectConcept) where c1.sctid='40700009' and c0.sctid='138875005'
+return reduce(a='', b in r|endNode(b).FSN+' '+endnode(b).sctid+'; '+a)+c1.FSN+' '+c1.sctid

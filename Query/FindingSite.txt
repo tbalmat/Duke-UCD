@@ -1,0 +1,44 @@
+Tremor
+
+match  (prt)-[:P_SCT]->(scta:ObjectConcept)-[rsct:ISA*]->(sctc:ObjectConcept)
+where  sctc.sctid='26079004'
+       and scta.active='1' and sctc.active='1'
+       and all(r2 in rsct where r2.active='1')
+
+with scta
+optional match(scta)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst:ObjectConcept)
+where    role2.active='1' and fst.active='1'
+return scta, fst
+
+Asterixis (ID 32838008) is the only SCT with an associated finding site:
+
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│{"FSN":"Asterixis (finding)","nodetype":"concept","effectiveTime":"200│{"FSN":"Upper limb structure (body structure)","nodetype":"concept","e│
+│20131","definitionStatusId":"900000000000074008","GLabel":"Asterixis (│ffectiveTime":"20020131","definitionStatusId":"900000000000074008","ac│
+│finding)","active":"1","history":"","ptcount":1,"lowcaseFSN":"asterixi│tive":"1","GLabel":"Upper limb structure (body structure)","lowcaseFSN│
+│s (finding)","id":"32838008","moduleId":"900000000000207008","sctid":"│":"upper limb structure (body structure)","history":"","id":"53120007"│
+│32838008"}                                                            │,"moduleId":"900000000000207008","sctid":"53120007"}                  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+
+
+Anxiety
+
+match  (prt)-[:P_SCT]->(scta:ObjectConcept)-[rsct:ISA*]->(sctc:ObjectConcept)
+where  sctc.sctid='48694002'
+       and scta.active='1' and sctc.active='1'
+       and all(r2 in rsct where r2.active='1')
+
+with scta
+optional match(scta)-[role1:HAS_ROLE_GROUP]->(rg)-[role2:FINDING_SITE]->(fst:ObjectConcept)
+where    role2.active='1' and fst.active='1'
+return scta, fst
+
+Phonophobia (ID 313387002) is the sole SCT with an associated finding site:
+
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│{"FSN":"Phonophobia (finding)","nodetype":"concept","effectiveTime":"2│{"FSN":"Ear structure (body structure)","nodetype":"concept","effectiv│
+│0020131","definitionStatusId":"900000000000074008","GLabel":"Phonophob│eTime":"20020131","definitionStatusId":"900000000000074008","active":"│
+│ia (finding)","active":"1","history":"","ptcount":1,"lowcaseFSN":"phon│1","GLabel":"Ear structure (body structure)","lowcaseFSN":"ear structu│
+│ophobia (finding)","id":"313387002","moduleId":"900000000000207008","s│re (body structure)","history":"","id":"117590005","moduleId":"9000000│
+│ctid":"313387002"}                                                    │00000207008","sctid":"117590005"}                                     │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤

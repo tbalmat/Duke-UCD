@@ -1,0 +1,451 @@
+-- SNOMEDCT nodes with relationships to role group nodes related to an object concept
+
+-- CT of petrous bone, taken from Jay Peterson's example in SNOMED CT Full Graph Database Schema
+-- Jay:  The defining relationship edges are tied to role groups, where each role group is treated as an atomic semantic unit.  The semantics derived from the definingrelationships for a concept is the union of semantics from all of the role groups for a concept.These relationships are edges between RoleGroup nodes and ObjectConcept nodes.  Each defines part of a role group.  There are over 1,000 defining relationshiptypes.  For example, a concept for medical procedure will commonly have a role group which has a METHOD defining relationship.  For example, the procedure “CT of petrous bones(procedure)” (SCTID 241522007) has a role group with a METHOD defining relationship to “Imaging -action (qualifier value)” (SCTID 360037004).
+
+match(x:ObjectConcept)-[r1:HAS_ROLE_GROUP]->(y)-[r2]->(z) where x.sctid='241522007' return x.FSN, type(r1), labels(y), type(r2), labels(z), z
+
+╒══════════════════════════════════════════════════╤════════════════╤═════════════╤════════════════════════╤═════════════════╤══════════════════════════════════════════════════════════════════════╕
+│"x.FSN"                                           │"type(r1)"      │"labels(y)"  │"type(r2)"              │"labels(z)"      │"z"                                                                   │
+╞══════════════════════════════════════════════════╪════════════════╪═════════════╪════════════════════════╪═════════════════╪══════════════════════════════════════════════════════════════════════╡
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"PROCEDURE_SITE__DIRECT"│["ObjectConcept"]│{"FSN":"Bone structure of head (body structure)","nodetype":"concept",│
+│                                                  │                │             │                        │                 │"effectiveTime":"20020131","definitionStatusId":"900000000000074008","│
+│                                                  │                │             │                        │                 │active":"1","GLabel":"Bone structure of head (body structure)","histor│
+│                                                  │                │             │                        │                 │y":"","id":"272679001","moduleId":"900000000000207008","sctid":"272679│
+│                                                  │                │             │                        │                 │001"}                                                                 │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"METHOD"                │["ObjectConcept"]│{"FSN":"Imaging - action (qualifier value)","nodetype":"concept","effe│
+│                                                  │                │             │                        │                 │ctiveTime":"20020131","definitionStatusId":"900000000000074008","activ│
+│                                                  │                │             │                        │                 │e":"1","GLabel":"Imaging - action (qualifier value)","history":"","id"│
+│                                                  │                │             │                        │                 │:"360037004","moduleId":"900000000000207008","sctid":"360037004"}     │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"METHOD"                │["ObjectConcept"]│{"FSN":"Computed tomography imaging - action (qualifier value)","nodet│
+│                                                  │                │             │                        │                 │ype":"concept","effectiveTime":"20020131","definitionStatusId":"900000│
+│                                                  │                │             │                        │                 │000000074008","active":"1","GLabel":"Computed tomography imaging - act│
+│                                                  │                │             │                        │                 │ion (qualifier value)","history":"","id":"312251004","moduleId":"90000│
+│                                                  │                │             │                        │                 │0000000207008","sctid":"312251004"}                                   │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"PROCEDURE_SITE"        │["ObjectConcept"]│{"FSN":"Structure of petrous part of temporal bone (body structure)","│
+│                                                  │                │             │                        │                 │nodetype":"concept","effectiveTime":"20020131","definitionStatusId":"9│
+│                                                  │                │             │                        │                 │00000000000074008","active":"1","GLabel":"Structure of petrous part of│
+│                                                  │                │             │                        │                 │ temporal bone (body structure)","history":"","id":"25516004","moduleI│
+│                                                  │                │             │                        │                 │d":"900000000000207008","sctid":"25516004"}                           │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"PROCEDURE_SITE"        │["ObjectConcept"]│{"FSN":"Head structure (body structure)","nodetype":"concept","effecti│
+│                                                  │                │             │                        │                 │veTime":"20020131","definitionStatusId":"900000000000074008","active":│
+│                                                  │                │             │                        │                 │"1","GLabel":"Head structure (body structure)","history":"","id":"6953│
+│                                                  │                │             │                        │                 │6005","moduleId":"900000000000207008","sctid":"69536005"}             │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"PROCEDURE_SITE__DIRECT"│["ObjectConcept"]│{"FSN":"Structure of petrous part of temporal bone (body structure)","│
+│                                                  │                │             │                        │                 │nodetype":"concept","effectiveTime":"20020131","definitionStatusId":"9│
+│                                                  │                │             │                        │                 │00000000000074008","active":"1","GLabel":"Structure of petrous part of│
+│                                                  │                │             │                        │                 │ temporal bone (body structure)","history":"","id":"25516004","moduleI│
+│                                                  │                │             │                        │                 │d":"900000000000207008","sctid":"25516004"}                           │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"PROCEDURE_SITE__DIRECT"│["ObjectConcept"]│{"FSN":"Structure of petrous part of temporal bone (body structure)","│
+│                                                  │                │             │                        │                 │nodetype":"concept","effectiveTime":"20020131","definitionStatusId":"9│
+│                                                  │                │             │                        │                 │00000000000074008","active":"1","GLabel":"Structure of petrous part of│
+│                                                  │                │             │                        │                 │ temporal bone (body structure)","history":"","id":"25516004","moduleI│
+│                                                  │                │             │                        │                 │d":"900000000000207008","sctid":"25516004"}                           │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"METHOD"                │["ObjectConcept"]│{"FSN":"Computed tomography imaging - action (qualifier value)","nodet│
+│                                                  │                │             │                        │                 │ype":"concept","effectiveTime":"20020131","definitionStatusId":"900000│
+│                                                  │                │             │                        │                 │000000074008","active":"1","GLabel":"Computed tomography imaging - act│
+│                                                  │                │             │                        │                 │ion (qualifier value)","history":"","id":"312251004","moduleId":"90000│
+│                                                  │                │             │                        │                 │0000000207008","sctid":"312251004"}                                   │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"METHOD"                │["ObjectConcept"]│{"FSN":"Computed tomography imaging - action (qualifier value)","nodet│
+│                                                  │                │             │                        │                 │ype":"concept","effectiveTime":"20020131","definitionStatusId":"900000│
+│                                                  │                │             │                        │                 │000000074008","active":"1","GLabel":"Computed tomography imaging - act│
+│                                                  │                │             │                        │                 │ion (qualifier value)","history":"","id":"312251004","moduleId":"90000│
+│                                                  │                │             │                        │                 │0000000207008","sctid":"312251004"}                                   │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"HAS_INTENT"            │["ObjectConcept"]│{"FSN":"Diagnostic intent (qualifier value)","nodetype":"concept","eff│
+│                                                  │                │             │                        │                 │ectiveTime":"20020131","definitionStatusId":"900000000000074008","acti│
+│                                                  │                │             │                        │                 │ve":"1","GLabel":"Diagnostic intent (qualifier value)","history":"","i│
+│                                                  │                │             │                        │                 │d":"261004008","moduleId":"900000000000207008","sctid":"261004008"}   │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"HAS_INTENT"            │["ObjectConcept"]│{"FSN":"Diagnostic intent (qualifier value)","nodetype":"concept","eff│
+│                                                  │                │             │                        │                 │ectiveTime":"20020131","definitionStatusId":"900000000000074008","acti│
+│                                                  │                │             │                        │                 │ve":"1","GLabel":"Diagnostic intent (qualifier value)","history":"","i│
+│                                                  │                │             │                        │                 │d":"261004008","moduleId":"900000000000207008","sctid":"261004008"}   │
+├──────────────────────────────────────────────────┼────────────────┼─────────────┼────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Computed tomography of petrous bones (procedure)"│"HAS_ROLE_GROUP"│["RoleGroup"]│"METHOD"                │["ObjectConcept"]│{"FSN":"Investigation - action (qualifier value)","nodetype":"concept"│
+│                                                  │                │             │                        │                 │,"effectiveTime":"20030131","definitionStatusId":"900000000000074008",│
+│                                                  │                │             │                        │                 │"active":"0","GLabel":"Investigation - action (qualifier value)","hist│
+│                                                  │                │             │                        │                 │ory":"[{"active": "1", "effectiveTime": "20020131", "id": "360224006",│
+│                                                  │                │             │                        │                 │ "definitionStatusId": "900000000000074008", "moduleId": "900000000000│
+│                                                  │                │             │                        │                 │207008"}]","id":"360224006","moduleId":"900000000000207008","sctid":"3│
+│                                                  │                │             │                        │                 │60224006"}                                                            │
+└──────────────────────────────────────────────────┴────────────────┴─────────────┴────────────────────────┴─────────────────┴──────────────────────────────────────────────────────────────────────┘
+
+-- Node types related by role groups
+
+match(x)-[r:HAS_ROLE_GROUP]->(y) return distinct labels(x), labels(y) order by labels(x), labels(y)
+
+╒══════════════════════════════════════════════════════════════════════╤═════════════╕
+│"labels(x)"                                                           │"labels(y)"  │
+╞══════════════════════════════════════════════════════════════════════╪═════════════╡
+│["ObjectConcept"]                                                     │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Behav"]                                             │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Behav","PBehav","PSCT"]                             │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro"]                                             │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","PNeuro","PSCT"]                             │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","Psych"]                                     │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","Psych","Behav"]                             │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","Psych","Behav","PNeuro","PPsych","PBehav","P│["RoleGroup"]│
+│SCT"]                                                                 │             │
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","Psych","Behav","SZ"]                        │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","Psych","PNeuro","PPsych","PSCT"]            │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","Psych","SZ"]                                │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","SZ"]                                        │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Neuro","SZ","PNeuro","PSZ","PSCT"]                  │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","PSCT"]                                              │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Psych"]                                             │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Psych","Behav"]                                     │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Psych","Behav","PPsych","PBehav","PSCT"]            │["RoleGroup"]│
+├──────────────────────────────────────────────────────────────────────┼─────────────┤
+│["ObjectConcept","Psych","PPsych","PSCT"]                             │["RoleGroup"]│
+└──────────────────────────────────────────────────────────────────────┴─────────────┘
+
+-- UCD example
+-- Retrieve roles of mental disorder concepts (ID 74732009)
+
+match(w)<-[:ISA]-(x:ObjectConcept)-[r1:HAS_ROLE_GROUP]->(y)-[r2]->(z)
+where w.active='1' and w.sctid='74732009' and x.active='1'
+return x.FSN, y.rolegroup, type(r2), z
+order by x.FSN, y.rolegroup
+
+╒══════════════════════════════════════════════════════════════════════╤═════════════╤════════════════════════════════╤══════════════════════════════════════════════════════════════════════╕
+│"x.FSN"                                                               │"y.rolegroup"│"type(r2)"                      │"z"                                                                   │
+╞══════════════════════════════════════════════════════════════════════╪═════════════╪════════════════════════════════╪══════════════════════════════════════════════════════════════════════╡
+│"Anxiety disorder (disorder)"                                         │"0"          │"HAS_DEFINITIONAL_MANIFESTATION"│{"FSN":"Anxiety (finding)","nodetype":"concept","effectiveTime":"20020│
+│                                                                      │             │                                │131","ptcount":67,"definitionStatusId":"900000000000074008","GLabel":"│
+│                                                                      │             │                                │Anxiety (finding)","active":"1","history":"","id":"48694002","moduleId│
+│                                                                      │             │                                │":"900000000000207008","sctid":"48694002"}                            │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Anxiety disorder (disorder)"                                         │"0"          │"INTERPRETS"                    │{"FSN":"Emotion (observable entity)","nodetype":"concept","effectiveTi│
+│                                                                      │             │                                │me":"20020131","definitionStatusId":"900000000000074008","GLabel":"Emo│
+│                                                                      │             │                                │tion (observable entity)","active":"1","history":"","id":"285854004","│
+│                                                                      │             │                                │moduleId":"900000000000207008","sctid":"285854004"}                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Behavioral and emotional disorder with onset in childhood (disorder)"│"0"          │"OCCURRENCE"                    │{"FSN":"Childhood (qualifier value)","nodetype":"concept","effectiveTi│
+│                                                                      │             │                                │me":"20020131","definitionStatusId":"900000000000074008","GLabel":"Chi│
+│                                                                      │             │                                │ldhood (qualifier value)","active":"1","history":"","id":"255398004","│
+│                                                                      │             │                                │moduleId":"900000000000207008","sctid":"255398004"}                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Bruxism (disorder)"                                                  │"0"          │"HAS_DEFINITIONAL_MANIFESTATION"│{"FSN":"Grinding teeth (finding)","nodetype":"concept","effectiveTime"│
+│                                                                      │             │                                │:"20020131","definitionStatusId":"900000000000074008","ptcount":4,"GLa│
+│                                                                      │             │                                │bel":"Grinding teeth (finding)","active":"1","history":"","id":"902070│
+│                                                                      │             │                                │07","moduleId":"900000000000207008","sctid":"90207007"}               │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Bruxism (disorder)"                                                  │"0"          │"ASSOCIATED_FINDING"            │{"FSN":"Grinding teeth (finding)","nodetype":"concept","effectiveTime"│
+│                                                                      │             │                                │:"20020131","definitionStatusId":"900000000000074008","ptcount":4,"GLa│
+│                                                                      │             │                                │bel":"Grinding teeth (finding)","active":"1","history":"","id":"902070│
+│                                                                      │             │                                │07","moduleId":"900000000000207008","sctid":"90207007"}               │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Bruxism (disorder)"                                                  │"0"          │"FINDING_SITE"                  │{"FSN":"Tooth structure (body structure)","nodetype":"concept","effect│
+│                                                                      │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Tooth structure (body structure)","history":"","id":"38│
+│                                                                      │             │                                │199008","moduleId":"900000000000207008","sctid":"38199008"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Bruxism (disorder)"                                                  │"0"          │"FINDING_SITE"                  │{"FSN":"Jaw region structure (body structure)","nodetype":"concept","e│
+│                                                                      │             │                                │ffectiveTime":"20020131","definitionStatusId":"900000000000074008","ac│
+│                                                                      │             │                                │tive":"1","GLabel":"Jaw region structure (body structure)","id":"66100│
+│                                                                      │             │                                │5","history":"","moduleId":"900000000000207008","sctid":"661005"}     │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Childhood emotional disorder (disorder)"                             │"0"          │"OCCURRENCE"                    │{"FSN":"Childhood (qualifier value)","nodetype":"concept","effectiveTi│
+│                                                                      │             │                                │me":"20020131","definitionStatusId":"900000000000074008","GLabel":"Chi│
+│                                                                      │             │                                │ldhood (qualifier value)","active":"1","history":"","id":"255398004","│
+│                                                                      │             │                                │moduleId":"900000000000207008","sctid":"255398004"}                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Childhood or adolescent disorder of social functioning (disorder)"   │"0"          │"OCCURRENCE"                    │{"FSN":"Adolescence (qualifier value)","nodetype":"concept","effective│
+│                                                                      │             │                                │Time":"20020131","definitionStatusId":"900000000000074008","active":"1│
+│                                                                      │             │                                │","GLabel":"Adolescence (qualifier value)","history":"","id":"26365900│
+│                                                                      │             │                                │3","moduleId":"900000000000207008","sctid":"263659003"}               │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Childhood or adolescent disorder of social functioning (disorder)"   │"0"          │"OCCURRENCE"                    │{"FSN":"Childhood (qualifier value)","nodetype":"concept","effectiveTi│
+│                                                                      │             │                                │me":"20020131","definitionStatusId":"900000000000074008","GLabel":"Chi│
+│                                                                      │             │                                │ldhood (qualifier value)","active":"1","history":"","id":"255398004","│
+│                                                                      │             │                                │moduleId":"900000000000207008","sctid":"255398004"}                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Chronic fatigue syndrome (disorder)"                                 │"0"          │"FINDING_SITE"                  │{"FSN":"Structure of nervous system (body structure)","nodetype":"conc│
+│                                                                      │             │                                │ept","effectiveTime":"20020131","definitionStatusId":"9000000000000740│
+│                                                                      │             │                                │08","active":"1","GLabel":"Structure of nervous system (body structure│
+│                                                                      │             │                                │)","history":"","id":"25087005","moduleId":"900000000000207008","sctid│
+│                                                                      │             │                                │":"25087005"}                                                         │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Chronic mental disorder (disorder)"                                  │"0"          │"COURSE"                        │{"FSN":"Chronic (qualifier value)","nodetype":"concept","effectiveTime│
+│                                                                      │             │                                │":"20020131","definitionStatusId":"900000000000074008","GLabel":"Chron│
+│                                                                      │             │                                │ic (qualifier value)","active":"1","history":"","id":"90734009","modul│
+│                                                                      │             │                                │eId":"900000000000207008","sctid":"90734009"}                         │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Chronic mental disorder (disorder)"                                  │"0"          │"CLINICAL_COURSE"               │{"FSN":"Chronic (qualifier value)","nodetype":"concept","effectiveTime│
+│                                                                      │             │                                │":"20020131","definitionStatusId":"900000000000074008","GLabel":"Chron│
+│                                                                      │             │                                │ic (qualifier value)","active":"1","history":"","id":"90734009","modul│
+│                                                                      │             │                                │eId":"900000000000207008","sctid":"90734009"}                         │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Developmental mental disorder (disorder)"                            │"0"          │"FINDING_SITE"                  │{"FSN":"Brain structure (body structure)","nodetype":"concept","effect│
+│                                                                      │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Brain structure (body structure)","history":"","id":"12│
+│                                                                      │             │                                │738006","moduleId":"900000000000207008","sctid":"12738006"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Factitious disorder (disorder)"                                      │"0"          │"DUE_TO"                        │{"FSN":"Self-injurious behavior (finding)","nodetype":"concept","effec│
+│                                                                      │             │                                │tiveTime":"20020131","definitionStatusId":"900000000000074008","ptcoun│
+│                                                                      │             │                                │t":3,"GLabel":"Self-injurious behavior (finding)","active":"1","histor│
+│                                                                      │             │                                │y":"","id":"248062006","moduleId":"900000000000207008","sctid":"248062│
+│                                                                      │             │                                │006"}                                                                 │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Hypersomnia disorder related to another mental disorder (disorder)"  │"0"          │"INTERPRETS"                    │{"FSN":"State of consciousness and awareness (observable entity)","nod│
+│                                                                      │             │                                │etype":"concept","effectiveTime":"20020131","definitionStatusId":"9000│
+│                                                                      │             │                                │00000000074008","active":"1","GLabel":"State of consciousness and awar│
+│                                                                      │             │                                │eness (observable entity)","history":"","id":"248217000","moduleId":"9│
+│                                                                      │             │                                │00000000000207008","sctid":"248217000"}                               │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Hypersomnia disorder related to another mental disorder (disorder)"  │"0"          │"INTERPRETS"                    │{"FSN":"Sleep, function (observable entity)","nodetype":"concept","eff│
+│                                                                      │             │                                │ectiveTime":"20020131","definitionStatusId":"900000000000074008","acti│
+│                                                                      │             │                                │ve":"1","GLabel":"Sleep, function (observable entity)","history":"","i│
+│                                                                      │             │                                │d":"258158006","moduleId":"900000000000207008","sctid":"258158006"}   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Hypersomnia disorder related to another mental disorder (disorder)"  │"0"          │"FINDING_SITE"                  │{"FSN":"Brain tissue structure (body structure)","nodetype":"concept",│
+│                                                                      │             │                                │"effectiveTime":"20020131","definitionStatusId":"900000000000074008","│
+│                                                                      │             │                                │active":"1","GLabel":"Brain tissue structure (body structure)","histor│
+│                                                                      │             │                                │y":"","id":"280369009","moduleId":"900000000000207008","sctid":"280369│
+│                                                                      │             │                                │009"}                                                                 │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Hypersomnia disorder related to another mental disorder (disorder)"  │"0"          │"FINDING_SITE"                  │{"FSN":"Brain structure (body structure)","nodetype":"concept","effect│
+│                                                                      │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Brain structure (body structure)","history":"","id":"12│
+│                                                                      │             │                                │738006","moduleId":"900000000000207008","sctid":"12738006"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Hyposomnia co-occurrent and due to psychological disorder (disorder)"│"0"          │"DUE_TO"                        │{"FSN":"Mental disorder (disorder)","nodetype":"concept","effectiveTim│
+│                                                                      │             │                                │e":"20020131","definitionStatusId":"900000000000074008","ptcount":5,"G│
+│                                                                      │             │                                │Label":"Mental disorder (disorder)","active":"1","history":"","id":"74│
+│                                                                      │             │                                │732009","moduleId":"900000000000207008","sctid":"74732009"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Insomnia disorder related to another mental disorder (disorder)"     │"0"          │"INTERPRETS"                    │{"FSN":"Sleep, function (observable entity)","nodetype":"concept","eff│
+│                                                                      │             │                                │ectiveTime":"20020131","definitionStatusId":"900000000000074008","acti│
+│                                                                      │             │                                │ve":"1","GLabel":"Sleep, function (observable entity)","history":"","i│
+│                                                                      │             │                                │d":"258158006","moduleId":"900000000000207008","sctid":"258158006"}   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Insomnia disorder related to another mental disorder (disorder)"     │"0"          │"INTERPRETS"                    │{"FSN":"State of consciousness and awareness (observable entity)","nod│
+│                                                                      │             │                                │etype":"concept","effectiveTime":"20020131","definitionStatusId":"9000│
+│                                                                      │             │                                │00000000074008","active":"1","GLabel":"State of consciousness and awar│
+│                                                                      │             │                                │eness (observable entity)","history":"","id":"248217000","moduleId":"9│
+│                                                                      │             │                                │00000000000207008","sctid":"248217000"}                               │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Insomnia disorder related to another mental disorder (disorder)"     │"0"          │"FINDING_SITE"                  │{"FSN":"Brain structure (body structure)","nodetype":"concept","effect│
+│                                                                      │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Brain structure (body structure)","history":"","id":"12│
+│                                                                      │             │                                │738006","moduleId":"900000000000207008","sctid":"12738006"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Insomnia disorder related to another mental disorder (disorder)"     │"0"          │"FINDING_SITE"                  │{"FSN":"Brain tissue structure (body structure)","nodetype":"concept",│
+│                                                                      │             │                                │"effectiveTime":"20020131","definitionStatusId":"900000000000074008","│
+│                                                                      │             │                                │active":"1","GLabel":"Brain tissue structure (body structure)","histor│
+│                                                                      │             │                                │y":"","id":"280369009","moduleId":"900000000000207008","sctid":"280369│
+│                                                                      │             │                                │009"}                                                                 │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Mental disorder caused by drug (disorder)"                           │"0"          │"CAUSATIVE_AGENT"               │{"FSN":"Drug or medicament (substance)","nodetype":"concept","effectiv│
+│                                                                      │             │                                │eTime":"20040731","definitionStatusId":"900000000000074008","active":"│
+│                                                                      │             │                                │1","GLabel":"Drug or medicament (substance)","history":"","id":"410942│
+│                                                                      │             │                                │007","moduleId":"900000000000207008","sctid":"410942007"}             │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Mild cognitive disorder (disorder)"                                  │"0"          │"HAS_DEFINITIONAL_MANIFESTATION"│{"FSN":"Impaired cognition (finding)","nodetype":"concept","effectiveT│
+│                                                                      │             │                                │ime":"20160131","definitionStatusId":"900000000000073002","ptcount":23│
+│                                                                      │             │                                │,"GLabel":"Impaired cognition (finding)","active":"1","history":"[{"ac│
+│                                                                      │             │                                │tive": "1", "effectiveTime": "20030131", "id": "386806002", "definitio│
+│                                                                      │             │                                │nStatusId": "900000000000074008", "moduleId": "900000000000207008"}]",│
+│                                                                      │             │                                │"id":"386806002","moduleId":"900000000000207008","sctid":"386806002"} │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Mild cognitive disorder (disorder)"                                  │"0"          │"FINDING_SITE"                  │{"FSN":"Brain structure (body structure)","nodetype":"concept","effect│
+│                                                                      │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Brain structure (body structure)","history":"","id":"12│
+│                                                                      │             │                                │738006","moduleId":"900000000000207008","sctid":"12738006"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Mild cognitive disorder (disorder)"                                  │"1"          │"HAS_INTERPRETATION"            │{"FSN":"Impaired (qualifier value)","nodetype":"concept","effectiveTim│
+│                                                                      │             │                                │e":"20020131","definitionStatusId":"900000000000074008","GLabel":"Impa│
+│                                                                      │             │                                │ired (qualifier value)","active":"1","history":"","id":"260379002","mo│
+│                                                                      │             │                                │duleId":"900000000000207008","sctid":"260379002"}                     │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Mild cognitive disorder (disorder)"                                  │"1"          │"INTERPRETS"                    │{"FSN":"Cognitive functions (observable entity)","nodetype":"concept",│
+│                                                                      │             │                                │"effectiveTime":"20020131","definitionStatusId":"900000000000074008","│
+│                                                                      │             │                                │active":"1","GLabel":"Cognitive functions (observable entity)","histor│
+│                                                                      │             │                                │y":"","id":"311465003","moduleId":"900000000000207008","sctid":"311465│
+│                                                                      │             │                                │003"}                                                                 │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Mood disorder (disorder)"                                            │"0"          │"FINDING_SITE"                  │{"FSN":"Brain structure (body structure)","nodetype":"concept","effect│
+│                                                                      │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Brain structure (body structure)","history":"","id":"12│
+│                                                                      │             │                                │738006","moduleId":"900000000000207008","sctid":"12738006"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Organic mental disorder (disorder)"                                  │"0"          │"FINDING_SITE"                  │{"FSN":"Brain structure (body structure)","nodetype":"concept","effect│
+│                                                                      │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Brain structure (body structure)","history":"","id":"12│
+│                                                                      │             │                                │738006","moduleId":"900000000000207008","sctid":"12738006"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychoactive substance use disorder (disorder)"                      │"0"          │"CAUSATIVE_AGENT"               │{"FSN":"Pharmaceutical / biologic product (product)","nodetype":"conce│
+│                                                                      │             │                                │pt","effectiveTime":"20020731","definitionStatusId":"90000000000007400│
+│                                                                      │             │                                │8","active":"1","GLabel":"Pharmaceutical / biologic product (product)"│
+│                                                                      │             │                                │,"history":"","id":"373873005","moduleId":"900000000000207008","sctid"│
+│                                                                      │             │                                │:"373873005"}                                                         │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychoactive substance use disorder (disorder)"                      │"0"          │"CAUSATIVE_AGENT"               │{"FSN":"Drug, medicament or biological substance (substance)","nodetyp│
+│                                                                      │             │                                │e":"concept","effectiveTime":"20040731","definitionStatusId":"90000000│
+│                                                                      │             │                                │0000074008","active":"0","GLabel":"Drug, medicament or biological subs│
+│                                                                      │             │                                │tance (substance)","history":"[{"active": "1", "effectiveTime": "20020│
+│                                                                      │             │                                │131", "id": "311980000", "definitionStatusId": "900000000000074008", "│
+│                                                                      │             │                                │moduleId": "900000000000207008"}]","id":"311980000","moduleId":"900000│
+│                                                                      │             │                                │000000207008","sctid":"311980000"}                                    │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychoactive substance use disorder (disorder)"                      │"0"          │"CAUSATIVE_AGENT"               │{"FSN":"Psychoactive substance of abuse - non-pharmaceutical (substanc│
+│                                                                      │             │                                │e)","nodetype":"concept","effectiveTime":"20180731","definitionStatusI│
+│                                                                      │             │                                │d":"900000000000074008","active":"0","GLabel":"Psychoactive substance │
+│                                                                      │             │                                │of abuse - non-pharmaceutical (substance)","history":"[{"active": "1",│
+│                                                                      │             │                                │ "effectiveTime": "20020131", "id": "264301008", "definitionStatusId":│
+│                                                                      │             │                                │ "900000000000074008", "moduleId": "900000000000207008"}]","id":"26430│
+│                                                                      │             │                                │1008","moduleId":"900000000000207008","sctid":"264301008"}            │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychoactive substance use disorder (disorder)"                      │"0"          │"CAUSATIVE_AGENT"               │{"FSN":"Psychoactive substance (substance)","nodetype":"concept","effe│
+│                                                                      │             │                                │ctiveTime":"20060131","definitionStatusId":"900000000000074008","activ│
+│                                                                      │             │                                │e":"1","GLabel":"Psychoactive substance (substance)","history":"","id"│
+│                                                                      │             │                                │:"418149003","moduleId":"900000000000207008","sctid":"418149003"}     │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychoactive substance use disorder (disorder)"                      │"0"          │"CAUSATIVE_AGENT"               │{"FSN":"Pharmaceutical / biologic product (product)","nodetype":"conce│
+│                                                                      │             │                                │pt","effectiveTime":"20020731","definitionStatusId":"90000000000007400│
+│                                                                      │             │                                │8","active":"1","GLabel":"Pharmaceutical / biologic product (product)"│
+│                                                                      │             │                                │,"history":"","id":"373873005","moduleId":"900000000000207008","sctid"│
+│                                                                      │             │                                │:"373873005"}                                                         │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychogenic voice disorder (disorder)"                               │"0"          │"INTERPRETS"                    │{"FSN":"Psychological function (observable entity)","nodetype":"concep│
+│                                                                      │             │                                │t","effectiveTime":"20020131","definitionStatusId":"900000000000074008│
+│                                                                      │             │                                │","active":"1","GLabel":"Psychological function (observable entity)","│
+│                                                                      │             │                                │history":"","id":"3850002","moduleId":"900000000000207008","sctid":"38│
+│                                                                      │             │                                │50002"}                                                               │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychogenic voice disorder (disorder)"                               │"0"          │"INTERPRETS"                    │{"FSN":"Mental state, behavior / psychosocial function observable (obs│
+│                                                                      │             │                                │ervable entity)","nodetype":"concept","effectiveTime":"20020131","defi│
+│                                                                      │             │                                │nitionStatusId":"900000000000074008","active":"1","GLabel":"Mental sta│
+│                                                                      │             │                                │te, behavior / psychosocial function observable (observable entity)","│
+│                                                                      │             │                                │history":"","id":"363870007","moduleId":"900000000000207008","sctid":"│
+│                                                                      │             │                                │363870007"}                                                           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychogenic voice disorder (disorder)"                               │"1"          │"HAS_INTERPRETATION"            │{"FSN":"Able with difficulty (qualifier value)","nodetype":"concept","│
+│                                                                      │             │                                │effectiveTime":"20020731","definitionStatusId":"900000000000074008","a│
+│                                                                      │             │                                │ctive":"1","GLabel":"Able with difficulty (qualifier value)","history"│
+│                                                                      │             │                                │:"","id":"371157007","moduleId":"900000000000207008","sctid":"37115700│
+│                                                                      │             │                                │7"}                                                                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychogenic voice disorder (disorder)"                               │"1"          │"HAS_INTERPRETATION"            │{"FSN":"Able with difficulty (qualifier value)","nodetype":"concept","│
+│                                                                      │             │                                │effectiveTime":"20020731","definitionStatusId":"900000000000074008","a│
+│                                                                      │             │                                │ctive":"1","GLabel":"Able with difficulty (qualifier value)","history"│
+│                                                                      │             │                                │:"","id":"371157007","moduleId":"900000000000207008","sctid":"37115700│
+│                                                                      │             │                                │7"}                                                                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychogenic voice disorder (disorder)"                               │"1"          │"HAS_INTERPRETATION"            │{"FSN":"Able with difficulty (qualifier value)","nodetype":"concept","│
+│                                                                      │             │                                │effectiveTime":"20020731","definitionStatusId":"900000000000074008","a│
+│                                                                      │             │                                │ctive":"1","GLabel":"Able with difficulty (qualifier value)","history"│
+│                                                                      │             │                                │:"","id":"371157007","moduleId":"900000000000207008","sctid":"37115700│
+│                                                                      │             │                                │7"}                                                                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychogenic voice disorder (disorder)"                               │"1"          │"INTERPRETS"                    │{"FSN":"Ability to speak (observable entity)","nodetype":"concept","ef│
+│                                                                      │             │                                │fectiveTime":"20020131","definitionStatusId":"900000000000074008","act│
+│                                                                      │             │                                │ive":"1","GLabel":"Ability to speak (observable entity)","history":"",│
+│                                                                      │             │                                │"id":"286367001","moduleId":"900000000000207008","sctid":"286367001"} │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychogenic voice disorder (disorder)"                               │"1"          │"INTERPRETS"                    │{"FSN":"Ability to speak (observable entity)","nodetype":"concept","ef│
+│                                                                      │             │                                │fectiveTime":"20020131","definitionStatusId":"900000000000074008","act│
+│                                                                      │             │                                │ive":"1","GLabel":"Ability to speak (observable entity)","history":"",│
+│                                                                      │             │                                │"id":"286367001","moduleId":"900000000000207008","sctid":"286367001"} │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychogenic voice disorder (disorder)"                               │"1"          │"INTERPRETS"                    │{"FSN":"Ability to speak (observable entity)","nodetype":"concept","ef│
+│                                                                      │             │                                │fectiveTime":"20020131","definitionStatusId":"900000000000074008","act│
+│                                                                      │             │                                │ive":"1","GLabel":"Ability to speak (observable entity)","history":"",│
+│                                                                      │             │                                │"id":"286367001","moduleId":"900000000000207008","sctid":"286367001"} │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Psychosis with origin in childhood (disorder)"                       │"0"          │"OCCURRENCE"                    │{"FSN":"Childhood (qualifier value)","nodetype":"concept","effectiveTi│
+│                                                                      │             │                                │me":"20020131","definitionStatusId":"900000000000074008","GLabel":"Chi│
+│                                                                      │             │                                │ldhood (qualifier value)","active":"1","history":"","id":"255398004","│
+│                                                                      │             │                                │moduleId":"900000000000207008","sctid":"255398004"}                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Specific nonpsychotic mental disorders following organic brain damage│"0"          │"TEMPORALLY_FOLLOWS"            │{"FSN":"Disorder of brain (disorder)","nodetype":"concept","effectiveT│
+│ (disorder)"                                                          │             │                                │ime":"20020131","definitionStatusId":"900000000000073002","ptcount":6,│
+│                                                                      │             │                                │"GLabel":"Disorder of brain (disorder)","active":"1","history":"","id"│
+│                                                                      │             │                                │:"81308009","moduleId":"900000000000207008","sctid":"81308009"}       │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Specific nonpsychotic mental disorders following organic brain damage│"0"          │"AFTER"                         │{"FSN":"Traumatic AND/OR non-traumatic brain injury (disorder)","nodet│
+│ (disorder)"                                                          │             │                                │ype":"concept","effectiveTime":"20050731","definitionStatusId":"900000│
+│                                                                      │             │                                │000000073002","active":"1","GLabel":"Traumatic AND/OR non-traumatic br│
+│                                                                      │             │                                │ain injury (disorder)","history":"[{"active": "1", "effectiveTime": "2│
+│                                                                      │             │                                │0020131", "id": "127294003", "definitionStatusId": "900000000000074008│
+│                                                                      │             │                                │", "moduleId": "900000000000207008"}]","id":"127294003","moduleId":"90│
+│                                                                      │             │                                │0000000000207008","sctid":"127294003"}                                │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Specific nonpsychotic mental disorders following organic brain damage│"0"          │"AFTER"                         │{"FSN":"Brain damage (disorder)","nodetype":"concept","effectiveTime":│
+│ (disorder)"                                                          │             │                                │"20180131","definitionStatusId":"900000000000074008","ptcount":2,"GLab│
+│                                                                      │             │                                │el":"Brain damage (disorder)","active":"0","history":"[{"active": "1",│
+│                                                                      │             │                                │ "effectiveTime": "20020131", "id": "2470005", "definitionStatusId": "│
+│                                                                      │             │                                │900000000000074008", "moduleId": "900000000000207008"}, {"active": "0"│
+│                                                                      │             │                                │, "effectiveTime": "20160131", "id": "2470005", "definitionStatusId": │
+│                                                                      │             │                                │"900000000000074008", "moduleId": "900000000000207008"}, {"active": "1│
+│                                                                      │             │                                │", "effectiveTime": "20160731", "id": "2470005", "definitionStatusId":│
+│                                                                      │             │                                │ "900000000000074008", "moduleId": "900000000000207008"}]","id":"24700│
+│                                                                      │             │                                │05","moduleId":"900000000000207008","sctid":"2470005"}                │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Specific nonpsychotic mental disorders following organic brain damage│"0"          │"FINDING_SITE"                  │{"FSN":"Brain structure (body structure)","nodetype":"concept","effect│
+│ (disorder)"                                                          │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Brain structure (body structure)","history":"","id":"12│
+│                                                                      │             │                                │738006","moduleId":"900000000000207008","sctid":"12738006"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Tic disorder (disorder)"                                             │"0"          │"HAS_DEFINITIONAL_MANIFESTATION"│{"FSN":"Tic (finding)","nodetype":"concept","effectiveTime":"20030131"│
+│                                                                      │             │                                │,"ptcount":7,"definitionStatusId":"900000000000074008","GLabel":"Tic (│
+│                                                                      │             │                                │finding)","active":"1","history":"","id":"386783003","moduleId":"90000│
+│                                                                      │             │                                │0000000207008","sctid":"386783003"}                                   │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Tic disorder (disorder)"                                             │"0"          │"FINDING_SITE"                  │{"FSN":"Brain structure (body structure)","nodetype":"concept","effect│
+│                                                                      │             │                                │iveTime":"20020131","definitionStatusId":"900000000000074008","active"│
+│                                                                      │             │                                │:"1","GLabel":"Brain structure (body structure)","history":"","id":"12│
+│                                                                      │             │                                │738006","moduleId":"900000000000207008","sctid":"12738006"}           │
+├──────────────────────────────────────────────────────────────────────┼─────────────┼────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│"Tic disorder (disorder)"                                             │"0"          │"FINDING_SITE"                  │{"FSN":"Structure of nervous system (body structure)","nodetype":"conc│
+│                                                                      │             │                                │ept","effectiveTime":"20020131","definitionStatusId":"9000000000000740│
+│                                                                      │             │                                │08","active":"1","GLabel":"Structure of nervous system (body structure│
+│                                                                      │             │                                │)","history":"","id":"25087005","moduleId":"900000000000207008","sctid│
+│                                                                      │             │                                │":"25087005"}                                                         │
+└──────────────────────────────────────────────────────────────────────┴─────────────┴────────────────────────────────┴──────────────────────────────────────────────────────────────────────┘
+
+-- Note that, although labels(z) is not returned, all z nodes have the structure of an ObjectConcept
+-- Distinct labels of z are:
+╒══════════════════════════════════════════════════════════════════════╕
+│"labels(z)"                                                           │
+╞══════════════════════════════════════════════════════════════════════╡
+│["ObjectConcept"]                                                     │
+├──────────────────────────────────────────────────────────────────────┤
+│["ObjectConcept","Neuro"]                                             │
+├──────────────────────────────────────────────────────────────────────┤
+│["ObjectConcept","Neuro","PNeuro","PSCT"]                             │
+├──────────────────────────────────────────────────────────────────────┤
+│["ObjectConcept","Neuro","Psych","Behav","PNeuro","PPsych","PBehav","P│
+│SCT"]                                                                 │
+├──────────────────────────────────────────────────────────────────────┤
+│["ObjectConcept","Psych"]                                             │
+├──────────────────────────────────────────────────────────────────────┤
+│["ObjectConcept","Psych","Behav","PPsych","PBehav","PSCT"]            │
+├──────────────────────────────────────────────────────────────────────┤
+│["ObjectConcept","Psych","PPsych","PSCT"]                             │
+└──────────────────────────────────────────────────────────────────────┘
